@@ -954,7 +954,7 @@
                 name: 'Structural',
                 title: 'Structural Analysis',
                 desc: 'FEA, Composites, Failure Analysis',
-                image: './Images/Game%20Options/Structural.jpeg',
+                image: './Images/Game%20Options/Aerostructure.jpeg',
                 branches: ['Aerostructures', 'Aeroelasticity', 'Energy Methods']
             },
             {
@@ -1011,26 +1011,8 @@
             });
         }
 
-        function handleWheelScroll() {
-            const wheelRect = wheelSection.getBoundingClientRect();
-            const windowHeight = window.innerHeight;
-
-            if (wheelRect.top > windowHeight) return;
-
-            const scrollProgress = Math.max(0, (windowHeight - wheelRect.top) / (windowHeight + wheelSection.offsetHeight));
-            const wheelIndex = Math.min(3, Math.floor(scrollProgress * 4));
-
-            updateWheelSelection(wheelIndex);
-        }
-
-        let wheelScrollTimeout;
-        window.addEventListener('scroll', () => {
-            if (wheelScrollTimeout) return;
-            wheelScrollTimeout = setTimeout(() => {
-                handleWheelScroll();
-                wheelScrollTimeout = null;
-            }, 16);
-        }, { passive: true });
+        // Scroll-linked disabled for this section - only click updates the selection
+        // The image stays fixed regardless of scroll position
 
         // ===== MIND MAP LOGIC =====
         const mindmapContainer = document.getElementById('mindmap-container');
