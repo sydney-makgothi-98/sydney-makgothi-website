@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gopolang Makgothi | Aerospace Engineer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ffffff, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-effect {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(59, 130, 246, 0.5) rgba(0, 0, 0, 0.2);
+        }
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        body::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
+        }
+        body::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.7);
+        }
+
+        .image-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .showcase-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: radial-gradient(circle, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+        }
+
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.4) 100%);
+        }
+
+        .image-counter {
+            position: absolute;
+            top: 32px;
+            right: 32px;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.1em;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .button-hover {
+            transition: all 300ms ease;
+        }
+        .button-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 113, 227, 0.3);
+        }
+
+        .orbit-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 0 auto;
+        }
+
+        @keyframes orbit {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .orbit-track {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: orbit 20s linear infinite;
+        }
+
+        .orbit-item {
+            position: absolute;
+            width: 220px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 300ms ease;
+        }
+
+        .orbit-item:nth-child(1) {
+            transform: translate(-50%, -50%) rotateZ(0deg) translateY(-200px) rotateZ(0deg);
+        }
+
+        .orbit-item:nth-child(2) {
+            transform: translate(-50%, -50%) rotateZ(90deg) translateY(-200px) rotateZ(-90deg);
+        }
+
+        .orbit-item:nth-child(3) {
+            transform: translate(-50%, -50%) rotateZ(180deg) translateY(-200px) rotateZ(-180deg);
+        }
+
+        .orbit-item:nth-child(4) {
+            transform: translate(-50%, -50%) rotateZ(270deg) translateY(-200px) rotateZ(-270deg);
+        }
+
+        .orbit-track:hover .orbit-item {
+            animation-play-state: paused;
+        }
+
+        .orbit-item:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+            z-index: 10;
+        }
+
+        .orbit-item:nth-child(1):hover {
+            transform: translate(-50%, -50%) rotateZ(0deg) translateY(-200px) rotateZ(0deg) scale(1.15);
+        }
+
+        .orbit-item:nth-child(2):hover {
+            transform: translate(-50%, -50%) rotateZ(90deg) translateY(-200px) rotateZ(-90deg) scale(1.15);
+        }
+
+        .orbit-item:nth-child(3):hover {
+            transform: translate(-50%, -50%) rotateZ(180deg) translateY(-200px) rotateZ(-180deg) scale(1.15);
+        }
+
+        .orbit-item:nth-child(4):hover {
+            transform: translate(-50%, -50%) rotateZ(270deg) translateY(-200px) rotateZ(-270deg) scale(1.15);
+        }
+
+        .orbit-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80px;
+            height: 80px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 113, 227, 0.2), rgba(0, 0, 0, 0.4));
+            border: 2px solid rgba(0, 113, 227, 0.3);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: rgba(0, 113, 227, 0.6);
+            font-mono: monospace;
+        }
+
+        .selection-wheel-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wheel-background {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .wheel-bg-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wheel-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.5) 100%);
+        }
+
+        .wheel-ui {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px 0 80px;
+            gap: 60px;
+        }
+
+        .game-menu-left {
+            flex: 1;
+            z-index: 20;
+            max-width: 600px;
+        }
+
+        .menu-title-container {
+            margin-bottom: 4rem;
+        }
+
+        .menu-subtitle {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #60a5fa;
+            text-shadow: 0 0 20px rgba(96, 165, 250, 0.5), 2px 2px 0 rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.15em;
+            margin-bottom: 1rem;
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        .game-title {
+            font-size: 4rem;
+            md:font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #60a5fa, #0071e3, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(0, 113, 227, 0.6), 4px 4px 0 rgba(0, 0, 0, 0.9);
+            font-family: 'Arial Black', sans-serif;
+            transform: skewX(-5deg);
+            letter-spacing: 0.05em;
+            animation: title-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes title-glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0, 113, 227, 0.4), 4px 4px 0 rgba(0, 0, 0, 0.9); }
+            50% { text-shadow: 0 0 40px rgba(0, 113, 227, 0.8), 4px 4px 0 rgba(0, 0, 0, 0.9); }
+        }
+
+        .game-menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .menu-option {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(96, 165, 250, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 300ms ease;
+            position: relative;
+        }
+
+        .menu-option.active {
+            background: rgba(0, 113, 227, 0.15);
+            border-color: rgba(0, 113, 227, 0.6);
+            box-shadow: 0 0 20px rgba(0, 113, 227, 0.3), inset 0 0 10px rgba(96, 165, 250, 0.1);
+            transform: translateX(10px);
+        }
+
+        .menu-option.expanded {
+            border-color: rgba(0, 113, 227, 0.8);
+            background: rgba(0, 113, 227, 0.12);
+        }
+
+        .menu-suboptions {
+            display: none;
+            margin-top: 0.5rem;
+            padding-left: 2rem;
+            border-left: 2px solid rgba(96, 165, 250, 0.4);
+        }
+
+        .menu-option.expanded + .menu-suboptions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .menu-subitem {
+            padding: 0.75rem 1rem;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 6px;
+            color: #e0e7ff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 300ms ease;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-subitem:hover {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.6);
+            transform: translateX(4px);
+            box-shadow: 0 0 10px rgba(0, 113, 227, 0.2);
+        }
+
+        .option-pointer {
+            font-size: 1.5rem;
+            color: #60a5fa;
+            font-weight: 900;
+            opacity: 0;
+            transition: all 200ms ease;
+        }
+
+        .menu-option.active .option-pointer {
+            opacity: 1;
+            animation: pointer-blink 0.8s ease-in-out infinite;
+        }
+
+        @keyframes pointer-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .option-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-family: 'Arial Black', sans-serif;
+            transition: all 200ms ease;
+        }
+
+        .menu-option.active .option-name {
+            color: #60a5fa;
+            text-shadow: 0 0 15px rgba(96, 165, 250, 0.6);
+            font-size: 1.4rem;
+        }
+
+        .menu-description {
+            padding: 1.5rem;
+            background: rgba(0, 113, 227, 0.05);
+            border-left: 4px solid #0071e3;
+            color: #fff;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .game-menu-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+            height: 100%;
+        }
+
+        .game-artwork {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: drop-shadow(0 0 40px rgba(0, 113, 227, 0.5)) brightness(1.05);
+            animation: artwork-float 3s ease-in-out infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes artwork-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .menu-decorations {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .deco-top-left,
+        .deco-top-right,
+        .deco-bottom-left,
+        .deco-bottom-right {
+            position: absolute;
+            font-size: 2rem;
+            color: rgba(0, 113, 227, 0.3);
+            animation: deco-pulse 2s ease-in-out infinite;
+        }
+
+        .deco-top-left {
+            top: 40px;
+            left: 40px;
+        }
+
+        .deco-top-right {
+            top: 40px;
+            right: 40px;
+        }
+
+        .deco-bottom-left {
+            bottom: 40px;
+            left: 40px;
+        }
+
+        .deco-bottom-right {
+            bottom: 40px;
+            right: 40px;
+        }
+
+        @keyframes deco-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        .wheel-scroll-hint {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            text-align: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .mindmap-container {
+            position: absolute;
+            inset: 0;
+            z-index: 25;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 300ms ease;
+        }
+
+        .mindmap-container.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mindmap-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mindmap-nodes {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .mindmap-tree-container {
+            max-width: 450px;
+            background: rgba(0, 113, 227, 0.08);
+            border: 2px solid rgba(96, 165, 250, 0.25);
+            border-radius: 14px;
+            padding: 2rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .tree-item {
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .mindmap-container.active .tree-item {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tree-branch {
+            margin: 0.8rem 0;
+            padding: 1rem;
+            background: rgba(0, 113, 227, 0.12);
+            border-left: 3px solid #60a5fa;
+            border-radius: 6px;
+            transition: all 300ms ease;
+        }
+
+        .tree-branch:hover {
+            background: rgba(0, 113, 227, 0.2);
+            border-left-color: #0071e3;
+            transform: translateX(4px);
+        }
+
+        .tree-branch .tree-node-content {
+            color: #e0e7ff;
+            font-weight: 700;
+            padding: 0;
+        }
+
+        .tree-node-content {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            cursor: pointer;
+            transition: all 300ms ease;
+        }
+
+        .tree-icon {
+            font-size: 1.2rem;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tree-label {
+            font-size: 0.98rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: inherit;
+        }
+
+        .tree-divider {
+            height: 1px;
+            background: linear-gradient(90deg, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.05));
+            margin: 2rem 0 1.5rem 0;
+            opacity: 0;
+            transform: scaleX(0);
+            transition: all 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: left;
+        }
+
+        .mindmap-container.active .tree-divider {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+
+        .tree-skill-tab {
+            margin: 0.6rem 0;
+            padding: 1rem 1.2rem;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(0, 113, 227, 0.08));
+            border: 1.5px solid rgba(96, 165, 250, 0.35);
+            border-radius: 8px;
+            transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .tree-skill-tab:hover {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.18), rgba(0, 113, 227, 0.15));
+            border-color: rgba(96, 165, 250, 0.6);
+            transform: translateX(6px);
+            box-shadow: 0 4px 15px rgba(0, 113, 227, 0.25);
+        }
+
+        .tree-skill-tab .tree-node-content {
+            color: #93c5fd;
+            font-weight: 700;
+            padding: 0;
+        }
+
+        .tree-skill-tab .tree-label {
+            font-size: 1rem;
+            color: #60a5fa;
+            letter-spacing: 0.4px;
+        }
+
+        .mindmap-close-btn {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 113, 227, 0.2);
+            border: 2px solid rgba(96, 165, 250, 0.4);
+            border-radius: 50%;
+            color: #60a5fa;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 300ms ease;
+            z-index: 30;
+        }
+
+        .mindmap-close-btn:hover {
+            background: rgba(0, 113, 227, 0.4);
+            border-color: rgba(96, 165, 250, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <!-- Fixed Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-bold tracking-tight gradient-text">
+                    Gopolang Makgothi
+                </h1>
+
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#home" class="text-sm text-white/70 hover:text-white transition-colors">Home</a>
+                    <a href="#showcase" class="text-sm text-white/70 hover:text-white transition-colors">Showcase</a>
+                    <a href="#contact" class="text-sm text-white/70 hover:text-white transition-colors">Contact</a>
+                    <button class="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-lg button-hover shadow-lg">
+                        Resume
+                    </button>
+                </div>
+
+                <button id="mobile-menu-btn" class="md:hidden text-white">
+                    <svg class="menu-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg class="close-icon w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative w-full h-screen overflow-hidden pt-20 flex items-center justify-center">
+        <div class="absolute inset-0">
+            <img src="./Images/Scroll Linked/SR71.webp" alt="SR-71 Blackbird" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20"></div>
+        </div>
+
+        <div class="relative h-full flex flex-col items-center justify-center text-center px-6">
+            <div class="space-y-6 max-w-4xl">
+                <h2 class="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight gradient-text">
+                    Gopolang Makgothi
+                </h2>
+
+                <h3 class="text-2xl md:text-3xl text-blue-400 font-light tracking-wide">
+                    Aerospace Engineer | Honours Graduate
+                </h3>
+
+                <p class="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl mx-auto font-light">
+                    Specializing in high-speed aerodynamics and advanced structural design. Passionate about pushing aerospace innovation through rigorous engineering and cutting-edge analysis.
+                </p>
+
+                <div class="pt-8">
+                    <button class="px-8 py-3 text-white font-medium bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-lg button-hover shadow-lg">
+                        Explore My Work
+                    </button>
+                </div>
+            </div>
+
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-float">
+                <div class="text-white/40 text-sm">Scroll to explore</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Full-Screen Scroll-Linked Showcase -->
+    <section id="showcase" class="relative" style="height: 8000px;">
+        <!-- Sticky Full-Screen Image -->
+        <div class="image-section sticky top-0">
+            <div class="image-wrapper">
+                <img id="showcase-image" src="./Images/Scroll Linked/002.webp" alt="Portfolio Showcase" class="showcase-image">
+                <div class="image-overlay"></div>
+
+                <!-- Image Counter Badge -->
+                <div class="image-counter">
+                    <span id="image-number">1</span> / 78
+                </div>
+
+                <!-- Bottom Text Overlay -->
+                <div class="absolute bottom-8 left-8 right-8 md:bottom-12 md:left-12 md:right-12 max-w-2xl">
+                    <div class="text-blue-400 text-sm font-mono mb-2" id="skill-tag">01 — AERODYNAMICS & FLUID MECHANICS</div>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight" id="skill-title">Advanced Fluid Dynamics</h2>
+                    <p class="text-white/80 text-base md:text-lg leading-relaxed" id="skill-desc">
+                        Expert proficiency in Computational Fluid Dynamics simulations. Wind tunnel testing, boundary layer analysis, and transonic flow optimization.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invisible Scrollable Anchor -->
+        <div class="absolute inset-0 pointer-events-none"></div>
+    </section>
+
+    <!-- Game-Style Selection Wheel Section -->
+    <section id="expertise-wheel" class="relative" style="height: 3600px;">
+        <!-- Full-Screen Selection Wheel -->
+        <div class="selection-wheel-container sticky top-0">
+            <!-- Background Image -->
+            <div class="wheel-background">
+                <img id="wheel-bg-image" src="https://via.placeholder.com/1920x1080?text=Placeholder" alt="Expertise Background" class="wheel-bg-img">
+                <div class="wheel-overlay"></div>
+            </div>
+
+            <!-- Game-Style Menu UI -->
+            <div class="wheel-ui">
+                <!-- Left Side: Title & Menu -->
+                <div class="game-menu-left">
+                    <!-- Menu Title -->
+                    <div class="menu-title-container">
+                        <div class="menu-subtitle">Engineering Skills</div>
+                        <div id="wheel-title" class="game-title">Aerodynamics</div>
+                    </div>
+
+                    <!-- Menu Options -->
+                    <div class="game-menu-options" id="game-menu-options">
+                        <!-- Menu items will be generated here -->
+                    </div>
+
+                    <!-- Description -->
+                    <div class="menu-description">
+                        <div id="wheel-desc" class="text-white/80">CFD, Wind Tunnel, Transonic Flow</div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Artwork -->
+                <div class="game-menu-right">
+                    <img id="wheel-artwork" src="https://via.placeholder.com/400x600?text=Character+Art" alt="Expertise Art" class="game-artwork">
+                </div>
+
+                <!-- Corner Decorations -->
+                <div class="menu-decorations">
+                    <div class="deco-top-left">◆</div>
+                    <div class="deco-top-right">◆</div>
+                    <div class="deco-bottom-left">◆</div>
+                    <div class="deco-bottom-right">◆</div>
+                </div>
+            </div>
+
+            <!-- Mind Map Visualization -->
+            <div id="mindmap-container" class="mindmap-container">
+                <svg id="mindmap-svg" class="mindmap-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                    <!-- Branches will be drawn here -->
+                </svg>
+                <div id="mindmap-nodes" class="mindmap-nodes">
+                    <!-- Nodes will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Scroll Hint -->
+            <div class="wheel-scroll-hint">
+                <div class="text-white/50 text-sm">SCROLL TO SELECT</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="py-12 md:py-16 px-6 border-t border-white/5 bg-black">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-12">
+                <div>
+                    <h3 class="text-lg font-bold gradient-text mb-2">
+                        Gopolang Makgothi
+                    </h3>
+                    <p class="text-white/50 text-sm">
+                        Aerospace Engineer specializing in advanced aerodynamics and structural design.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Navigation</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-white/50 hover:text-white text-sm transition-colors">Home</a></li>
+                        <li><a href="#showcase" class="text-white/50 hover:text-white text-sm transition-colors">Showcase</a></li>
+                        <li><a href="#contact" class="text-white/50 hover:text-white text-sm transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect</h4>
+                    <div class="flex gap-4">
+                        <a href="https://linkedin.com" target="_blank" class="p-3 rounded-lg glass-effect text-white hover:bg-white/10 transition-all">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/>
+                            </svg>
+                        </a>
+                        <a href="https://github.com" target="_blank" class="p-3 rounded-lg glass-effect text-white hover:bg-white/10 transition-all">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="mailto:nickmood1zn@gmail.com" class="p-3 rounded-lg glass-effect text-white hover:bg-white/10 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-white/5 text-center">
+                <p class="text-white/40 text-sm">
+                    © 2026 Gopolang Makgothi. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Valid frame numbers (scanned from actual files)
+        const VALID_FRAMES = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,24,25,26,27,37,38,39,40,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100];
+
+        const TOTAL_IMAGES = VALID_FRAMES.length; // 88
+        const IMAGE_PATH = './Images/Scroll%20Linked/';
+        const SHOWCASE_SECTION = document.getElementById('showcase');
+        const showcaseImage = document.getElementById('showcase-image');
+        const imageNumber = document.getElementById('image-number');
+        const skillTag = document.getElementById('skill-tag');
+        const skillTitle = document.getElementById('skill-title');
+        const skillDesc = document.getElementById('skill-desc');
+
+        const skillSets = [
+            {
+                range: [1, 19],
+                tag: '01 — AERODYNAMICS & FLUID MECHANICS',
+                title: 'Advanced Fluid Dynamics',
+                desc: 'Expert proficiency in Computational Fluid Dynamics simulations. Wind tunnel testing, boundary layer analysis, and transonic flow optimization for high-speed aerospace applications.'
+            },
+            {
+                range: [20, 39],
+                tag: '02 — STRUCTURAL ANALYSIS & MATERIALS',
+                title: 'Finite Element Analysis',
+                desc: 'Advanced FEA for complex load cases. Composite material design, laminate optimization, and failure prediction for aerospace-grade structures.'
+            },
+            {
+                range: [40, 59],
+                tag: '03 — PROPULSION & FLIGHT DYNAMICS',
+                title: 'Engine & Control Systems',
+                desc: 'Jet engine thermodynamics and turbine design. Orbital mechanics, trajectory optimization, and flight control system stability analysis.'
+            },
+            {
+                range: [60, 78],
+                tag: '04 — SYSTEMS ENGINEERING & CAD',
+                title: '3D Modeling & Integration',
+                desc: 'Master-level 3D parametric modeling using CATIA and SOLIDWORKS. Complete project lifecycle management with systems integration.'
+            }
+        ];
+
+        let lastImageIndex = 1;
+
+        function getImageFileName(imageIndex) {
+            const frameNum = VALID_FRAMES[imageIndex - 1];
+            return `${String(frameNum).padStart(3, '0')}.webp`;
+        }
+
+        function getSkillSet(imageIndex) {
+            return skillSets.find(s => imageIndex >= s.range[0] && imageIndex <= s.range[1]);
+        }
+
+        function updateImage(imageIndex) {
+            if (lastImageIndex === imageIndex) return;
+            lastImageIndex = imageIndex;
+
+            const fileName = getImageFileName(imageIndex);
+            showcaseImage.src = `${IMAGE_PATH}${fileName}`;
+            imageNumber.textContent = imageIndex;
+
+            const skill = getSkillSet(imageIndex);
+            if (skill) {
+                skillTag.textContent = skill.tag;
+                skillTitle.textContent = skill.title;
+                skillDesc.textContent = skill.desc;
+            }
+
+            // Preload adjacent images for smooth playback
+            if (imageIndex > 1) {
+                const prevFile = getImageFileName(imageIndex - 1);
+                const prevImg = new Image();
+                prevImg.src = `${IMAGE_PATH}${prevFile}`;
+            }
+            if (imageIndex < TOTAL_IMAGES) {
+                const nextFile = getImageFileName(imageIndex + 1);
+                const nextImg = new Image();
+                nextImg.src = `${IMAGE_PATH}${nextFile}`;
+            }
+        }
+
+        function handleScroll() {
+            const showcaseRect = SHOWCASE_SECTION.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            if (showcaseRect.top > windowHeight) return;
+
+            // Calculate scroll progress through the showcase section
+            const scrollProgress = Math.max(0, (windowHeight - showcaseRect.top) / (windowHeight + SHOWCASE_SECTION.offsetHeight));
+            const imageIndex = Math.max(1, Math.min(TOTAL_IMAGES, Math.round(scrollProgress * TOTAL_IMAGES)));
+
+            updateImage(imageIndex);
+        }
+
+        // Smooth scroll event listener - plays images like video scrubbing
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (scrollTimeout) return;
+            scrollTimeout = setTimeout(() => {
+                handleScroll();
+                scrollTimeout = null;
+            }, 16); // ~60fps for smooth video-like playback
+        }, { passive: true });
+
+        // Mobile menu
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        mobileMenuBtn.addEventListener('click', () => {
+            const menuIcon = mobileMenuBtn.querySelector('.menu-icon');
+            const closeIcon = mobileMenuBtn.querySelector('.close-icon');
+            menuIcon.classList.toggle('hidden');
+            closeIcon.classList.toggle('hidden');
+        });
+
+        // ===== SELECTION WHEEL LOGIC =====
+        const WHEEL_OPTIONS = [
+            {
+                id: 'aerodynamics',
+                name: 'Aerodynamics',
+                title: 'Aerodynamics',
+                desc: 'CFD, Wind Tunnel, Transonic Flow',
+                image: './Images/Game%20Options/CFD.jpeg',
+                branches: ['CFD', 'Applied Aerodynamics', 'Vortex Lattice Methods']
+            },
+            {
+                id: 'structural',
+                name: 'Structural',
+                title: 'Structural Analysis',
+                desc: 'FEA, Composites, Failure Analysis',
+                image: './Images/Game%20Options/Structural.jpeg',
+                branches: ['Aerostructures', 'Aeroelasticity', 'Energy Methods']
+            },
+            {
+                id: 'propulsion',
+                name: 'Propulsion',
+                title: 'Propulsion',
+                desc: 'Jet Engines, Control Systems, Orbital Mechanics',
+                image: './Images/Game%20Options/Propulsion.jpeg',
+                branches: ['Engine Design', 'Turbomachinery', 'Combustion Analysis']
+            },
+            {
+                id: 'systems',
+                name: 'Systems',
+                title: 'Systems Engineering',
+                desc: 'CAD, 3D Modeling, Systems Integration',
+                image: './Images/Game%20Options/Systems.jpeg',
+                branches: ['CAD Modeling', 'Integration', 'Lifecycle Management']
+            }
+        ];
+
+        let currentWheelIndex = 0;
+        const wheelSection = document.getElementById('expertise-wheel');
+        const wheelBgImage = document.getElementById('wheel-bg-image');
+        const wheelTitle = document.getElementById('wheel-title');
+        const wheelDesc = document.getElementById('wheel-desc');
+        const wheelArtwork = document.getElementById('wheel-artwork');
+        const menuOptions = document.querySelectorAll('.menu-option');
+
+        function updateWheelSelection(index) {
+            if (currentWheelIndex === index) return;
+            currentWheelIndex = index;
+
+            const option = WHEEL_OPTIONS[index];
+
+            // Update background image IMMEDIATELY (like Naruto - on scroll, not click)
+            wheelBgImage.src = option.image;
+            wheelBgImage.alt = option.name;
+
+            // Update artwork
+            wheelArtwork.src = option.image;
+            wheelArtwork.alt = option.name;
+
+            // Update center text
+            wheelTitle.textContent = option.title;
+            wheelDesc.textContent = option.desc;
+
+            // Update menu options
+            menuOptions.forEach((option, i) => {
+                if (i === index) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+        }
+
+        function handleWheelScroll() {
+            const wheelRect = wheelSection.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            if (wheelRect.top > windowHeight) return;
+
+            const scrollProgress = Math.max(0, (windowHeight - wheelRect.top) / (windowHeight + wheelSection.offsetHeight));
+            const wheelIndex = Math.min(3, Math.floor(scrollProgress * 4));
+
+            updateWheelSelection(wheelIndex);
+        }
+
+        let wheelScrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (wheelScrollTimeout) return;
+            wheelScrollTimeout = setTimeout(() => {
+                handleWheelScroll();
+                wheelScrollTimeout = null;
+            }, 16);
+        }, { passive: true });
+
+        // ===== MIND MAP LOGIC =====
+        const mindmapContainer = document.getElementById('mindmap-container');
+        const mindmapSvg = document.getElementById('mindmap-svg');
+        const mindmapNodes = document.getElementById('mindmap-nodes');
+
+        function renderMindMap(option) {
+            // Clear previous content
+            mindmapNodes.innerHTML = '';
+
+            // Create tree container
+            const treeContainer = document.createElement('div');
+            treeContainer.className = 'mindmap-tree-container';
+
+            // Create branch items (without root label)
+            option.branches.forEach((branch, i) => {
+                const branchItem = document.createElement('div');
+                branchItem.className = 'tree-item tree-branch';
+                branchItem.style.transitionDelay = (i * 60) + 'ms';
+                branchItem.innerHTML = `
+                    <div class="tree-node-content">
+                        <span class="tree-icon">📄</span>
+                        <span class="tree-label">${branch}</span>
+                    </div>
+                `;
+                treeContainer.appendChild(branchItem);
+            });
+
+            // Add divider
+            const divider = document.createElement('div');
+            divider.className = 'tree-divider';
+            divider.style.transitionDelay = (option.branches.length * 60) + 'ms';
+            treeContainer.appendChild(divider);
+
+            // Add other skill tabs below
+            WHEEL_OPTIONS.forEach((skill, i) => {
+                if (skill.id !== option.id) {
+                    const skillTab = document.createElement('div');
+                    skillTab.className = 'tree-item tree-skill-tab';
+                    skillTab.style.transitionDelay = (option.branches.length * 60 + 100 + i * 60) + 'ms';
+                    skillTab.innerHTML = `
+                        <div class="tree-node-content">
+                            <span class="tree-icon">🎯</span>
+                            <span class="tree-label">${skill.name}</span>
+                        </div>
+                    `;
+                    skillTab.onclick = () => {
+                        menuOptions[WHEEL_OPTIONS.indexOf(skill)].click();
+                    };
+                    treeContainer.appendChild(skillTab);
+                }
+            });
+
+            mindmapNodes.appendChild(treeContainer);
+
+            // Create close button
+            const closeBtn = document.createElement('div');
+            closeBtn.className = 'mindmap-close-btn';
+            closeBtn.innerHTML = '✕';
+            closeBtn.onclick = closeMindMap;
+            mindmapNodes.appendChild(closeBtn);
+
+            // Show mind map
+            mindmapContainer.classList.add('active');
+        }
+
+        function closeMindMap() {
+            mindmapContainer.classList.remove('active');
+            setTimeout(() => {
+                mindmapSvg.innerHTML = '';
+                mindmapNodes.innerHTML = '';
+            }, 300);
+        }
+
+        // Build dynamic menu with expandable options
+        const gameMenuOptionsContainer = document.getElementById('game-menu-options');
+
+        WHEEL_OPTIONS.forEach((option, index) => {
+            // Main menu option
+            const menuOption = document.createElement('div');
+            menuOption.className = 'menu-option' + (index === 0 ? ' active expanded' : '');
+            menuOption.innerHTML = `
+                <div class="option-pointer">►</div>
+                <div class="option-name">${option.name}</div>
+            `;
+
+            menuOption.addEventListener('click', () => {
+                // Remove active from all
+                document.querySelectorAll('.menu-option').forEach(m => {
+                    m.classList.remove('active', 'expanded');
+                });
+                // Add active and expanded to this one
+                menuOption.classList.add('active', 'expanded');
+
+                updateWheelSelection(index);
+
+                // Calculate scroll position
+                const sectionTop = wheelSection.getBoundingClientRect().top + window.scrollY;
+                const optionScrollPos = sectionTop + (index * 900);
+
+                // Smooth scroll
+                window.scrollTo({
+                    top: optionScrollPos,
+                    behavior: 'smooth'
+                });
+            });
+
+            gameMenuOptionsContainer.appendChild(menuOption);
+
+            // Suboptions container
+            const suboptions = document.createElement('div');
+            suboptions.className = 'menu-suboptions';
+
+            option.branches.forEach((branch) => {
+                const subitem = document.createElement('div');
+                subitem.className = 'menu-subitem';
+                subitem.textContent = branch;
+                suboptions.appendChild(subitem);
+            });
+
+            gameMenuOptionsContainer.appendChild(suboptions);
+        });
+
+        // Close mind map on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mindmapContainer.classList.contains('active')) {
+                closeMindMap();
+            }
+        });
+
+        updateImage(1);
+        updateWheelSelection(0);
+    </script>
+
+</body>
+</html>
