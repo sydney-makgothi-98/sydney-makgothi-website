@@ -334,6 +334,23 @@
             letter-spacing: 0.3px;
         }
 
+        .menu-subitem.has-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .menu-subitem.has-link::after {
+            content: '→';
+            color: #60a5fa;
+            transition: transform 300ms ease;
+        }
+
+        .menu-subitem.has-link:hover::after {
+            transform: translateX(4px);
+        }
+
         .menu-subitem:hover {
             background: rgba(96, 165, 250, 0.2);
             border-color: rgba(96, 165, 250, 0.6);
@@ -955,14 +972,15 @@
                 title: 'Structural Analysis',
                 desc: 'FEA, Composites, Failure Analysis',
                 image: './Images/Game%20Options/Aerostructure.jpeg',
-                branches: ['Aerostructures', 'Aeroelasticity', 'Energy Methods']
+                branches: ['Aerostructures', 'Aeroelasticity', 'Energy Methods'],
+                branchLinks: { 'Aerostructures': 'aerostructures.html' }
             },
             {
                 id: 'propulsion',
                 name: 'Propulsion',
                 title: 'Propulsion',
                 desc: 'Jet Engines, Control Systems, Orbital Mechanics',
-                image: './Images/Game%20Options/Propulsion.jpeg',
+                image: './Images/Game%20Options/Propulsion.jpg',
                 branches: ['Engine Design', 'Turbomachinery', 'Combustion Analysis']
             },
             {
@@ -970,7 +988,7 @@
                 name: 'Systems',
                 title: 'Systems Engineering',
                 desc: 'CAD, 3D Modeling, Systems Integration',
-                image: './Images/Game%20Options/Systems.jpeg',
+                image: './Images/Game%20Options/systems.webp',
                 branches: ['CAD Modeling', 'Integration', 'Lifecycle Management']
             }
         ];
@@ -1127,9 +1145,19 @@
             suboptions.className = 'menu-suboptions';
 
             option.branches.forEach((branch) => {
-                const subitem = document.createElement('div');
+                const link = option.branchLinks && option.branchLinks[branch];
+                const subitem = document.createElement(link ? 'a' : 'div');
                 subitem.className = 'menu-subitem';
                 subitem.textContent = branch;
+                if (link) {
+                    subitem.href = link;
+                    subitem.classList.add('has-link');
+                    subitem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = link;
+                    });
+                }
                 suboptions.appendChild(subitem);
             });
 
