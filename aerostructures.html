@@ -307,6 +307,15 @@
         .grid-3 figure { margin: 0; }
         .grid-3 .img-box { aspect-ratio: 4 / 3; }
 
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0 2.25rem;
+        }
+        .grid-2 figure { margin: 0; }
+        .grid-2 .img-box { aspect-ratio: 16 / 10; }
+
         /* Results/gallery break out a little wider than the text column */
         .wide { width: min(100%, 980px); }
 
@@ -436,7 +445,7 @@
             .pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 640px) {
-            .grid-3, .oop-grid, .cta-row, .pipeline, .legend-grid { grid-template-columns: minmax(0, 1fr); }
+            .grid-3, .grid-2, .oop-grid, .cta-row, .pipeline, .legend-grid { grid-template-columns: minmax(0, 1fr); }
             .nav-tag { display: none; }
             .brief { padding: 1.25rem; }
         }
@@ -593,36 +602,44 @@
                 <div class="wide">
                     <div class="gallery-group">
                         <div class="gallery-label"><span class="dot"></span> NON-PRESSURISED</div>
-                        <div class="grid-3">
+                        <div class="grid-2">
                             <figure>
-                                <div class="img-box" data-img="Stress_Variation_No_Pressure"><img alt="Stress variation, no pressure"></div>
-                                <figcaption><span class="fig-no">FIG 2.2</span> Stress variation [No pressure]</figcaption>
+                                <div class="img-box chart-box" data-chart="stressNP" role="img" aria-label="Stress variation around the frame, no pressure"></div>
+                                <figcaption><span class="fig-no">FIG 2.2</span> <span>Stress variation [No pressure]</span></figcaption>
                             </figure>
                             <figure>
-                                <div class="img-box" data-img="Displacement_X_No_Pressure"><img alt="Displacement X, no pressure"></div>
-                                <figcaption><span class="fig-no">FIG 2.3</span> Displacement X [No pressure]</figcaption>
+                                <div class="img-box chart-box" data-chart="dispXNP" role="img" aria-label="Horizontal displacement around the frame, no pressure"></div>
+                                <figcaption><span class="fig-no">FIG 2.3</span> <span>Horizontal displacement u<sub>x</sub> [No pressure]</span></figcaption>
                             </figure>
                             <figure>
-                                <div class="img-box" data-img="Displacement_Y_No_Pressure"><img alt="Displacement Y, no pressure"></div>
-                                <figcaption><span class="fig-no">FIG 2.4</span> Displacement Y [No pressure]</figcaption>
+                                <div class="img-box chart-box" data-chart="dispYNP" role="img" aria-label="Vertical displacement around the frame, no pressure"></div>
+                                <figcaption><span class="fig-no">FIG 2.4</span> <span>Vertical displacement u<sub>y</sub> [No pressure]</span></figcaption>
+                            </figure>
+                            <figure>
+                                <div class="img-box chart-box" data-chart="rotNP" role="img" aria-label="Rotation around the frame, no pressure"></div>
+                                <figcaption><span class="fig-no">FIG 2.5</span> <span>Rotation φ [No pressure]</span></figcaption>
                             </figure>
                         </div>
                     </div>
 
                     <div class="gallery-group">
                         <div class="gallery-label"><span class="dot on"></span> PRESSURISED</div>
-                        <div class="grid-3">
+                        <div class="grid-2">
                             <figure>
-                                <div class="img-box" data-img="Stress_Variation_Pressurised"><img alt="Stress variation, pressurised"></div>
-                                <figcaption><span class="fig-no">FIG 2.5</span> Stress variation [Pressurised]</figcaption>
+                                <div class="img-box chart-box" data-chart="stressP" role="img" aria-label="Stress variation around the frame, pressurised"></div>
+                                <figcaption><span class="fig-no">FIG 2.6</span> <span>Stress variation [Pressurised]</span></figcaption>
                             </figure>
                             <figure>
-                                <div class="img-box" data-img="Displacement_X_Pressurised"><img alt="Displacement X, pressurised"></div>
-                                <figcaption><span class="fig-no">FIG 2.6</span> Displacement X [Pressurised]</figcaption>
+                                <div class="img-box chart-box" data-chart="dispXP" role="img" aria-label="Horizontal displacement around the frame, pressurised"></div>
+                                <figcaption><span class="fig-no">FIG 2.7</span> <span>Horizontal displacement u<sub>x</sub> [Pressurised]</span></figcaption>
                             </figure>
                             <figure>
-                                <div class="img-box" data-img="Displacement_Y_Pressurised"><img alt="Displacement Y, pressurised"></div>
-                                <figcaption><span class="fig-no">FIG 2.7</span> Displacement Y [Pressurised]</figcaption>
+                                <div class="img-box chart-box" data-chart="dispYP" role="img" aria-label="Vertical displacement around the frame, pressurised"></div>
+                                <figcaption><span class="fig-no">FIG 2.8</span> <span>Vertical displacement u<sub>y</sub> [Pressurised]</span></figcaption>
+                            </figure>
+                            <figure>
+                                <div class="img-box chart-box" data-chart="rotP" role="img" aria-label="Rotation around the frame, pressurised"></div>
+                                <figcaption><span class="fig-no">FIG 2.9</span> <span>Rotation φ [Pressurised]</span></figcaption>
                             </figure>
                         </div>
                     </div>
@@ -640,7 +657,7 @@
 
                 <figure>
                     <div class="img-box" data-img="Fuselage_FEA_Fringe"><img alt="FEA fringe plot of the fuselage frame"></div>
-                    <figcaption><span class="fig-no">FIG 2.8</span> FEA fringe plot of the fuselage frame.</figcaption>
+                    <figcaption><span class="fig-no">FIG 2.10</span> FEA fringe plot of the fuselage frame.</figcaption>
                 </figure>
 
                 <h3 id="fuselage-code">How the code was developed</h3>
@@ -673,7 +690,7 @@
                 </div>
                 <figure>
                     <div class="img-box" data-img="Trapezoidal_Rule" data-fallback="trapezoid"><img alt="Animation of the trapezoidal rule"></div>
-                    <figcaption><span class="fig-no">FIG 2.9</span> As the number of trapezoids increases, the approximation converges to the true area under the curve.</figcaption>
+                    <figcaption><span class="fig-no">FIG 2.11</span> As the number of trapezoids increases, the approximation converges to the true area under the curve.</figcaption>
                 </figure>
 
                 <h4><span class="step-num">03</span> Object-oriented programming</h4>
@@ -705,6 +722,8 @@
     </div>
 
     <footer>© 2026 Gopolang Makgothi · Aerospace Engineer</footer>
+
+    <script src="fuselage-charts.js"></script>
 
     <div class="lightbox" id="lightbox">
         <button class="lightbox-close" aria-label="Close">✕</button>
@@ -902,7 +921,9 @@
             const canvas = document.createElement('canvas');
             box.appendChild(canvas);
             const ctx = canvas.getContext('2d');
-            const curve = smoothCurve(cfg.points);
+            const curve = cfg.smooth === false ? cfg.points : smoothCurve(cfg.points);
+            const color = cfg.color || '#60a5fa';
+            const rgb = color.match(/\w\w/g).map(h => parseInt(h, 16)).join(', ');
             const peak = cfg.points.reduce((a, p) => Math.abs(p[1]) > Math.abs(a[1]) ? p : a);
             const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             let progress = reduceMotion ? 1 : 0;
@@ -918,24 +939,32 @@
                 // Scale text, padding and line weights up for the large lightbox version
                 const s = Math.max(1, Math.min(1.8, w / 420));
                 const font = (px, weight = '') => `${weight} ${Math.round(px * s)}px "JetBrains Mono", monospace`;
-                const pad = { l: 46 * s, r: 14 * s, t: 38 * s, b: 34 * s };
+                const fmt = v => Math.abs(v) < 1e-12 ? '0' : +v.toFixed(4) + '';
+                // Left padding grows to fit the widest y tick label
+                ctx.font = font(10);
+                let labelW = 0;
+                for (let i = Math.ceil(cfg.yMin / cfg.yTicks - 1e-9); i * cfg.yTicks <= cfg.yMax + 1e-9; i++) {
+                    labelW = Math.max(labelW, ctx.measureText(fmt(i * cfg.yTicks)).width);
+                }
+                const pad = { l: Math.max(46 * s, labelW + 30 * s), r: 14 * s, t: 38 * s, b: 34 * s };
                 const X = x => pad.l + (x / cfg.xMax) * (w - pad.l - pad.r);
                 const Y = y => h - pad.b - ((y - cfg.yMin) / (cfg.yMax - cfg.yMin)) * (h - pad.t - pad.b);
-                const fmt = v => Math.abs(v) < 1e-12 ? '0' : +v.toFixed(4) + '';
 
                 // Grid + tick labels
                 ctx.font = font(10);
                 ctx.lineWidth = 1;
                 ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-                for (let y = cfg.yMin; y <= cfg.yMax + 1e-9; y += cfg.yTicks) {
+                const firstTick = Math.ceil(cfg.yMin / cfg.yTicks - 1e-9);
+                for (let i = firstTick; i * cfg.yTicks <= cfg.yMax + 1e-9; i++) {
+                    const y = i * cfg.yTicks;
                     ctx.strokeStyle = Math.abs(y) < 1e-9 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.06)';
                     ctx.beginPath(); ctx.moveTo(pad.l, Y(y)); ctx.lineTo(w - pad.r, Y(y)); ctx.stroke();
                     ctx.fillStyle = '#6b7489';
                     ctx.fillText(fmt(y), pad.l - 6 * s, Y(y));
                 }
                 ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-                for (let x = 0; x <= cfg.xMax + 1e-9; x += cfg.xTicks) {
-                    ctx.fillText(fmt(x), X(x), h - pad.b + 6 * s);
+                for (let i = 0; i * cfg.xTicks <= cfg.xMax + 1e-9; i++) {
+                    ctx.fillText(fmt(i * cfg.xTicks), X(i * cfg.xTicks), h - pad.b + 6 * s);
                 }
 
                 // Curve grows from zero to its final shape
@@ -943,17 +972,17 @@
                 ctx.beginPath();
                 curve.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y * k)) : ctx.moveTo(X(x), Y(y * k)));
                 const area = ctx.createLinearGradient(0, pad.t, 0, h - pad.b);
-                area.addColorStop(0, 'rgba(96, 165, 250, 0.22)');
-                area.addColorStop(1, 'rgba(96, 165, 250, 0)');
+                area.addColorStop(0, `rgba(${rgb}, 0.22)`);
+                area.addColorStop(1, `rgba(${rgb}, 0)`);
                 ctx.save();
-                ctx.lineTo(X(cfg.xMax), Y(0)); ctx.lineTo(X(0), Y(0)); ctx.closePath();
+                ctx.lineTo(X(curve[curve.length - 1][0]), Y(0)); ctx.lineTo(X(curve[0][0]), Y(0)); ctx.closePath();
                 ctx.fillStyle = area; ctx.fill();
                 ctx.restore();
 
                 ctx.beginPath();
                 curve.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y * k)) : ctx.moveTo(X(x), Y(y * k)));
-                ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5 * s; ctx.lineJoin = 'round';
-                ctx.shadowColor = 'rgba(96, 165, 250, 0.6)'; ctx.shadowBlur = 8 * s;
+                ctx.strokeStyle = color; ctx.lineWidth = (cfg.color ? 2 : 2.5) * s; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                ctx.shadowColor = `rgba(${rgb}, 0.6)`; ctx.shadowBlur = 8 * s;
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
@@ -964,9 +993,9 @@
 
                 ctx.textBaseline = 'alphabetic';
                 ctx.textAlign = 'left';
-                ctx.fillStyle = '#60a5fa';
+                ctx.fillStyle = color;
                 ctx.font = font(12, 600);
-                ctx.fillText('max ' + (peak[1] * k).toFixed(cfg.digits) + cfg.unit, pad.l, 20 * s);
+                ctx.fillText((cfg.peakLabel || 'max') + ' ' + (peak[1] * k).toFixed(cfg.digits) + cfg.unit, pad.l, 20 * s);
 
                 ctx.save();
                 ctx.translate(11 * s, (pad.t + h - pad.b) / 2);
@@ -1009,8 +1038,11 @@
             };
         }
 
+        const CHARTS = { ...WING_CHARTS, ...(window.FUSELAGE_CHARTS || {}) };
+
         document.querySelectorAll('[data-chart]').forEach(box => {
-            const cfg = WING_CHARTS[box.dataset.chart];
+            const cfg = CHARTS[box.dataset.chart];
+            if (!cfg) return;
             drawWingChart(box, cfg);
 
             // Click opens a large, freshly animated version of the graph
