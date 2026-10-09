@@ -281,6 +281,9 @@
         .img-box.auto img { height: auto; width: auto; max-width: 100%; margin: 0 auto; }
         .img-box.light { background: #fff; padding: 1rem; }
 
+        .brief.outcome { border-left-color: #f87171; }
+        .brief.outcome .brief-label { color: #f87171; }
+
 
         .legend-grid {
             display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -655,9 +658,15 @@
                     <div class="pipe-step"><b>Extract</b>Stress and displacement data post-processed</div>
                 </div>
 
+                <div class="brief outcome">
+                    <span class="brief-label">OUTCOME</span>
+                    <p>Based on the stress data, the initially proposed cross-section was deemed <strong>unsafe</strong>. Under internal pressure, the peak stresses (around 1,295 MPa, Fig 2.6) exceed the ultimate strength of the aluminium by nearly <strong>three times</strong>.</p>
+                    <p>The cross-section was therefore redesigned to handle the internal pressure.</p>
+                </div>
+
                 <figure>
-                    <div class="img-box" data-img="Fuselage_FEA_Fringe"><img alt="FEA fringe plot of the fuselage frame"></div>
-                    <figcaption><span class="fig-no">FIG 2.10</span> FEA fringe plot of the fuselage frame.</figcaption>
+                    <div class="img-box auto light" data-img="Fringe Plot Fuselage"><img alt="FEA fringe plot of the fuselage cross-section under internal pressure"></div>
+                    <figcaption><span class="fig-no">FIG 2.10</span> FEA fringe plot of the fuselage cross-section under internal pressure.</figcaption>
                 </figure>
 
                 <h3 id="fuselage-code">How the code was developed</h3>
