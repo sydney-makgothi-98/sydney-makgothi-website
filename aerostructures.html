@@ -84,8 +84,9 @@
         }
         .hero-bg {
             position: absolute; inset: 0;
-            background: url('./Images/Game%20Options/Aerostructure.jpeg') center / cover no-repeat;
-            transform: scale(1.05);
+            width: 100%; height: 100%;
+            object-fit: cover;
+            background: var(--bg);
         }
         .hero::after {
             content: ''; position: absolute; inset: 0;
@@ -244,11 +245,13 @@
             border: 1px solid var(--border);
             aspect-ratio: 16 / 9;
             cursor: zoom-in;
-            transition: border-color 250ms ease, transform 250ms ease, box-shadow 250ms ease;
+            transition: border-color 250ms ease, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
         }
-        .img-box:hover {
+        .img-box:not(.missing):hover {
+            z-index: 2;
+            transform: translateY(-6px) scale(1.04);
             border-color: var(--border-accent);
-            box-shadow: 0 12px 40px rgba(0, 113, 227, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(96, 165, 250, 0.4), 0 0 30px rgba(0, 113, 227, 0.25);
         }
         .img-box.tall { aspect-ratio: 4 / 3; }
         .img-box img, .img-box canvas {
@@ -273,6 +276,27 @@
             display: flex; gap: 0.5rem;
         }
         figcaption .fig-no { font-family: var(--mono); color: var(--accent); flex-shrink: 0; }
+
+        .img-box.auto { aspect-ratio: auto; }
+        .img-box.auto img { height: auto; width: auto; max-width: 100%; margin: 0 auto; }
+        .img-box.light { background: #fff; padding: 1rem; }
+
+
+        .legend-grid {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem; margin: -0.75rem 0 2rem;
+        }
+        .legend-item {
+            display: flex; gap: 0.9rem; align-items: flex-start;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem 1.1rem;
+        }
+        .legend-item svg {
+            width: 34px; height: 34px; flex-shrink: 0; color: var(--accent);
+            background: var(--accent-soft); border-radius: 8px; padding: 4px;
+        }
+        .legend-item b { display: block; color: #fff; font-size: 0.92rem; margin-bottom: 0.2rem; }
+        .legend-item span { display: block; font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; }
 
         .grid-3 {
             display: grid;
@@ -362,8 +386,42 @@
             background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px);
             padding: 2rem; cursor: zoom-out;
         }
-        .lightbox.open { display: flex; }
-        .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 10px; }
+        .lightbox.open { display: flex; animation: lb-fade 200ms ease; }
+        .lightbox img {
+            max-width: 100%; max-height: 88vh;
+            width: auto; height: auto; object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        }
+        .lightbox.open img { animation: lb-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .lightbox.light img { background: #fff; padding: 1.5rem; }
+        .lightbox-chart {
+            display: none;
+            width: min(1100px, 92vw); height: min(640px, 72vh);
+            background: var(--bg-raised);
+            border: 1px solid var(--border-accent);
+            border-radius: 14px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            animation: lb-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .lightbox-chart canvas { width: 100%; height: 100%; display: block; }
+        .lightbox.chart-mode img { display: none; }
+        .lightbox.chart-mode .lightbox-chart { display: block; }
+        .lightbox-close {
+            position: absolute; top: 1.25rem; right: 1.25rem;
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08); color: #fff;
+            font-size: 1.1rem; cursor: pointer;
+        }
+        .lightbox-close:hover { background: rgba(255, 255, 255, 0.18); }
+        .lightbox-caption {
+            position: absolute; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+            font-size: 0.85rem; color: var(--text-muted); text-align: center;
+            max-width: 90%;
+        }
+        @keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes lb-pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         footer {
             text-align: center; padding: 3rem 1rem;
@@ -378,7 +436,7 @@
             .pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 640px) {
-            .grid-3, .oop-grid, .cta-row, .pipeline { grid-template-columns: minmax(0, 1fr); }
+            .grid-3, .oop-grid, .cta-row, .pipeline, .legend-grid { grid-template-columns: minmax(0, 1fr); }
             .nav-tag { display: none; }
             .brief { padding: 1.25rem; }
         }
@@ -393,7 +451,9 @@
     </nav>
 
     <header class="hero">
-        <div class="hero-bg"></div>
+        <video class="hero-bg" id="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+            <source src="./Syd%20Website%20Images/Aerostructures%20Page/Cover%20Video.mp4" type="video/mp4">
+        </video>
         <div class="hero-content">
             <span class="eyebrow">AEROSTRUCTURES · PROJECT LOG</span>
             <h1>Designing structures that carry the load.</h1>
@@ -413,6 +473,7 @@
             <div class="toc-title">CONTENTS</div>
             <a href="#wing">01 · Wing Analysis</a>
             <a href="#wing-matlab" class="sub">MATLAB bending model</a>
+            <a href="#wing-section" class="sub">Wing cross-section</a>
             <a href="#wing-fea" class="sub">FEA in Nastran / Patran</a>
             <a href="#wing-results" class="sub">Results</a>
             <a href="#fuselage">02 · Fuselage Frame</a>
@@ -441,43 +502,60 @@
                 <p>Because the wing tapers, both the bending moment \(M(y)\) and the second moment of area \(I(y)\) change along the span, so the peak stress isn't simply "wherever the moment is largest". Scripting it in MATLAB made it quick to sweep through stations, plot the distribution and see where the structure was working hardest.</p>
 
                 <figure>
-                    <div class="img-box" data-img="Wing"><img alt="Wing model"></div>
+                    <div class="img-box light" data-img="Wing"><img alt="Wing model"></div>
                     <figcaption><span class="fig-no">FIG 1.1</span> Wing geometry used for the structural model.</figcaption>
                 </figure>
 
+                <h4 id="wing-section">Wing cross-section</h4>
+                <p>To get the section properties at each spanwise station, I idealised the wing box as a thin-walled cross-section made up of skin panels, spar webs and discrete reinforcing elements. Two types of reinforcement carry most of the bending load:</p>
+                <figure>
+                    <div class="img-box auto light" data-img="Wing_Cross_Section"><img alt="Wing cross-section showing stiffeners and spar caps"></div>
+                    <figcaption><span class="fig-no">FIG 1.2</span> Idealised wing cross-section with numbered skin panels and spar webs.</figcaption>
+                </figure>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M10 6v24h22" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="square"/></svg>
+                        <div><b>Stiffeners — L-shaped elements</b><span>Stringers attached along the skin between the spars. They stabilise the skin panels against buckling and add bending stiffness.</span></div>
+                    </div>
+                    <div class="legend-item">
+                        <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 8h28M20 8v24" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="square"/></svg>
+                        <div><b>Spar caps — T-shaped elements</b><span>Flanges at the top and bottom of each spar web. They carry the bulk of the bending load as tension and compression.</span></div>
+                    </div>
+                </div>
+
                 <h3 id="wing-fea">Finite element analysis: Nastran &amp; Patran</h3>
-                <p>To check the hand model, I carried out a Finite Element Analysis (FEA) of the wing. <strong>MSC Patran</strong> was used as the pre- and post-processing interface — building the mesh, assigning material and section properties, and applying the loads and root boundary conditions — while <strong>MSC Nastran</strong> was used as the solver.</p>
-                <p>The FEA captures what a beam model can't: local stress concentrations, how the skins and spars share load, and the coupling between bending and twist. Comparing the two approaches gave me confidence in both.</p>
+                <p>To check the hand model, I carried out a Finite Element Analysis (FEA) of the full wing. <strong>MSC Patran</strong> was used as the pre- and post-processing interface — building the mesh, assigning material and section properties, and applying the loads and root boundary conditions — while <strong>MSC Nastran</strong> was used as the solver.</p>
+                <p>Modelling the complete wing from root to tip, the FEA captures what a beam model can't: how the skins and spars share load, and the coupling between bending and twist. Comparing the two approaches gave me confidence in both.</p>
 
                 <div class="grid-3">
                     <figure>
-                        <div class="img-box" data-img="FEA_1"><img alt="Wing FEA view 1"></div>
-                        <figcaption><span class="fig-no">FIG 1.2</span> FEA model</figcaption>
-                    </figure>
-                    <figure>
-                        <div class="img-box" data-img="FEA_2"><img alt="Wing FEA view 2"></div>
+                        <div class="img-box light" data-img="FEA_1"><img alt="Wing FEA view 1"></div>
                         <figcaption><span class="fig-no">FIG 1.3</span> FEA model</figcaption>
                     </figure>
                     <figure>
-                        <div class="img-box" data-img="FEA_3"><img alt="Wing FEA view 3"></div>
+                        <div class="img-box light" data-img="FEA_2"><img alt="Wing FEA view 2"></div>
                         <figcaption><span class="fig-no">FIG 1.4</span> FEA model</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="img-box light" data-img="FEA_3"><img alt="Wing FEA view 3"></div>
+                        <figcaption><span class="fig-no">FIG 1.5</span> FEA model</figcaption>
                     </figure>
                 </div>
 
                 <h3 id="wing-results">Results</h3>
                 <p>The three key outputs of the analysis were the spanwise deflection, bending and twist of the wing.</p>
-                <div class="grid-3">
+                <div class="grid-3 wide">
                     <figure>
-                        <div class="img-box" data-img="Wing_Deflection"><img alt="Wing deflection graph"></div>
-                        <figcaption><span class="fig-no">FIG 1.5</span> Wing deflection</figcaption>
+                        <div class="img-box chart-box" data-chart="deflection" role="img" aria-label="Wing deflection rising from 0 at the root to about 61 mm at the tip"></div>
+                        <figcaption><span class="fig-no">FIG 1.6</span> Wing deflection</figcaption>
                     </figure>
                     <figure>
-                        <div class="img-box" data-img="Wing_Bending"><img alt="Wing bending graph"></div>
-                        <figcaption><span class="fig-no">FIG 1.6</span> Wing bending</figcaption>
+                        <div class="img-box chart-box" data-chart="bending" role="img" aria-label="Bending moment, about 35 million at the root falling to zero at the tip"></div>
+                        <figcaption><span class="fig-no">FIG 1.7</span> Wing bending moment</figcaption>
                     </figure>
                     <figure>
-                        <div class="img-box" data-img="Wing_Twist"><img alt="Wing twist graph"></div>
-                        <figcaption><span class="fig-no">FIG 1.7</span> Wing twist</figcaption>
+                        <div class="img-box chart-box" data-chart="twist" role="img" aria-label="Wing twist rising from 0 to about 0.018 and levelling off toward the tip"></div>
+                        <figcaption><span class="fig-no">FIG 1.8</span> Wing twist</figcaption>
                     </figure>
                 </div>
             </article>
@@ -498,7 +576,7 @@
                 </div>
 
                 <figure>
-                    <div class="img-box tall" data-img="Fuselage Cross Section"><img alt="Fuselage cross section"></div>
+                    <div class="img-box auto light" data-img="Fuselage Cross Section"><img alt="Fuselage cross section"></div>
                     <figcaption><span class="fig-no">FIG 2.1</span> Fuselage frame cross-section and segment geometry.</figcaption>
                 </figure>
 
@@ -628,11 +706,16 @@
 
     <footer>© 2026 Gopolang Makgothi · Aerospace Engineer</footer>
 
-    <div class="lightbox" id="lightbox"><img alt=""></div>
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" aria-label="Close">✕</button>
+        <img alt="">
+        <div class="lightbox-chart"></div>
+        <div class="lightbox-caption"></div>
+    </div>
 
     <script>
-        // ===== Images: drop files into Images/Aerostructures/ with any common extension =====
-        const IMG_DIR = './Images/Aerostructures/';
+        // ===== Images: drop files into "Syd Website Images/Aerostructures Page/" with any common extension =====
+        const IMG_DIR = './Syd%20Website%20Images/Aerostructures%20Page/';
         const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 
         document.querySelectorAll('.img-box[data-img]').forEach(box => {
@@ -650,7 +733,7 @@
                     }
                     box.classList.add('missing');
                     box.insertAdjacentHTML('beforeend',
-                        `<div class="placeholder"><strong>${name}</strong>Add to Images/Aerostructures/</div>`);
+                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Images/Aerostructures Page/</div>`);
                     return;
                 }
                 img.src = IMG_DIR + encodeURIComponent(name) + '.' + EXTENSIONS[i++];
@@ -661,8 +744,12 @@
 
             box.addEventListener('click', () => {
                 if (box.classList.contains('missing') || !img.isConnected) return;
+                const caption = box.closest('figure')?.querySelector('figcaption');
                 lightboxImg.src = img.src;
                 lightboxImg.alt = img.alt;
+                lightboxCaption.textContent = caption ? caption.textContent : '';
+                lightbox.classList.toggle('light', box.classList.contains('light'));
+                lightbox.classList.remove('chart-mode');
                 lightbox.classList.add('open');
             });
         });
@@ -670,9 +757,20 @@
         // ===== Lightbox =====
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = lightbox.querySelector('img');
-        lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+        const lightboxCaption = lightbox.querySelector('.lightbox-caption');
+        const lightboxChart = lightbox.querySelector('.lightbox-chart');
+        let cleanupLightboxChart = null;
+
+        function closeLightbox() {
+            lightbox.classList.remove('open', 'chart-mode');
+            if (cleanupLightboxChart) {
+                cleanupLightboxChart();
+                cleanupLightboxChart = null;
+            }
+        }
+        lightbox.addEventListener('click', closeLightbox);
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') lightbox.classList.remove('open');
+            if (e.key === 'Escape') closeLightbox();
         });
 
         // ===== Trapezoidal rule animation (used until a Trapezoidal_Rule gif is added) =====
@@ -751,6 +849,181 @@
             }, 1100);
             window.addEventListener('resize', render);
         }
+
+        // ===== Cover video: respect reduced-motion preference =====
+        const heroVideo = document.getElementById('hero-video');
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            heroVideo.removeAttribute('autoplay');
+            heroVideo.pause();
+        }
+
+        // ===== Wing result charts (digitised from the FE results) =====
+        const WING_CHARTS = {
+            deflection: {
+                xLabel: 'Span (mm)', yLabel: 'Deflection (mm)',
+                xMax: 5000, yMin: 0, yMax: 70, xTicks: 1000, yTicks: 10,
+                unit: ' mm', digits: 1,
+                points: [[0, 0], [200, 0.4], [400, 1.2], [600, 2.4], [800, 3.8], [1000, 5.6], [1200, 7.6],
+                         [1400, 9.8], [1600, 12.1], [2000, 17.5], [2400, 23.2], [2800, 29.1], [3200, 35],
+                         [3600, 40.9], [4000, 46.8], [4500, 54], [5000, 61]]
+            },
+            bending: {
+                xLabel: 'Span (m)', yLabel: 'Moment (×10⁶)',
+                xMax: 5, yMin: -5, yMax: 40, xTicks: 1, yTicks: 5,
+                unit: '×10⁶', digits: 1,
+                points: [[0, 35], [0.5, 26.5], [1, 18.8], [1.5, 12.6], [2, 7.6], [2.5, 3.9], [3, 1.3],
+                         [3.5, -0.1], [4, -0.45], [4.25, -0.5], [4.5, -0.45], [5, 0]]
+            },
+            twist: {
+                xLabel: 'Span (mm)', yLabel: 'Twist θ',
+                xMax: 5000, yMin: 0, yMax: 0.02, xTicks: 1000, yTicks: 0.005,
+                unit: '', digits: 4,
+                points: [[0, 0], [150, 0.0018], [500, 0.0065], [1000, 0.0112], [1500, 0.0146], [2000, 0.0166],
+                         [2500, 0.0177], [3000, 0.0183], [3500, 0.01843], [4000, 0.01838], [4500, 0.01825], [5000, 0.01815]]
+            }
+        };
+
+        // Catmull-Rom resample so the sparse digitised points draw as a smooth curve
+        function smoothCurve(pts, perSegment = 12) {
+            const out = [];
+            for (let i = 0; i < pts.length - 1; i++) {
+                const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+                for (let s = 0; s < perSegment; s++) {
+                    const t = s / perSegment, t2 = t * t, t3 = t2 * t;
+                    const c = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+                    out.push([c(p0[0], p1[0], p2[0], p3[0]), c(p0[1], p1[1], p2[1], p3[1])]);
+                }
+            }
+            out.push(pts[pts.length - 1]);
+            return out;
+        }
+
+        function drawWingChart(box, cfg) {
+            const canvas = document.createElement('canvas');
+            box.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+            const curve = smoothCurve(cfg.points);
+            const peak = cfg.points.reduce((a, p) => Math.abs(p[1]) > Math.abs(a[1]) ? p : a);
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            let progress = reduceMotion ? 1 : 0;
+            let animating = false;
+
+            function render() {
+                const dpr = window.devicePixelRatio || 1;
+                const w = box.clientWidth, h = box.clientHeight;
+                canvas.width = w * dpr; canvas.height = h * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                ctx.clearRect(0, 0, w, h);
+
+                // Scale text, padding and line weights up for the large lightbox version
+                const s = Math.max(1, Math.min(1.8, w / 420));
+                const font = (px, weight = '') => `${weight} ${Math.round(px * s)}px "JetBrains Mono", monospace`;
+                const pad = { l: 46 * s, r: 14 * s, t: 38 * s, b: 34 * s };
+                const X = x => pad.l + (x / cfg.xMax) * (w - pad.l - pad.r);
+                const Y = y => h - pad.b - ((y - cfg.yMin) / (cfg.yMax - cfg.yMin)) * (h - pad.t - pad.b);
+                const fmt = v => Math.abs(v) < 1e-12 ? '0' : +v.toFixed(4) + '';
+
+                // Grid + tick labels
+                ctx.font = font(10);
+                ctx.lineWidth = 1;
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                for (let y = cfg.yMin; y <= cfg.yMax + 1e-9; y += cfg.yTicks) {
+                    ctx.strokeStyle = Math.abs(y) < 1e-9 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.06)';
+                    ctx.beginPath(); ctx.moveTo(pad.l, Y(y)); ctx.lineTo(w - pad.r, Y(y)); ctx.stroke();
+                    ctx.fillStyle = '#6b7489';
+                    ctx.fillText(fmt(y), pad.l - 6 * s, Y(y));
+                }
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                for (let x = 0; x <= cfg.xMax + 1e-9; x += cfg.xTicks) {
+                    ctx.fillText(fmt(x), X(x), h - pad.b + 6 * s);
+                }
+
+                // Curve grows from zero to its final shape
+                const k = 1 - Math.pow(1 - progress, 3);
+                ctx.beginPath();
+                curve.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y * k)) : ctx.moveTo(X(x), Y(y * k)));
+                const area = ctx.createLinearGradient(0, pad.t, 0, h - pad.b);
+                area.addColorStop(0, 'rgba(96, 165, 250, 0.22)');
+                area.addColorStop(1, 'rgba(96, 165, 250, 0)');
+                ctx.save();
+                ctx.lineTo(X(cfg.xMax), Y(0)); ctx.lineTo(X(0), Y(0)); ctx.closePath();
+                ctx.fillStyle = area; ctx.fill();
+                ctx.restore();
+
+                ctx.beginPath();
+                curve.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y * k)) : ctx.moveTo(X(x), Y(y * k)));
+                ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5 * s; ctx.lineJoin = 'round';
+                ctx.shadowColor = 'rgba(96, 165, 250, 0.6)'; ctx.shadowBlur = 8 * s;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Marker + live readout at the peak value
+                ctx.beginPath();
+                ctx.arc(X(peak[0]), Y(peak[1] * k), 4 * s, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff'; ctx.fill();
+
+                ctx.textBaseline = 'alphabetic';
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#60a5fa';
+                ctx.font = font(12, 600);
+                ctx.fillText('max ' + (peak[1] * k).toFixed(cfg.digits) + cfg.unit, pad.l, 20 * s);
+
+                ctx.save();
+                ctx.translate(11 * s, (pad.t + h - pad.b) / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#6b7489';
+                ctx.font = font(10);
+                ctx.fillText(cfg.yLabel, 0, 0);
+                ctx.restore();
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#6b7489';
+                ctx.font = font(10);
+                ctx.fillText(cfg.xLabel, w - pad.r, pad.t - 4 * s);
+            }
+
+            function animate() {
+                if (animating || reduceMotion) return;
+                animating = true;
+                const start = performance.now(), duration = 1800;
+                const tick = now => {
+                    progress = Math.min(1, (now - start) / duration);
+                    render();
+                    if (progress < 1) requestAnimationFrame(tick);
+                    else animating = false;
+                };
+                progress = 0;
+                requestAnimationFrame(tick);
+            }
+
+            render();
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(e => e.isIntersecting && animate());
+            }, { threshold: 0.5 });
+            observer.observe(box);
+            window.addEventListener('resize', render);
+
+            return () => {
+                observer.disconnect();
+                window.removeEventListener('resize', render);
+            };
+        }
+
+        document.querySelectorAll('[data-chart]').forEach(box => {
+            const cfg = WING_CHARTS[box.dataset.chart];
+            drawWingChart(box, cfg);
+
+            // Click opens a large, freshly animated version of the graph
+            box.addEventListener('click', () => {
+                const caption = box.closest('figure')?.querySelector('figcaption');
+                lightboxChart.innerHTML = '';
+                lightboxCaption.textContent = caption ? caption.textContent : '';
+                lightbox.classList.remove('light');
+                lightbox.classList.add('open', 'chart-mode');
+                if (cleanupLightboxChart) cleanupLightboxChart();
+                cleanupLightboxChart = drawWingChart(lightboxChart, cfg);
+            });
+        });
 
         // ===== KaTeX =====
         window.addEventListener('DOMContentLoaded', () => {
