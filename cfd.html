@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFD | Gopolang Makgothi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg: #03080b;
+            --bg-raised: #08141a;
+            --surface: rgba(255, 255, 255, 0.025);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(34, 211, 238, 0.35);
+            --text: #e3eef2;
+            --text-muted: #93a7b0;
+            --text-faint: #5f747d;
+            --accent: #22d3ee;
+            --accent-soft: rgba(34, 211, 238, 0.09);
+            --shock: #fbbf24;
+            --radius: 12px;
+            --turbo: linear-gradient(90deg, #30123b, #4662d7, #36aaf9, #1ae4b6, #72fe5e, #c8ef34, #faba39, #f66b19, #ca2a04, #7a0403);
+            --display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.75;
+            -webkit-font-smoothing: antialiased;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(34, 211, 238, 0.45) rgba(0, 0, 0, 0.2);
+        }
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        body::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.45); border-radius: 4px; }
+
+        /* Faint engineering grid behind everything */
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 211, 238, 0.035) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
+        }
+
+        a { color: var(--accent); }
+
+        /* ===== Progress + nav ===== */
+        .progress {
+            position: fixed; top: 0; left: 0; height: 3px; width: 0;
+            background: var(--turbo); background-size: 100vw 100%;
+            z-index: 60;
+        }
+        .topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.9rem clamp(1rem, 4vw, 2.5rem);
+            background: rgba(3, 8, 11, 0.72);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.9rem; font-weight: 600;
+            transition: color 200ms ease, transform 200ms ease;
+        }
+        .back-link:hover { color: #fff; transform: translateX(-3px); }
+        .case-tabs { display: flex; gap: 0.35rem; }
+        .case-tabs a {
+            font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em;
+            color: var(--text-muted); text-decoration: none;
+            padding: 0.35rem 0.75rem; border-radius: 999px;
+            border: 1px solid transparent;
+            transition: all 200ms ease;
+        }
+        .case-tabs a:hover { color: #fff; }
+        .case-tabs a.active { color: var(--accent); border-color: var(--border-accent); background: var(--accent-soft); }
+
+        /* ===== Hero ===== */
+        .hero {
+            position: relative; min-height: 86vh;
+            display: flex; align-items: flex-end;
+            padding: 8rem clamp(1rem, 6vw, 5rem) 4.5rem;
+            overflow: hidden;
+        }
+        #hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+        .hero::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background:
+                linear-gradient(90deg, rgba(3,8,11,0.9) 0%, rgba(3,8,11,0.55) 45%, rgba(3,8,11,0) 75%),
+                linear-gradient(180deg, rgba(3,8,11,0) 60%, var(--bg) 100%);
+        }
+        .hero-content { position: relative; z-index: 1; max-width: 720px; }
+        .eyebrow {
+            font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.2em;
+            color: var(--accent); margin-bottom: 1rem; display: block;
+        }
+        .hero h1 {
+            font-family: var(--display);
+            font-size: clamp(2.6rem, 7vw, 5.2rem); line-height: 1.02; font-weight: 700;
+            letter-spacing: -0.035em;
+        }
+        .hero h1 em {
+            font-style: normal;
+            background: var(--turbo);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p { margin-top: 1.25rem; font-size: clamp(1rem, 2vw, 1.15rem); color: #c3d3d9; max-width: 600px; }
+        .hero-legend {
+            position: absolute; z-index: 1; right: clamp(1rem, 4vw, 2.5rem); bottom: 2rem;
+            font-family: var(--mono); font-size: 0.68rem; color: var(--text-muted);
+            display: grid; gap: 0.35rem; width: 180px;
+        }
+        .hero-legend .bar { height: 6px; border-radius: 3px; background: var(--turbo); }
+        .hero-legend .ends { display: flex; justify-content: space-between; }
+
+        /* ===== Case overview cards ===== */
+        .overview {
+            max-width: 1180px; margin: 0 auto;
+            padding: 0 clamp(1rem, 4vw, 2.5rem);
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;
+        }
+        .case-card {
+            position: relative; overflow: hidden;
+            display: block; text-decoration: none; color: var(--text);
+            background: var(--bg-raised); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.4rem 1.4rem 1.2rem;
+            transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), border-color 250ms ease, box-shadow 300ms ease;
+        }
+        .case-card::before {
+            content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+            background: var(--turbo); opacity: 0.85;
+        }
+        .case-card:hover { transform: translateY(-4px); border-color: var(--border-accent); box-shadow: 0 18px 40px rgba(0,0,0,0.45), 0 0 30px rgba(34,211,238,0.12); }
+        .case-no { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.2em; color: var(--text-faint); }
+        .case-mach {
+            font-family: var(--display); font-size: 2.4rem; font-weight: 700; line-height: 1.1;
+            margin: 0.6rem 0 0.2rem; letter-spacing: -0.02em;
+        }
+        .case-mach small { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; margin-left: 0.3rem; }
+        .case-card h3 { font-family: var(--display); font-size: 1.05rem; font-weight: 600; line-height: 1.35; }
+        .case-card p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.55; }
+
+        /* ===== Content ===== */
+        main {
+            max-width: 900px; margin: 0 auto;
+            padding: 5rem clamp(1rem, 4vw, 2.5rem) 6rem;
+        }
+        article + article { margin-top: 7rem; }
+        .case-head {
+            display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.25rem; align-items: start;
+            padding-bottom: 1.5rem; margin-bottom: 1.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .case-index {
+            font-family: var(--display); font-size: 4.5rem; font-weight: 700; line-height: 0.9;
+            color: transparent; -webkit-text-stroke: 1px rgba(34, 211, 238, 0.55);
+        }
+        .section-tag { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.2em; color: var(--accent); }
+        article h2 {
+            font-family: var(--display);
+            font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 700;
+            letter-spacing: -0.025em; line-height: 1.12; margin-top: 0.35rem;
+        }
+        article h3 {
+            font-family: var(--display);
+            font-size: 1.35rem; font-weight: 600; letter-spacing: -0.01em;
+            margin: 3.25rem 0 1rem;
+            display: flex; align-items: center; gap: 0.7rem;
+        }
+        article h3::before {
+            content: ''; width: 18px; height: 2px; background: var(--accent); flex-shrink: 0;
+        }
+        article p { color: #bfcdd3; margin-bottom: 1.1rem; }
+        article p strong { color: #fff; font-weight: 600; }
+        .lede { font-size: 1.12rem; color: #d3e0e5; }
+
+        /* Flow-condition readout strip */
+        .conditions {
+            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+            border: 1px solid var(--border); border-radius: var(--radius);
+            background: var(--bg-raised); overflow: hidden;
+            margin: 1.5rem 0 2rem;
+        }
+        .cond { padding: 0.9rem 1rem; border-right: 1px solid var(--border); }
+        .cond:last-child { border-right: 0; }
+        .cond span { display: block; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--text-faint); }
+        .cond b { display: block; font-family: var(--display); font-size: 1.15rem; font-weight: 600; color: #fff; margin-top: 0.15rem; }
+
+        .equation {
+            background: var(--bg-raised);
+            border: 1px solid var(--border); border-left: 2px solid var(--shock);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.25rem; margin: 1.25rem 0 1.5rem;
+            overflow-x: auto; font-size: 1.05rem;
+        }
+        .equation .katex-display { margin: 0.3rem 0; }
+        .eq-label { display: block; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.18em; color: var(--shock); margin-bottom: 0.25rem; }
+
+        .steps { list-style: none; counter-reset: s; display: grid; gap: 0.6rem; margin: 1rem 0 1.75rem; }
+        .steps li {
+            counter-increment: s; position: relative;
+            padding: 0.75rem 1rem 0.75rem 3.1rem;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+            color: #bfcdd3; font-size: 0.95rem; line-height: 1.6;
+        }
+        .steps li::before {
+            content: counter(s, decimal-leading-zero);
+            position: absolute; left: 1rem; top: 0.8rem;
+            font-family: var(--mono); font-size: 0.75rem; color: var(--accent);
+        }
+        .steps li b { color: #fff; font-weight: 600; }
+
+        /* ===== Interactive lab panels ===== */
+        .lab {
+            margin: 1.75rem 0 2.5rem;
+            border: 1px solid var(--border-accent); border-radius: 16px;
+            background:
+                radial-gradient(120% 80% at 100% 0%, rgba(34, 211, 238, 0.07), transparent 60%),
+                var(--bg-raised);
+            overflow: hidden;
+        }
+        .lab-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--border);
+        }
+        .lab-title { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em; color: var(--accent); }
+        .lab-title::before {
+            content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+            background: var(--accent); box-shadow: 0 0 10px var(--accent); margin-right: 0.6rem;
+            vertical-align: 1px; animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 50% { opacity: 0.35; } }
+        .lab-note { font-size: 0.75rem; color: var(--text-faint); }
+        .lab-canvas { position: relative; height: 320px; border-bottom: 1px solid var(--border); }
+        .lab-canvas.short { height: 260px; }
+        .lab-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+        .lab-controls {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem 1.5rem; padding: 1.1rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .ctrl label {
+            display: flex; justify-content: space-between;
+            font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;
+        }
+        .ctrl output { font-family: var(--mono); color: #fff; }
+        input[type=range] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 4px; border-radius: 2px;
+            background: rgba(255,255,255,0.12); outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+            background: var(--accent); border: 3px solid var(--bg-raised);
+            box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(34,211,238,0.6); cursor: pointer;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--accent); border: 3px solid var(--bg-raised);
+            box-shadow: 0 0 0 1px var(--accent); cursor: pointer;
+        }
+        input[type=range]:focus-visible { box-shadow: 0 0 0 3px rgba(34,211,238,0.3); }
+        .readouts {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        }
+        .readout { padding: 0.85rem 1.2rem; border-right: 1px solid var(--border); border-top: 1px solid var(--border); margin-top: -1px; }
+        .readout span { display: block; font-size: 0.72rem; color: var(--text-faint); }
+        .readout b { display: block; font-family: var(--mono); font-size: 1.05rem; color: #fff; font-weight: 600; }
+        .readout.hl b { color: var(--accent); }
+        .lab-warn {
+            display: none; padding: 0.7rem 1.2rem; font-size: 0.85rem;
+            color: #fca5a5; background: rgba(248, 113, 113, 0.08); border-top: 1px solid rgba(248,113,113,0.25);
+        }
+        .lab-warn.show { display: block; }
+
+        .stage-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.78rem; }
+        .stage-table th, .stage-table td { padding: 0.5rem 1.2rem; text-align: right; border-top: 1px solid var(--border); }
+        .stage-table th { color: var(--text-faint); font-weight: 400; }
+        .stage-table th:first-child, .stage-table td:first-child { text-align: left; }
+        .stage-table td { color: #d3e0e5; }
+        .table-wrap { overflow-x: auto; }
+
+        /* ===== Figures ===== */
+        figure { margin: 1.75rem 0 2.25rem; }
+        .img-box {
+            position: relative; border-radius: var(--radius); overflow: hidden;
+            background: var(--bg-raised); border: 1px solid var(--border);
+            aspect-ratio: 16 / 9; cursor: zoom-in;
+            transition: border-color 250ms ease, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
+        }
+        .img-box:not(.missing):hover {
+            z-index: 2; transform: translateY(-5px) scale(1.03);
+            border-color: var(--border-accent);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(34,211,238,0.2);
+        }
+        .img-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .img-box.missing { cursor: default; }
+        .img-box.missing img { display: none; }
+        .img-box .placeholder {
+            display: none; position: absolute; inset: 0;
+            flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+            text-align: center; padding: 1rem;
+            background: repeating-linear-gradient(-45deg, transparent 0 14px, rgba(34,211,238,0.04) 14px 28px);
+            color: var(--text-faint); font-family: var(--mono); font-size: 0.72rem;
+        }
+        .img-box.missing .placeholder { display: flex; }
+        .placeholder strong { color: var(--text-muted); font-size: 0.82rem; }
+        figcaption { margin-top: 0.7rem; font-size: 0.85rem; color: var(--text-faint); display: flex; gap: 0.5rem; }
+        figcaption .fig-no { font-family: var(--mono); color: var(--accent); flex-shrink: 0; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 1.25rem 0 2.25rem; }
+        .grid-2 figure { margin: 0; }
+        .grid-2 .img-box { aspect-ratio: 4 / 3; }
+
+        .turbo-rule { height: 2px; border: 0; background: var(--turbo); opacity: 0.5; margin: 0 auto; max-width: 1180px; }
+
+        /* ===== CTA ===== */
+        .cta {
+            display: flex; align-items: center; gap: 1rem; margin-top: 2rem;
+            padding: 1.25rem 1.4rem; border-radius: var(--radius);
+            background: var(--bg-raised); border: 1px solid var(--border);
+            color: var(--text); text-decoration: none; transition: all 300ms ease;
+        }
+        .cta:hover { transform: translateY(-2px); border-color: var(--border-accent); box-shadow: 0 12px 24px rgba(34,211,238,0.15); }
+        .cta svg { width: 30px; height: 30px; flex-shrink: 0; color: var(--accent); }
+        .cta b { display: block; font-family: var(--display); }
+        .cta span span { font-size: 0.82rem; color: var(--text-muted); }
+        .cta-arrow { margin-left: auto; color: var(--text-faint); transition: transform 300ms ease; }
+        .cta:hover .cta-arrow { transform: translateX(4px); color: var(--accent); }
+
+        /* ===== Lightbox ===== */
+        .lightbox {
+            position: fixed; inset: 0; z-index: 100;
+            display: none; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+            padding: 2rem; cursor: zoom-out;
+        }
+        .lightbox.open { display: flex; animation: lb-fade 200ms ease; }
+        .lightbox img { max-width: 100%; max-height: 88vh; object-fit: contain; border-radius: 10px; animation: lb-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .lightbox-close {
+            position: absolute; top: 1.25rem; right: 1.25rem;
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08);
+            color: #fff; font-size: 1.1rem; cursor: pointer;
+        }
+        .lightbox-caption {
+            position: absolute; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+            font-size: 0.85rem; color: var(--text-muted); text-align: center; max-width: 90%;
+        }
+        @keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes lb-pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.85rem; }
+
+        @media (max-width: 860px) {
+            .overview { grid-template-columns: minmax(0, 1fr); }
+            .case-tabs { display: none; }
+            .conditions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .cond:nth-child(2) { border-right: 0; }
+            .cond:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+            .hero-legend { display: none; }
+        }
+        @media (max-width: 640px) {
+            .grid-2 { grid-template-columns: minmax(0, 1fr); }
+            .case-head { grid-template-columns: minmax(0, 1fr); }
+            .case-index { font-size: 3rem; }
+            .lab-canvas { height: 240px; }
+            .lab-note { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+
+    <nav class="topnav">
+        <a href="portfolio.html#expertise-wheel" class="back-link">← Back to Portfolio</a>
+        <div class="case-tabs">
+            <a href="#intake">01 · INTAKE</a>
+            <a href="#slot-jet">02 · SLOT JET</a>
+            <a href="#boundary-layer">03 · BOUNDARY LAYER</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <canvas id="hero-canvas" aria-hidden="true"></canvas>
+        <div class="hero-content">
+            <span class="eyebrow">COMPUTATIONAL FLUID DYNAMICS · CASE FILES</span>
+            <h1>Reading the flow,<br><em>shock by shock.</em></h1>
+            <p>Three compressible-flow problems, from Mach 0.45 to Mach 3.3: a supersonic intake, an underexpanded rocket slot jet and the boundary layer on a record-setting electric aircraft. Each one pairs classical gas dynamics with numerical simulation.</p>
+        </div>
+        <div class="hero-legend" aria-hidden="true">
+            <span>LOCAL MACH NUMBER</span>
+            <div class="bar"></div>
+            <div class="ends"><span>1.5</span><span>3.5</span></div>
+        </div>
+    </header>
+
+    <section class="overview" aria-label="Case overview">
+        <a class="case-card" href="#intake">
+            <span class="case-no">CASE 01</span>
+            <div class="case-mach">M 3.3<small>supersonic</small></div>
+            <h3>Supersonic intake for a high-speed drone</h3>
+            <p>Oblique-shock compression to slow the flow down before it reaches the engine.</p>
+        </a>
+        <a class="case-card" href="#slot-jet">
+            <span class="case-no">CASE 02</span>
+            <div class="case-mach">p<sub>e</sub> &gt; p<sub>a</sub><small>underexpanded</small></div>
+            <h3>Rocket engine underexpanded slot jet</h3>
+            <p>Expansion fans and shock cells in the exhaust plume, modelled with the θ–β–M relation.</p>
+        </a>
+        <a class="case-card" href="#boundary-layer">
+            <span class="case-no">CASE 03</span>
+            <div class="case-mach">M 0.45<small>subsonic</small></div>
+            <h3>Boundary layer on the Spirit of Innovation wing</h3>
+            <p>Boundary layer analysis of the Rolls-Royce electric aircraft wing, including compressibility effects.</p>
+        </a>
+    </section>
+
+    <main>
+        <!-- ================= CASE 01: INTAKE ================= -->
+        <article id="intake">
+            <div class="case-head">
+                <div class="case-index">01</div>
+                <div>
+                    <span class="section-tag">CASE 01 — SUPERSONIC INTAKE</span>
+                    <h2>Intake design for a drone flying at Mach 3.3</h2>
+                </div>
+            </div>
+
+            <div class="conditions">
+                <div class="cond"><span>FREESTREAM</span><b>M∞ = 3.3</b></div>
+                <div class="cond"><span>REGIME</span><b>Supersonic</b></div>
+                <div class="cond"><span>KEY RELATION</span><b>θ–β–M</b></div>
+                <div class="cond"><span>METRIC</span><b>p₀ recovery</b></div>
+            </div>
+
+            <p class="lede">A jet engine can't swallow air at Mach 3.3. The intake has to slow the flow to subsonic speed before it reaches the compressor face, and every shock it uses to do that destroys some total pressure. The design problem is to <strong>decelerate the flow with as little loss as possible</strong>.</p>
+
+            <p>A single normal shock at Mach 3.3 would do the job, but it is very wasteful. Instead, the intake uses a series of compression ramps. Each ramp turns the flow through a small angle and creates a weak oblique shock. A terminal normal shock at the cowl lip then takes the already-slowed flow to subsonic speed. Several weak shocks lose much less total pressure than one strong one.</p>
+
+            <h3>Oblique shock relations</h3>
+            <p>Each ramp's shock angle \(\beta\) follows from the upstream Mach number and the ramp deflection angle \(\theta\) through the θ–β–M relation:</p>
+            <div class="equation">
+                <span class="eq-label">θ–β–M RELATION</span>
+                $$\tan\theta = 2\cot\beta\,\frac{M_1^2\sin^2\beta - 1}{M_1^2(\gamma + \cos 2\beta) + 2}$$
+            </div>
+            <p>The normal component of the Mach number, \(M_{n1} = M_1\sin\beta\), then sets the jump in pressure and the total pressure loss across that shock:</p>
+            <div class="equation">
+                <span class="eq-label">TOTAL PRESSURE RATIO</span>
+                $$\frac{p_{0,2}}{p_{0,1}} = \left[\frac{(\gamma+1)M_{n1}^2}{(\gamma-1)M_{n1}^2+2}\right]^{\frac{\gamma}{\gamma-1}} \left[\frac{\gamma+1}{2\gamma M_{n1}^2-(\gamma-1)}\right]^{\frac{1}{\gamma-1}}$$
+            </div>
+            <p>The overall intake recovery is the product of the ratios across every shock in the system, and it is usually compared against the military standard MIL-E-5008B:</p>
+            <div class="equation">
+                <span class="eq-label">MIL-E-5008B REFERENCE</span>
+                $$\eta_{\text{MIL}} = 1 - 0.075\,(M_\infty - 1)^{1.35}, \qquad 1 < M_\infty < 5$$
+            </div>
+
+            <div class="lab" id="intake-lab">
+                <div class="lab-head">
+                    <span class="lab-title">INTAKE LAB · SHOCK-ON-LIP</span>
+                    <span class="lab-note">Ideal inviscid shock relations, γ = 1.4</span>
+                </div>
+                <div class="lab-canvas"><canvas id="intake-canvas" role="img" aria-label="Multi-ramp intake with oblique shocks focused on the cowl lip, coloured by Mach number"></canvas></div>
+                <div class="lab-controls">
+                    <div class="ctrl">
+                        <label for="in-mach">Freestream Mach <output id="in-mach-out">3.30</output></label>
+                        <input type="range" id="in-mach" min="1.5" max="5" step="0.05" value="3.3">
+                    </div>
+                    <div class="ctrl">
+                        <label for="in-ramps">Compression ramps <output id="in-ramps-out">3</output></label>
+                        <input type="range" id="in-ramps" min="1" max="4" step="1" value="3">
+                    </div>
+                    <div class="ctrl">
+                        <label for="in-theta">Deflection per ramp <output id="in-theta-out">8.0°</output></label>
+                        <input type="range" id="in-theta" min="2" max="20" step="0.5" value="8">
+                    </div>
+                </div>
+                <div class="readouts">
+                    <div class="readout hl"><span>Total p₀ recovery</span><b id="in-rec">–</b></div>
+                    <div class="readout"><span>Normal shock only</span><b id="in-ns">–</b></div>
+                    <div class="readout"><span>MIL-E-5008B</span><b id="in-mil">–</b></div>
+                    <div class="readout"><span>Mach after terminal shock</span><b id="in-mexit">–</b></div>
+                </div>
+                <div class="table-wrap">
+                    <table class="stage-table" id="in-table">
+                        <thead><tr><th>SHOCK</th><th>M in</th><th>β</th><th>M out</th><th>p₂/p₁</th><th>p₀₂/p₀₁</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="lab-warn" id="in-warn"></div>
+            </div>
+
+            <div class="lab" id="tbm-lab">
+                <div class="lab-head">
+                    <span class="lab-title">θ–β–M CHART</span>
+                    <span class="lab-note">Solid: weak shock branch · faint: strong branch</span>
+                </div>
+                <div class="lab-canvas"><canvas id="tbm-canvas" role="img" aria-label="Theta-beta-Mach chart with curves for several Mach numbers and the first ramp's operating point marked"></canvas></div>
+            </div>
+
+            <h3>CFD model and results</h3>
+            <p>The hand calculations set the ramp angles and shock positions; the CFD model then shows how the real, viscous flow behaves, including shock–boundary layer interaction on the ramps and where the terminal shock settles.</p>
+            <div class="grid-2">
+                <figure>
+                    <div class="img-box" data-img="Intake Geometry"><img alt="Supersonic intake geometry"></div>
+                    <figcaption><span class="fig-no">FIG 1.1</span> Intake geometry and computational domain.</figcaption>
+                </figure>
+                <figure>
+                    <div class="img-box" data-img="Intake Mesh"><img alt="Intake mesh"></div>
+                    <figcaption><span class="fig-no">FIG 1.2</span> Mesh, refined around the ramps and cowl lip.</figcaption>
+                </figure>
+                <figure>
+                    <div class="img-box" data-img="Intake Mach Contour"><img alt="Mach number contour in the intake"></div>
+                    <figcaption><span class="fig-no">FIG 1.3</span> Mach number contour.</figcaption>
+                </figure>
+                <figure>
+                    <div class="img-box" data-img="Intake Pressure Contour"><img alt="Static pressure contour in the intake"></div>
+                    <figcaption><span class="fig-no">FIG 1.4</span> Static pressure contour.</figcaption>
+                </figure>
+            </div>
+        </article>
+
+        <!-- ================= CASE 02: SLOT JET ================= -->
+        <article id="slot-jet">
+            <div class="case-head">
+                <div class="case-index">02</div>
+                <div>
+                    <span class="section-tag">CASE 02 — ROCKET EXHAUST</span>
+                    <h2>Modelling an underexpanded rocket slot jet</h2>
+                </div>
+            </div>
+
+            <div class="conditions">
+                <div class="cond"><span>NOZZLE</span><b>2D slot</b></div>
+                <div class="cond"><span>EXPANSION</span><b>p<sub>e</sub> &gt; p<sub>a</sub></b></div>
+                <div class="cond"><span>KEY RELATION</span><b>θ–β–M</b></div>
+                <div class="cond"><span>FEATURE</span><b>Shock cells</b></div>
+            </div>
+
+            <p class="lede">When a rocket nozzle's exit pressure is higher than the surrounding air, the exhaust leaves <strong>underexpanded</strong>: it keeps expanding after it leaves the nozzle. That sets up a repeating pattern of expansion fans and shocks in the plume, the "shock diamonds" you can see behind a rocket engine.</p>
+
+            <h3>How the shock cells form</h3>
+            <ol class="steps">
+                <li><b>Expansion at the lip.</b> At the nozzle exit the jet is still above ambient pressure, so a Prandtl–Meyer expansion fan forms at each lip and turns the jet boundary outwards.</li>
+                <li><b>Reflection at the boundary.</b> The jet boundary is a constant-pressure surface. The expansion waves reflect from it as compression waves, which bend the flow back towards the centreline.</li>
+                <li><b>Coalescence into a shock.</b> The compression waves converge into an oblique (intercepting) shock. Its angle follows from the θ–β–M relation for the local Mach number and turning angle.</li>
+                <li><b>Repeat.</b> The shocks cross at the centreline and reflect, over-compress the jet, and the cycle starts again. Mixing with the ambient air slowly damps each new cell.</li>
+            </ol>
+
+            <p>The turning at the lip comes from the Prandtl–Meyer function. The flow expands from the exit Mach number \(M_e\) to the Mach number \(M_j\) that brings it down to ambient pressure:</p>
+            <div class="equation">
+                <span class="eq-label">PRANDTL–MEYER FUNCTION</span>
+                $$\nu(M) = \sqrt{\frac{\gamma+1}{\gamma-1}}\tan^{-1}\sqrt{\frac{\gamma-1}{\gamma+1}(M^2-1)} - \tan^{-1}\sqrt{M^2-1}, \qquad \theta_{\text{lip}} = \nu(M_j) - \nu(M_e)$$
+            </div>
+            <p>The compression that turns the boundary back through \(\theta_{\text{lip}}\) is then modelled as an oblique shock with the θ–β–M relation, which gives the shock angle and the jump in pressure across it.</p>
+
+            <div class="lab" id="jet-lab">
+                <div class="lab-head">
+                    <span class="lab-title">PLUME LAB · SHOCK DIAMONDS</span>
+                    <span class="lab-note">Schematic cell pattern from the computed angles</span>
+                </div>
+                <div class="lab-canvas"><canvas id="jet-canvas" role="img" aria-label="Underexpanded slot jet with expansion fans, jet boundary and crossing shocks forming a diamond pattern"></canvas></div>
+                <div class="lab-controls">
+                    <div class="ctrl">
+                        <label for="jet-me">Nozzle exit Mach M<sub>e</sub> <output id="jet-me-out">2.00</output></label>
+                        <input type="range" id="jet-me" min="1" max="3.5" step="0.05" value="2">
+                    </div>
+                    <div class="ctrl">
+                        <label for="jet-pr">Pressure ratio p<sub>e</sub>/p<sub>a</sub> <output id="jet-pr-out">2.0</output></label>
+                        <input type="range" id="jet-pr" min="1" max="6" step="0.1" value="2">
+                    </div>
+                </div>
+                <div class="readouts">
+                    <div class="readout"><span>Fully expanded Mach M<sub>j</sub></span><b id="jet-mj">–</b></div>
+                    <div class="readout hl"><span>Boundary turning θ<sub>lip</sub></span><b id="jet-theta">–</b></div>
+                    <div class="readout"><span>Intercepting shock β</span><b id="jet-beta">–</b></div>
+                    <div class="readout"><span>Shock p₂/p₁</span><b id="jet-p">–</b></div>
+                </div>
+                <div class="lab-warn" id="jet-warn"></div>
+            </div>
+
+            <h3>CFD model and results</h3>
+            <div class="grid-2">
+                <figure>
+                    <div class="img-box" data-img="Slot Jet Mach Contour"><img alt="Mach contour of the underexpanded slot jet"></div>
+                    <figcaption><span class="fig-no">FIG 2.1</span> Mach number contour of the plume.</figcaption>
+                </figure>
+                <figure>
+                    <div class="img-box" data-img="Slot Jet Pressure Contour"><img alt="Pressure contour of the underexpanded slot jet"></div>
+                    <figcaption><span class="fig-no">FIG 2.2</span> Static pressure contour showing the shock cells.</figcaption>
+                </figure>
+            </div>
+        </article>
+
+        <!-- ================= CASE 03: BOUNDARY LAYER ================= -->
+        <article id="boundary-layer">
+            <div class="case-head">
+                <div class="case-index">03</div>
+                <div>
+                    <span class="section-tag">CASE 03 — BOUNDARY LAYER ANALYSIS</span>
+                    <h2>Rolls-Royce Spirit of Innovation wing at Mach 0.45</h2>
+                </div>
+            </div>
+
+            <div class="conditions">
+                <div class="cond"><span>FLIGHT SPEED</span><b>M = 0.45</b></div>
+                <div class="cond"><span>REGIME</span><b>Subsonic</b></div>
+                <div class="cond"><span>EFFECTS</span><b>Compressible</b></div>
+                <div class="cond"><span>OUTPUT</span><b>δ, C<sub>f</sub></b></div>
+            </div>
+
+            <p class="lede">The Spirit of Innovation is Rolls-Royce's all-electric speed-record aircraft. At Mach 0.45 it is well into the range where air can no longer be treated as incompressible, so this analysis looks at how the <strong>boundary layer on its wing grows</strong> and how compressibility changes skin friction and surface temperature.</p>
+
+            <p>The boundary layer starts laminar at the leading edge, becomes unstable and transitions to turbulence. The turbulent layer grows much faster and creates more skin friction drag. Where transition happens is set by the local Reynolds number:</p>
+            <div class="equation">
+                <span class="eq-label">BOUNDARY LAYER THICKNESS</span>
+                $$\delta_{\text{lam}} \approx \frac{5.0\,x}{\sqrt{Re_x}}, \qquad \delta_{\text{turb}} \approx \frac{0.37\,x}{Re_x^{1/5}}, \qquad Re_x = \frac{\rho U_\infty x}{\mu}$$
+            </div>
+
+            <h3>Accounting for compressibility</h3>
+            <p>At Mach 0.45 the flow near the wall is heated by viscous friction, which changes the density and viscosity inside the boundary layer. Three corrections capture this:</p>
+            <ol class="steps">
+                <li><b>Recovery temperature.</b> An insulated wall heats up towards the adiabatic wall temperature \(T_{aw} = T_\infty\left(1 + r\,\tfrac{\gamma-1}{2}M_\infty^2\right)\), with recovery factor \(r \approx Pr^{1/2}\) (laminar) or \(Pr^{1/3}\) (turbulent).</li>
+                <li><b>Reference temperature.</b> Eckert's method evaluates fluid properties at \(T^{*}/T_\infty = 1 + 0.032M_\infty^2 + 0.58\,(T_w/T_\infty - 1)\), so the incompressible skin-friction formulas can be reused.</li>
+                <li><b>Pressure scaling.</b> The Prandtl–Glauert factor \(1/\sqrt{1 - M_\infty^2}\) scales the incompressible pressure coefficients to compressible conditions.</li>
+            </ol>
+
+            <div class="lab" id="bl-lab">
+                <div class="lab-head">
+                    <span class="lab-title">BOUNDARY LAYER LAB</span>
+                    <span class="lab-note">Flat-plate model, sea-level ISA, first 1 m of chord</span>
+                </div>
+                <div class="lab-canvas"><canvas id="bl-canvas" role="img" aria-label="Boundary layer thickness growing along the chord, laminar then turbulent, with velocity profiles drawn at several stations"></canvas></div>
+                <div class="lab-controls">
+                    <div class="ctrl">
+                        <label for="bl-mach">Flight Mach number <output id="bl-mach-out">0.45</output></label>
+                        <input type="range" id="bl-mach" min="0.1" max="0.85" step="0.01" value="0.45">
+                    </div>
+                </div>
+                <div class="readouts">
+                    <div class="readout"><span>Airspeed</span><b id="bl-u">–</b></div>
+                    <div class="readout"><span>Reynolds no. per metre</span><b id="bl-re">–</b></div>
+                    <div class="readout"><span>Transition at</span><b id="bl-xtr">–</b></div>
+                    <div class="readout hl"><span>δ at 1 m</span><b id="bl-delta">–</b></div>
+                    <div class="readout"><span>Wall heating T<sub>aw</sub> − T∞</span><b id="bl-taw">–</b></div>
+                    <div class="readout"><span>C<sub>f</sub> compressible / incompressible</span><b id="bl-cf">–</b></div>
+                    <div class="readout"><span>Prandtl–Glauert factor</span><b id="bl-pg">–</b></div>
+                </div>
+            </div>
+
+            <h3>CFD model and results</h3>
+            <div class="grid-2">
+                <figure>
+                    <div class="img-box" data-img="Wing Geometry"><img alt="Spirit of Innovation wing geometry"></div>
+                    <figcaption><span class="fig-no">FIG 3.1</span> Wing section geometry.</figcaption>
+                </figure>
+                <figure>
+                    <div class="img-box" data-img="Boundary Layer Result"><img alt="Boundary layer results along the wing"></div>
+                    <figcaption><span class="fig-no">FIG 3.2</span> Boundary layer development along the chord.</figcaption>
+                </figure>
+            </div>
+
+            <a class="cta" href="https://github.com/sydney-makgothi-98" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+                <span><b>GitHub</b><span>Request &amp; download the project files</span></span>
+                <span class="cta-arrow">→</span>
+            </a>
+        </article>
+    </main>
+
+    <footer>© 2026 Gopolang Makgothi · Aerospace Engineer</footer>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" aria-label="Close">✕</button>
+        <img alt="">
+        <div class="lightbox-caption"></div>
+    </div>
+
+    <script>
+        const G = 1.4;
+        const DEG = Math.PI / 180;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // ===== Gas dynamics =====
+        function thetaFromBeta(M, b) {
+            return Math.atan(2 / Math.tan(b) * (M * M * Math.sin(b) ** 2 - 1) / (M * M * (G + Math.cos(2 * b)) + 2));
+        }
+        function maxDeflection(M) {
+            let best = { theta: 0, beta: Math.asin(1 / M) };
+            for (let i = 0; i <= 600; i++) {
+                const b = Math.asin(1 / M) + (Math.PI / 2 - Math.asin(1 / M)) * i / 600;
+                const t = thetaFromBeta(M, b);
+                if (t > best.theta) best = { theta: t, beta: b };
+            }
+            return best;
+        }
+        // Weak-branch shock angle by bisection (theta rises monotonically from mu to beta_max)
+        function weakBeta(M, theta) {
+            const max = maxDeflection(M);
+            if (theta > max.theta) return null;
+            let lo = Math.asin(1 / M), hi = max.beta;
+            for (let i = 0; i < 60; i++) {
+                const mid = (lo + hi) / 2;
+                thetaFromBeta(M, mid) < theta ? lo = mid : hi = mid;
+            }
+            return (lo + hi) / 2;
+        }
+        function normalShock(Mn) {
+            const p = 1 + 2 * G / (G + 1) * (Mn * Mn - 1);
+            const r = (G + 1) * Mn * Mn / ((G - 1) * Mn * Mn + 2);
+            const Mn2 = Math.sqrt((1 + (G - 1) / 2 * Mn * Mn) / (G * Mn * Mn - (G - 1) / 2));
+            const p0 = Math.pow(r, G / (G - 1)) * Math.pow(p, -1 / (G - 1));
+            return { p, r, T: p / r, Mn2, p0 };
+        }
+        function obliqueShock(M, theta) {
+            const beta = weakBeta(M, theta);
+            if (beta === null) return null;
+            const ns = normalShock(M * Math.sin(beta));
+            return { beta, M2: ns.Mn2 / Math.sin(beta - theta), p: ns.p, T: ns.T, p0: ns.p0 };
+        }
+        function prandtlMeyer(M) {
+            const k = Math.sqrt((G + 1) / (G - 1)), m = Math.sqrt(M * M - 1);
+            return k * Math.atan(m / k) - Math.atan(m);
+        }
+        const p0OverP = M => Math.pow(1 + (G - 1) / 2 * M * M, G / (G - 1));
+        const machFromP0OverP = r => Math.sqrt(2 / (G - 1) * (Math.pow(r, (G - 1) / G) - 1));
+
+        // Turbo colormap (polynomial approximation), t in [0, 1]
+        function turbo(t) {
+            t = Math.max(0, Math.min(1, t));
+            const r = 0.13572138 + t * (4.61539260 + t * (-42.66032258 + t * (132.13108234 + t * (-152.94239396 + t * 59.28637943))));
+            const g = 0.09140261 + t * (2.19418839 + t * (4.84296658 + t * (-14.18503333 + t * (4.27729857 + t * 2.82956604))));
+            const b = 0.10667330 + t * (12.64194608 + t * (-60.58204836 + t * (110.36276771 + t * (-89.90310912 + t * 27.34824973))));
+            const c = v => Math.round(Math.max(0, Math.min(1, v)) * 255);
+            return `rgb(${c(r)}, ${c(g)}, ${c(b)})`;
+        }
+
+        // Size a canvas to its box at device resolution; returns {ctx, w, h}
+        function fitCanvas(canvas) {
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.clientWidth, h = canvas.clientHeight;
+            if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+                canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            return { ctx, w, h };
+        }
+        const MONO = '"JetBrains Mono", monospace';
+
+        // ===== Hero: Mach 3.3 flow over a wedge with an oblique shock =====
+        (function hero() {
+            const canvas = document.getElementById('hero-canvas');
+            const M1 = 3.3, theta = 12 * DEG;
+            const shock = obliqueShock(M1, theta);
+            const speedRatio = shock.M2 * Math.sqrt(shock.T) / M1;
+            const colorOf = M => turbo((M - 1.5) / 2);
+            let w, h, ctx, apex, particles = [], running = true;
+
+            function layout() {
+                ({ ctx, w, h } = fitCanvas(canvas));
+                apex = { x: w * 0.52, y: h * 0.86 };
+                ctx.fillStyle = '#03080b'; ctx.fillRect(0, 0, w, h);
+            }
+            const spawn = (x) => ({ x: x ?? -10, y: Math.random() * apex.y * 0.98, px: null, py: null });
+            const downstream = p => (apex.y - p.y) / Math.tan(shock.beta) + apex.x < p.x;
+
+            function frame() {
+                if (!running) return;
+                ctx.fillStyle = 'rgba(3, 8, 11, 0.12)';
+                ctx.fillRect(0, 0, w, h);
+
+                const v = Math.max(2.2, w / 420);
+                ctx.lineWidth = 1.4;
+                for (const p of particles) {
+                    p.px = p.x; p.py = p.y;
+                    const down = downstream(p);
+                    if (down) {
+                        p.x += v * speedRatio * Math.cos(theta);
+                        p.y -= v * speedRatio * Math.sin(theta);
+                    } else {
+                        p.x += v;
+                    }
+                    ctx.strokeStyle = colorOf(down ? shock.M2 : M1);
+                    ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); ctx.stroke();
+                    if (p.x > w + 10 || p.y < -10) Object.assign(p, spawn());
+                }
+
+                // Wedge body
+                ctx.fillStyle = '#0b1a21';
+                ctx.beginPath();
+                ctx.moveTo(apex.x, apex.y);
+                ctx.lineTo(w + 5, apex.y - (w + 5 - apex.x) * Math.tan(theta));
+                ctx.lineTo(w + 5, h); ctx.lineTo(apex.x, h); ctx.lineTo(0, h); ctx.lineTo(0, apex.y);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = 'rgba(34, 211, 238, 0.5)'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.moveTo(0, apex.y); ctx.lineTo(apex.x, apex.y);
+                ctx.lineTo(w + 5, apex.y - (w + 5 - apex.x) * Math.tan(theta)); ctx.stroke();
+
+                // Shock line
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.75)'; ctx.lineWidth = 2;
+                ctx.shadowColor = 'rgba(251, 191, 36, 0.8)'; ctx.shadowBlur = 12;
+                ctx.beginPath(); ctx.moveTo(apex.x, apex.y);
+                ctx.lineTo(apex.x + apex.y / Math.tan(shock.beta), 0); ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                ctx.font = `11px ${MONO}`; ctx.fillStyle = 'rgba(251, 191, 36, 0.9)';
+                const lx = apex.x + (apex.y * 0.35) / Math.tan(shock.beta) + 14;
+                ctx.fillText(`β = ${(shock.beta / DEG).toFixed(1)}°`, lx, apex.y * 0.65);
+                ctx.fillStyle = 'rgba(147, 167, 176, 0.9)';
+                ctx.fillText(`M∞ = ${M1}`, w * 0.05 + 0, 90);
+                ctx.fillText(`M₂ = ${shock.M2.toFixed(2)}`, w - 120, apex.y * 0.35);
+                ctx.fillText(`θ = ${theta / DEG}°`, apex.x + 60, apex.y - 10);
+
+                requestAnimationFrame(frame);
+            }
+
+            layout();
+            const count = Math.round(Math.min(260, w * h / 5000));
+            for (let i = 0; i < count; i++) particles.push(spawn(Math.random() * w));
+            window.addEventListener('resize', layout);
+
+            if (reduceMotion) {
+                // Draw a few long static streaks instead of animating
+                for (let k = 0; k < 400; k++) { running = true; frame(); }
+                running = false;
+                return;
+            }
+            new IntersectionObserver(([e]) => {
+                const was = running; running = e.isIntersecting;
+                if (running && !was) requestAnimationFrame(frame);
+            }).observe(canvas);
+            requestAnimationFrame(frame);
+        })();
+
+        // ===== Intake lab =====
+        (function intakeLab() {
+            const canvas = document.getElementById('intake-canvas');
+            const inMach = document.getElementById('in-mach');
+            const inRamps = document.getElementById('in-ramps');
+            const inTheta = document.getElementById('in-theta');
+            const $ = id => document.getElementById(id);
+            const machColor = (M, Mmax) => turbo(0.08 + 0.9 * M / Mmax);
+
+            function solve() {
+                const M1 = +inMach.value, n = +inRamps.value, theta = +inTheta.value * DEG;
+                let M = M1, rec = 1, stages = [], warn = '';
+                for (let i = 0; i < n; i++) {
+                    const s = obliqueShock(M, theta);
+                    if (!s) { warn = `Shock ${i + 1} detaches: a ${(theta / DEG).toFixed(1)}° ramp is beyond the maximum deflection (${(maxDeflection(M).theta / DEG).toFixed(1)}°) at M = ${M.toFixed(2)}. Reduce the ramp angle or the number of ramps.`; break; }
+                    stages.push({ Min: M, ...s });
+                    rec *= s.p0; M = s.M2;
+                    if (M <= 1.0) { warn = `The flow is already subsonic after shock ${i + 1}, so the remaining ramps can't form oblique shocks.`; break; }
+                }
+                let terminal = null;
+                if (M > 1) { terminal = normalShock(M); terminal.Min = M; rec *= terminal.p0; }
+                return { M1, theta, stages, terminal, rec, warn, Mexit: terminal ? terminal.Mn2 : M };
+            }
+
+            function draw(res) {
+                const { ctx, w, h } = fitCanvas(canvas);
+                ctx.clearRect(0, 0, w, h);
+                const { M1, theta, stages } = res;
+
+                // Geometry in model units: shocks all focus on the cowl lip C
+                const P = [{ x: 0, y: 0 }];
+                const phi1 = stages.length ? stages[0].beta : Math.asin(1 / M1);
+                const C = { x: Math.cos(phi1), y: Math.sin(phi1) };
+                // Ramp k starts at P[k-1] and is inclined at k*theta; shock k+1 leaves the end of
+                // that ramp at (beta + k*theta) to the horizontal, so P[k] is where the ray back
+                // from the lip along that angle meets ramp k.
+                for (let k = 1; k < stages.length; k++) {
+                    const prev = P[k - 1];
+                    const rx = Math.cos(k * theta), ry = Math.sin(k * theta);
+                    const phi = stages[k].beta + k * theta;
+                    const ex = Math.cos(phi), ey = Math.sin(phi);
+                    const s = ((C.x - prev.x) * ey - (C.y - prev.y) * ex) / (rx * ey - ry * ex);
+                    P.push({ x: prev.x + s * rx, y: prev.y + s * ry });
+                }
+                const last = P[P.length - 1];
+                const lastAng = Math.max(1, stages.length) * theta;
+                const F = { x: C.x, y: last.y + (C.x - last.x) * Math.tan(lastAng) };   // foot of terminal shock
+                const ductEnd = C.x + 0.55;
+
+                // Fit to canvas
+                const minX = -0.55, maxX = ductEnd, minY = Math.min(0, F.y) - 0.12, maxY = C.y + 0.2;
+                const sc = Math.min((w - 30) / (maxX - minX), (h - 30) / (maxY - minY));
+                const ox = (w - (maxX - minX) * sc) / 2 - minX * sc;
+                const oy = h - (h - (maxY - minY) * sc) / 2 + minY * sc;
+                const X = p => ox + p.x * sc, Y = p => oy - p.y * sc;
+                const poly = (pts, fill) => {
+                    ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(X(p), Y(p)) : ctx.moveTo(X(p), Y(p)));
+                    ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+                };
+
+                // Freestream
+                ctx.fillStyle = machColor(M1, M1); ctx.globalAlpha = 0.55; ctx.fillRect(0, 0, w, h);
+                // Regions between successive shocks
+                stages.forEach((s, k) => {
+                    const next = k + 1 < stages.length ? P[k + 1] : F;
+                    poly([P[k], next, C], machColor(s.M2, M1));
+                });
+                // Subsonic duct after the terminal shock
+                const Mexit = res.Mexit;
+                poly([F, C, { x: ductEnd + 1, y: C.y }, { x: ductEnd + 1, y: F.y }], machColor(Mexit, M1));
+                ctx.globalAlpha = 1;
+
+                // Ramp body
+                const body = [{ x: minX - 1, y: 0 }, ...P, F, { x: ductEnd + 1, y: F.y }, { x: ductEnd + 1, y: minY - 1 }, { x: minX - 1, y: minY - 1 }];
+                poly(body, '#0b1a21');
+                ctx.strokeStyle = 'rgba(34, 211, 238, 0.7)'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); body.slice(0, -2).forEach((p, i) => i ? ctx.lineTo(X(p), Y(p)) : ctx.moveTo(X(p), Y(p))); ctx.stroke();
+                // Cowl
+                ctx.fillStyle = '#0b1a21';
+                ctx.beginPath();
+                ctx.moveTo(X(C), Y(C)); ctx.lineTo(X({ x: ductEnd + 1, y: C.y }), Y(C));
+                ctx.lineTo(X({ x: ductEnd + 1, y: C.y + 0.08 }), Y({ y: C.y + 0.08 }));
+                ctx.lineTo(X({ x: C.x + 0.25, y: C.y + 0.08 }), Y({ y: C.y + 0.08 }));
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+
+                // Shocks
+                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
+                ctx.shadowColor = 'rgba(251, 191, 36, 0.7)'; ctx.shadowBlur = 8;
+                stages.forEach((s, k) => { ctx.beginPath(); ctx.moveTo(X(P[k]), Y(P[k])); ctx.lineTo(X(C), Y(C)); ctx.stroke(); });
+                if (res.terminal) {
+                    ctx.setLineDash([5, 4]);
+                    ctx.beginPath(); ctx.moveTo(X(F), Y(F)); ctx.lineTo(X(C), Y(C)); ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                ctx.shadowBlur = 0;
+
+                // Labels
+                ctx.font = `600 11px ${MONO}`; ctx.textAlign = 'center';
+                const tag = (p, text) => {
+                    ctx.fillStyle = 'rgba(3, 8, 11, 0.75)';
+                    const tw = ctx.measureText(text).width + 10;
+                    ctx.fillRect(X(p) - tw / 2, Y(p) - 9, tw, 18);
+                    ctx.fillStyle = '#fff'; ctx.fillText(text, X(p), Y(p) + 4);
+                };
+                tag({ x: minX + 0.22, y: C.y * 0.55 }, `M ${M1.toFixed(2)}`);
+                stages.forEach((s, k) => {
+                    const next = k + 1 < stages.length ? P[k + 1] : F;
+                    const cx = (P[k].x + next.x + C.x) / 3, cy = (P[k].y + next.y + C.y) / 3;
+                    tag({ x: cx, y: cy }, s.M2.toFixed(2));
+                });
+                tag({ x: (C.x + ductEnd) / 2 + 0.05, y: (C.y + F.y) / 2 }, `M ${Mexit.toFixed(2)}`);
+                ctx.textAlign = 'left';
+            }
+
+            function update() {
+                $('in-mach-out').textContent = (+inMach.value).toFixed(2);
+                $('in-ramps-out').textContent = inRamps.value;
+                $('in-theta-out').textContent = (+inTheta.value).toFixed(1) + '°';
+                const res = solve();
+                const M1 = res.M1;
+                $('in-rec').textContent = (res.rec * 100).toFixed(1) + '%';
+                $('in-ns').textContent = (normalShock(M1).p0 * 100).toFixed(1) + '%';
+                $('in-mil').textContent = ((1 - 0.075 * Math.pow(M1 - 1, 1.35)) * 100).toFixed(1) + '%';
+                $('in-mexit').textContent = res.Mexit.toFixed(3);
+
+                const rows = res.stages.map((s, i) =>
+                    `<tr><td>Oblique ${i + 1}</td><td>${s.Min.toFixed(3)}</td><td>${(s.beta / DEG).toFixed(2)}°</td><td>${s.M2.toFixed(3)}</td><td>${s.p.toFixed(3)}</td><td>${s.p0.toFixed(4)}</td></tr>`);
+                if (res.terminal) {
+                    const t = res.terminal;
+                    rows.push(`<tr><td>Normal (terminal)</td><td>${t.Min.toFixed(3)}</td><td>90.00°</td><td>${t.Mn2.toFixed(3)}</td><td>${t.p.toFixed(3)}</td><td>${t.p0.toFixed(4)}</td></tr>`);
+                }
+                document.querySelector('#in-table tbody').innerHTML = rows.join('');
+                $('in-warn').textContent = res.warn;
+                $('in-warn').classList.toggle('show', !!res.warn);
+
+                draw(res);
+                drawTBM(M1, res.theta, res.stages[0]);
+            }
+
+            [inMach, inRamps, inTheta].forEach(el => el.addEventListener('input', update));
+            window.addEventListener('resize', update);
+            update();
+        })();
+
+        // ===== θ–β–M chart =====
+        function drawTBM(Mcur, theta, firstShock) {
+            const canvas = document.getElementById('tbm-canvas');
+            const { ctx, w, h } = fitCanvas(canvas);
+            ctx.clearRect(0, 0, w, h);
+            const pad = { l: 52, r: 20, t: 20, b: 40 };
+            const X = t => pad.l + t / 46 * (w - pad.l - pad.r);
+            const Y = b => h - pad.b - b / 90 * (h - pad.t - pad.b);
+
+            ctx.font = `10px ${MONO}`; ctx.lineWidth = 1;
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            for (let b = 0; b <= 90; b += 15) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                ctx.beginPath(); ctx.moveTo(pad.l, Y(b)); ctx.lineTo(w - pad.r, Y(b)); ctx.stroke();
+                ctx.fillStyle = '#5f747d'; ctx.fillText(b + '°', pad.l - 8, Y(b));
+            }
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            for (let t = 0; t <= 45; t += 5) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                ctx.beginPath(); ctx.moveTo(X(t), pad.t); ctx.lineTo(X(t), h - pad.b); ctx.stroke();
+                ctx.fillStyle = '#5f747d'; ctx.fillText(t + '°', X(t), h - pad.b + 6);
+            }
+            ctx.fillText('Deflection angle θ', (pad.l + w - pad.r) / 2, h - 16);
+            ctx.save(); ctx.translate(12, (pad.t + h - pad.b) / 2); ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Shock angle β', 0, 0); ctx.restore();
+
+            const curve = (M, color, width, labelIt) => {
+                const mu = Math.asin(1 / M), max = maxDeflection(M);
+                const trace = (b0, b1, alpha) => {
+                    ctx.beginPath();
+                    for (let i = 0; i <= 120; i++) {
+                        const b = b0 + (b1 - b0) * i / 120, t = Math.max(0, thetaFromBeta(M, b)) / DEG;
+                        i ? ctx.lineTo(X(t), Y(b / DEG)) : ctx.moveTo(X(t), Y(b / DEG));
+                    }
+                    ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke(); ctx.globalAlpha = 1;
+                };
+                trace(mu, max.beta, 1);
+                trace(max.beta, Math.PI / 2, 0.3);
+                if (labelIt) {
+                    ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                    ctx.fillText('M ' + M, X(max.theta / DEG) + 4, Y(max.beta / DEG) - 8);
+                }
+            };
+            [1.5, 2, 3, 4, 6, 10].forEach(M => curve(M, 'rgba(147, 167, 176, 0.55)', 1.2, true));
+            ctx.shadowColor = 'rgba(34, 211, 238, 0.7)'; ctx.shadowBlur = 8;
+            curve(+Mcur.toFixed(2), '#22d3ee', 2.5, false);
+            ctx.shadowBlur = 0;
+
+            if (firstShock) {
+                const px = X(theta / DEG), py = Y(firstShock.beta / DEG);
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(px, h - pad.b); ctx.lineTo(px, py); ctx.lineTo(pad.l, py); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fillStyle = '#fbbf24'; ctx.fill();
+                ctx.font = `600 11px ${MONO}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText(`Ramp 1: M ${Mcur.toFixed(2)}, θ ${(theta / DEG).toFixed(1)}° → β ${(firstShock.beta / DEG).toFixed(1)}°`, pad.l + 10, pad.t + 14);
+            }
+        }
+
+        // ===== Slot jet lab =====
+        (function jetLab() {
+            const canvas = document.getElementById('jet-canvas');
+            const inMe = document.getElementById('jet-me');
+            const inPr = document.getElementById('jet-pr');
+            const $ = id => document.getElementById(id);
+            let state = null, t0 = performance.now(), running = true;
+
+            function solve() {
+                const Me = +inMe.value, pr = +inPr.value;
+                const Mj = machFromP0OverP(p0OverP(Me) * pr);
+                const thetaLip = prandtlMeyer(Mj) - prandtlMeyer(Me);
+                const shock = thetaLip > 1e-4 ? obliqueShock(Mj, thetaLip) : null;
+                return { Me, pr, Mj, thetaLip, shock };
+            }
+
+            function draw(now) {
+                const { ctx, w, h } = fitCanvas(canvas);
+                ctx.clearRect(0, 0, w, h);
+                const { Me, Mj, thetaLip } = state;
+                const x0 = 70, cy = h / 2, hh = h * 0.16;               // nozzle exit and half-height
+                const L = 2 * hh * Math.sqrt(Math.max(Mj * Mj - 1, 0.05)); // cell length from the Mach-wave geometry
+                const A0 = Math.tan(thetaLip) * L / Math.PI;
+                const decay = 0.82;
+                const boundary = x => {
+                    const k = Math.floor((x - x0) / L);
+                    return hh + A0 * Math.pow(decay, k) * Math.abs(Math.sin(Math.PI * (x - x0) / L));
+                };
+                const Mmax = Math.max(Mj * 1.15, 1.5);
+                const localMach = (x, y) => {
+                    const k = Math.floor((x - x0) / L), ph = ((x - x0) / L) % 1;
+                    const amp = Math.pow(decay, k);
+                    return Me + (Mj - Me) * 0.5 + (Mj - Me) * 0.65 * amp * Math.sin(Math.PI * ph) * (1 - 0.3 * (y / boundary(x)) ** 2);
+                };
+
+                // Mach field inside the plume, drawn column by column
+                const step = 3;
+                for (let x = x0; x < w; x += step) {
+                    const yb = boundary(x);
+                    for (let y = 0; y < yb; y += step) {
+                        ctx.fillStyle = turbo(0.1 + 0.85 * localMach(x, y) / Mmax);
+                        ctx.globalAlpha = 0.55 * Math.min(1, 1.2 - y / yb);
+                        ctx.fillRect(x, cy - y - step, step, step);
+                        ctx.fillRect(x, cy + y, step, step);
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                // Jet boundary
+                ctx.strokeStyle = 'rgba(34, 211, 238, 0.85)'; ctx.lineWidth = 1.5;
+                [-1, 1].forEach(s => {
+                    ctx.beginPath();
+                    for (let x = x0; x <= w; x += 2) { const y = cy + s * boundary(x); x === x0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+                    ctx.stroke();
+                });
+
+                // Expansion fans at the lips
+                const muE = Math.asin(1 / Math.max(Me, 1.0001)), muJ = Math.asin(1 / Mj);
+                ctx.strokeStyle = 'rgba(54, 170, 249, 0.6)'; ctx.lineWidth = 1;
+                for (let i = 0; i <= 5; i++) {
+                    const a = muE + (muJ - thetaLip - muE) * i / 5;   // first wave at mu_e, last at mu_j - theta
+                    const len = hh / Math.sin(Math.max(a, 0.05));
+                    [-1, 1].forEach(s => {
+                        ctx.beginPath(); ctx.moveTo(x0, cy + s * hh);
+                        ctx.lineTo(x0 + len * Math.cos(a), cy + s * (hh - len * Math.sin(a)));
+                        ctx.stroke();
+                    });
+                }
+
+                // Crossing shocks: diamonds
+                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.8;
+                ctx.shadowColor = 'rgba(251, 191, 36, 0.7)'; ctx.shadowBlur = 6;
+                for (let k = 0; x0 + (k + 0.3) * L < w; k++) {
+                    const xs = x0 + (k + 0.35) * L, xe = x0 + (k + 1.25) * L;
+                    const alpha = Math.pow(decay, k);
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath(); ctx.moveTo(xs, cy - boundary(xs) * 0.9); ctx.lineTo(xe, cy + boundary(xe) * 0.9); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(xs, cy + boundary(xs) * 0.9); ctx.lineTo(xe, cy - boundary(xe) * 0.9); ctx.stroke();
+                }
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+
+                // Moving tracer dots
+                if (now !== undefined) {
+                    const tt = (now - t0) / 1000;
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    for (let j = 0; j < 7; j++) {
+                        const frac = (j - 3) / 3.5;
+                        for (let i = 0; i < 14; i++) {
+                            const x = x0 + (((tt * 60 + i * (w / 14)) % (w - x0)));
+                            const y = cy + frac * boundary(x) * 0.85;
+                            ctx.fillRect(x, y, 2, 2);
+                        }
+                    }
+                }
+
+                // Nozzle walls
+                ctx.fillStyle = '#0b1a21'; ctx.strokeStyle = 'rgba(34, 211, 238, 0.6)';
+                [-1, 1].forEach(s => {
+                    ctx.beginPath();
+                    ctx.moveTo(0, cy + s * hh * 0.7); ctx.lineTo(x0, cy + s * hh);
+                    ctx.lineTo(x0, cy + s * (hh + 14)); ctx.lineTo(0, cy + s * (hh + 24));
+                    ctx.closePath(); ctx.fill(); ctx.stroke();
+                });
+
+                ctx.font = `600 11px ${MONO}`; ctx.fillStyle = '#93a7b0'; ctx.textAlign = 'left';
+                ctx.fillText(`Me ${Me.toFixed(2)}`, 8, 18);
+                ctx.fillStyle = 'rgba(54, 170, 249, 0.9)'; ctx.fillText('expansion fan', x0 + 8, cy - hh - 14 - A0 * 0.2);
+                ctx.fillStyle = '#fbbf24'; ctx.fillText('shock cells', x0 + L * 0.9, cy + boundary(x0 + L * 0.9) + 18);
+            }
+
+            function frame(now) {
+                if (!running) return;
+                draw(now);
+                requestAnimationFrame(frame);
+            }
+
+            function update() {
+                $('jet-me-out').textContent = (+inMe.value).toFixed(2);
+                $('jet-pr-out').textContent = (+inPr.value).toFixed(1);
+                state = solve();
+                $('jet-mj').textContent = state.Mj.toFixed(3);
+                $('jet-theta').textContent = (state.thetaLip / DEG).toFixed(2) + '°';
+                $('jet-beta').textContent = state.shock ? (state.shock.beta / DEG).toFixed(2) + '°' : '–';
+                $('jet-p').textContent = state.shock ? state.shock.p.toFixed(3) : '–';
+                const warn = state.pr <= 1.001 ? 'At p_e/p_a = 1 the nozzle is perfectly expanded: no lip expansion and no shock cells.' : '';
+                $('jet-warn').textContent = warn;
+                $('jet-warn').classList.toggle('show', !!warn);
+                if (reduceMotion || !running) draw();
+            }
+
+            [inMe, inPr].forEach(el => el.addEventListener('input', update));
+            window.addEventListener('resize', () => draw());
+            update();
+            if (reduceMotion) { running = false; return; }
+            running = false;
+            new IntersectionObserver(([e]) => {
+                const was = running; running = e.isIntersecting;
+                if (running && !was) requestAnimationFrame(frame);
+            }).observe(canvas);
+        })();
+
+        // ===== Boundary layer lab =====
+        (function blLab() {
+            const canvas = document.getElementById('bl-canvas');
+            const inM = document.getElementById('bl-mach');
+            const $ = id => document.getElementById(id);
+            const T = 288.15, a = 340.29, nu = 1.4607e-5, Pr = 0.71, ReTr = 5e5;
+            const sutherland = Tk => Math.pow(Tk / T, 1.5) * (T + 110.4) / (Tk + 110.4);
+            let progress = reduceMotion ? 1 : 0;
+
+            function solve() {
+                const M = +inM.value, U = M * a, ReM = U / nu;
+                const xtr = ReTr / ReM;
+                const delta = x => {
+                    const Re = Math.max(ReM * x, 1);
+                    return x < xtr ? 5 * x / Math.sqrt(Re) : 0.37 * x / Math.pow(Re, 0.2);
+                };
+                const rT = Math.cbrt(Pr);
+                const TawRatio = 1 + rT * (G - 1) / 2 * M * M;
+                const Tstar = 1 + 0.032 * M * M + 0.58 * (TawRatio - 1);   // adiabatic wall, Eckert
+                // Turbulent reference-temperature correction: Cf/Cf_inc = (T*/Te)^-0.8 (mu*/mue)^0.2
+                const cfRatio = Math.pow(Tstar, -0.8) * Math.pow(sutherland(T * Tstar), 0.2);
+                return { M, U, ReM, xtr, delta, dT: T * (TawRatio - 1), cfRatio, pg: 1 / Math.sqrt(1 - M * M) };
+            }
+
+            function draw(s) {
+                const { ctx, w, h } = fitCanvas(canvas);
+                ctx.clearRect(0, 0, w, h);
+                const pad = { l: 56, r: 24, t: 26, b: 42 };
+                const dMax = 25e-3;                                       // y-axis range: 25 mm
+                const X = x => pad.l + x * (w - pad.l - pad.r);
+                const Y = d => h - pad.b - d / dMax * (h - pad.t - pad.b);
+                const k = 1 - Math.pow(1 - progress, 3);
+
+                // Grid
+                ctx.font = `10px ${MONO}`; ctx.lineWidth = 1;
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                for (let d = 0; d <= 25; d += 5) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                    ctx.beginPath(); ctx.moveTo(pad.l, Y(d / 1000)); ctx.lineTo(w - pad.r, Y(d / 1000)); ctx.stroke();
+                    ctx.fillStyle = '#5f747d'; ctx.fillText(d + ' mm', pad.l - 8, Y(d / 1000));
+                }
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                for (let x = 0; x <= 1.0001; x += 0.2) ctx.fillText(x.toFixed(1) + ' m', X(x), h - pad.b + 8);
+                ctx.fillText('Distance from leading edge x', (pad.l + w - pad.r) / 2, h - 16);
+
+                // Boundary layer envelope, filled with a velocity-like gradient
+                const xEnd = k;
+                ctx.beginPath(); ctx.moveTo(X(0), Y(0));
+                for (let i = 1; i <= 300; i++) { const x = xEnd * i / 300; ctx.lineTo(X(x), Y(Math.min(s.delta(x), dMax))); }
+                ctx.lineTo(X(xEnd), Y(0)); ctx.closePath();
+                const grad = ctx.createLinearGradient(0, Y(0), 0, Y(0.015));
+                grad.addColorStop(0, 'rgba(48, 18, 59, 0.75)'); grad.addColorStop(0.5, 'rgba(54, 170, 249, 0.35)'); grad.addColorStop(1, 'rgba(26, 228, 182, 0.08)');
+                ctx.fillStyle = grad; ctx.fill();
+                ctx.beginPath();
+                for (let i = 0; i <= 300; i++) { const x = xEnd * i / 300; const y = Y(Math.min(s.delta(x), dMax)); i ? ctx.lineTo(X(x), y) : ctx.moveTo(X(x), y); }
+                ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2; ctx.shadowColor = 'rgba(34,211,238,0.6)'; ctx.shadowBlur = 8; ctx.stroke(); ctx.shadowBlur = 0;
+
+                // Velocity profiles at stations
+                [0.2, 0.4, 0.6, 0.8, 1.0].filter(x => x <= xEnd + 1e-6).forEach(x => {
+                    const d = Math.min(s.delta(x), dMax), lam = x < s.xtr;
+                    const umax = 0.075 * (w - pad.l - pad.r);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(X(x), Y(0)); ctx.lineTo(X(x), Y(d)); ctx.stroke();
+                    ctx.beginPath();
+                    for (let i = 0; i <= 40; i++) {
+                        const eta = i / 40;
+                        const u = lam ? 2 * eta - 2 * eta ** 3 + eta ** 4 : Math.pow(eta, 1 / 7);
+                        const px = X(x) + u * umax, py = Y(eta * d);
+                        i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+                    }
+                    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
+                });
+
+                // Transition marker
+                if (s.xtr < 1 && s.xtr <= xEnd) {
+                    ctx.strokeStyle = 'rgba(244, 114, 182, 0.7)'; ctx.setLineDash([4, 4]);
+                    ctx.beginPath(); ctx.moveTo(X(s.xtr), Y(0)); ctx.lineTo(X(s.xtr), pad.t); ctx.stroke(); ctx.setLineDash([]);
+                    ctx.fillStyle = '#f472b6'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                    ctx.fillText('transition', X(s.xtr) + 6, pad.t);
+                }
+
+                // Wall
+                ctx.fillStyle = '#0b1a21'; ctx.fillRect(pad.l, Y(0), w - pad.l - pad.r, 6);
+                ctx.fillStyle = '#93a7b0'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+                ctx.font = `600 11px ${MONO}`;
+                ctx.fillText('laminar → turbulent  ·  yellow: velocity profiles', w - pad.r, 6);
+            }
+
+            let s;
+            function update() {
+                $('bl-mach-out').textContent = (+inM.value).toFixed(2);
+                s = solve();
+                $('bl-u').textContent = s.U.toFixed(0) + ' m/s';
+                $('bl-re').textContent = (s.ReM / 1e6).toFixed(2) + ' × 10⁶';
+                $('bl-xtr').textContent = (s.xtr * 1000).toFixed(0) + ' mm';
+                $('bl-delta').textContent = (s.delta(1) * 1000).toFixed(1) + ' mm';
+                $('bl-taw').textContent = '+' + s.dT.toFixed(1) + ' K';
+                $('bl-cf').textContent = s.cfRatio.toFixed(3);
+                $('bl-pg').textContent = s.pg.toFixed(3);
+                draw(s);
+            }
+            inM.addEventListener('input', update);
+            window.addEventListener('resize', update);
+            update();
+
+            if (!reduceMotion) {
+                const obs = new IntersectionObserver(([e]) => {
+                    if (!e.isIntersecting) return;
+                    obs.disconnect();
+                    const start = performance.now();
+                    const tick = now => {
+                        progress = Math.min(1, (now - start) / 1600);
+                        draw(s);
+                        if (progress < 1) requestAnimationFrame(tick);
+                    };
+                    requestAnimationFrame(tick);
+                }, { threshold: 0.5 });
+                obs.observe(canvas);
+            }
+        })();
+
+        // ===== Images: drop files into "Syd Website Images/CFD Page/" with any common extension =====
+        const IMG_DIR = './Syd%20Website%20Images/CFD%20Page/';
+        const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = lightbox.querySelector('img');
+        const lightboxCaption = lightbox.querySelector('.lightbox-caption');
+
+        document.querySelectorAll('.img-box[data-img]').forEach(box => {
+            const name = box.dataset.img;
+            const img = box.querySelector('img');
+            let i = 0;
+            const tryNext = () => {
+                if (i >= EXTENSIONS.length) {
+                    box.classList.add('missing');
+                    box.insertAdjacentHTML('beforeend',
+                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Images/CFD Page/</div>`);
+                    return;
+                }
+                img.src = IMG_DIR + encodeURIComponent(name) + '.' + EXTENSIONS[i++];
+            };
+            img.addEventListener('error', tryNext);
+            tryNext();
+
+            box.addEventListener('click', () => {
+                if (box.classList.contains('missing')) return;
+                const caption = box.closest('figure')?.querySelector('figcaption');
+                lightboxImg.src = img.src;
+                lightboxImg.alt = img.alt;
+                lightboxCaption.textContent = caption ? caption.textContent : '';
+                lightbox.classList.add('open');
+            });
+        });
+        lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
+
+        // ===== KaTeX =====
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ]
+            });
+        });
+
+        // ===== Reading progress + case tab highlight =====
+        const progressBar = document.getElementById('progress');
+        const tabs = [...document.querySelectorAll('.case-tabs a')];
+        const cases = tabs.map(a => document.querySelector(a.getAttribute('href')));
+        window.addEventListener('scroll', () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            progressBar.style.width = (window.scrollY / max * 100) + '%';
+            let current = -1;
+            cases.forEach((c, i) => { if (c.getBoundingClientRect().top < 160) current = i; });
+            tabs.forEach((a, i) => a.classList.toggle('active', i === current));
+        }, { passive: true });
+    </script>
+</body>
+</html>
