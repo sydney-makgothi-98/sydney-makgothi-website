@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applied Aerodynamics | Gopolang Makgothi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg: #060807;
+            --bg-raised: #0c110e;
+            --surface: rgba(255, 255, 255, 0.025);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(163, 230, 53, 0.35);
+            --text: #e6ede4;
+            --text-muted: #9caa98;
+            --text-faint: #66735f;
+            --accent: #a3e635;
+            --accent-soft: rgba(163, 230, 53, 0.09);
+            --magenta: #e879f9;
+            --radius: 10px;
+            --display: 'Chakra Petch', 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.75;
+            -webkit-font-smoothing: antialiased;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(163, 230, 53, 0.45) rgba(0, 0, 0, 0.2);
+        }
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        body::-webkit-scrollbar-thumb { background: rgba(163, 230, 53, 0.45); border-radius: 4px; }
+
+        a { color: var(--accent); }
+
+        /* ===== Nav ===== */
+        .progress {
+            position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 60;
+            background: linear-gradient(90deg, var(--accent), var(--magenta));
+        }
+        .topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.9rem clamp(1rem, 4vw, 2.5rem);
+            background: rgba(6, 8, 7, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.9rem; font-weight: 600;
+            transition: color 200ms ease, transform 200ms ease;
+        }
+        .back-link:hover { color: #fff; transform: translateX(-3px); }
+        .nav-status {
+            font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent);
+            display: flex; gap: 1.25rem;
+        }
+        .nav-status span { color: var(--text-faint); }
+
+        /* ===== Hero with HUD overlay ===== */
+        .hero {
+            position: relative; min-height: 92vh;
+            display: flex; align-items: flex-end;
+            padding: 8rem clamp(1rem, 6vw, 5rem) 4.5rem;
+            overflow: hidden;
+            background: radial-gradient(90% 70% at 70% 30%, #13210f 0%, var(--bg) 70%);
+        }
+        .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .hero::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background:
+                linear-gradient(90deg, rgba(6,8,7,0.88) 0%, rgba(6,8,7,0.4) 50%, rgba(6,8,7,0.15) 100%),
+                linear-gradient(180deg, rgba(6,8,7,0.2) 0%, rgba(6,8,7,0) 50%, var(--bg) 100%);
+        }
+        .hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+        .hud svg { position: absolute; }
+        .hud-reticle { left: 68%; top: 44%; width: 300px; height: 300px; transform: translate(-50%, -50%); }
+        .hud-ladder { animation: roll 9s ease-in-out infinite; transform-origin: 150px 150px; }
+        @keyframes roll {
+            0%, 100% { transform: rotate(-4deg) translateY(-6px); }
+            50% { transform: rotate(5deg) translateY(8px); }
+        }
+        .hud-tape {
+            position: absolute; top: 24%; height: 44%; width: 64px;
+            border-top: 1px solid rgba(163,230,53,0.35); border-bottom: 1px solid rgba(163,230,53,0.35);
+            overflow: hidden;
+            mask-image: linear-gradient(180deg, transparent, #000 20%, #000 80%, transparent);
+        }
+        .hud-tape.left { left: calc(68% - 250px); }
+        .hud-tape.right { left: calc(68% + 186px); }
+        .hud-tape .ticks {
+            position: absolute; left: 0; right: 0; top: -100%; height: 300%;
+            background: repeating-linear-gradient(180deg, transparent 0 23px, rgba(163,230,53,0.5) 23px 24px);
+            animation: tape 6s linear infinite;
+        }
+        .hud-tape.right .ticks { animation-duration: 11s; animation-direction: reverse; }
+        @keyframes tape { to { transform: translateY(33.33%); } }
+        .hud-tape b {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: var(--mono); font-size: 0.8rem; color: #0a0f08; background: var(--accent);
+            padding: 0.1rem 0.4rem; border-radius: 3px; font-weight: 600;
+        }
+        .hud-tape small {
+            position: absolute; top: 4px; left: 0; right: 0; text-align: center;
+            font-family: var(--mono); font-size: 0.6rem; color: var(--accent); letter-spacing: 0.1em;
+        }
+        .hud-corner { width: 34px; height: 34px; border-color: rgba(163,230,53,0.45); border-style: solid; position: absolute; }
+        .hud-corner.tl { top: 88px; left: 22px; border-width: 2px 0 0 2px; }
+        .hud-corner.tr { top: 88px; right: 22px; border-width: 2px 2px 0 0; }
+        .hud-corner.bl { bottom: 22px; left: 22px; border-width: 0 0 2px 2px; }
+        .hud-corner.br { bottom: 22px; right: 22px; border-width: 0 2px 2px 0; }
+        .video-missing {
+            position: absolute; z-index: 1; right: clamp(1rem, 4vw, 2.5rem); bottom: 2.2rem;
+            font-family: var(--mono); font-size: 0.7rem; color: var(--text-faint);
+            display: none;
+        }
+        .hero.no-video .video-missing { display: block; }
+
+        .hero-content { position: relative; z-index: 2; max-width: 680px; }
+        .eyebrow {
+            font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.2em;
+            color: var(--accent); margin-bottom: 1rem; display: block;
+        }
+        .hero h1 {
+            font-family: var(--display); text-transform: uppercase;
+            font-size: clamp(2.5rem, 6.5vw, 4.8rem); line-height: 1; font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .hero h1 span { color: var(--accent); }
+        .hero p { margin-top: 1.25rem; font-size: clamp(1rem, 2vw, 1.15rem); color: #c9d4c5; max-width: 580px; }
+
+        /* Tech stack */
+        .stack { margin-top: 2rem; }
+        .stack-label { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.2em; color: var(--text-faint); margin-bottom: 0.6rem; display: block; }
+        .stack-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .tech {
+            display: inline-flex; align-items: center; gap: 0.55rem;
+            padding: 0.45rem 0.9rem 0.45rem 0.5rem;
+            background: rgba(12, 17, 14, 0.75); border: 1px solid var(--border);
+            border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+            transition: border-color 200ms ease, transform 200ms ease;
+        }
+        .tech:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+        .tech-icon {
+            width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
+            display: grid; place-items: center; background: #fff; overflow: hidden;
+        }
+        .tech-icon img { width: 20px; height: 20px; object-fit: contain; }
+        .tech-icon svg { width: 100%; height: 100%; display: block; }
+
+        /* ===== Flight plan (overview) ===== */
+        .flightplan {
+            max-width: 1100px; margin: 0 auto;
+            padding: 0 clamp(1rem, 4vw, 2.5rem);
+        }
+        .fp-box {
+            border: 1px solid var(--border); border-radius: var(--radius);
+            background: var(--bg-raised); overflow: hidden;
+        }
+        .fp-head {
+            display: flex; justify-content: space-between;
+            padding: 0.6rem 1.1rem; border-bottom: 1px solid var(--border);
+            font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em; color: var(--text-faint);
+        }
+        .fp-row {
+            display: grid; grid-template-columns: 90px minmax(0, 1fr) auto; gap: 1rem; align-items: center;
+            padding: 0.9rem 1.1rem; text-decoration: none; color: var(--text);
+            border-top: 1px solid var(--border);
+            transition: background 200ms ease;
+        }
+        .fp-head + .fp-row { border-top: 0; }
+        .fp-row:hover { background: var(--accent-soft); }
+        .fp-row.sub { padding-left: 2.2rem; grid-template-columns: 68px minmax(0, 1fr) auto; }
+        .fp-wpt { font-family: var(--mono); font-size: 0.75rem; color: var(--magenta); }
+        .fp-name { font-family: var(--display); font-weight: 600; font-size: 1rem; }
+        .fp-row.sub .fp-name { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; color: var(--text-muted); }
+        .fp-tool { font-family: var(--mono); font-size: 0.7rem; color: var(--text-faint); }
+
+        /* ===== Content ===== */
+        main {
+            max-width: 900px; margin: 0 auto;
+            padding: 5rem clamp(1rem, 4vw, 2.5rem) 6rem;
+        }
+        article + article { margin-top: 7rem; }
+        .proj-head { margin-bottom: 2rem; }
+        .proj-tag {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.2em; color: var(--accent);
+        }
+        .proj-tag::before { content: ''; width: 10px; height: 10px; border: 2px solid var(--accent); transform: rotate(45deg); }
+        article h2 {
+            font-family: var(--display); text-transform: uppercase;
+            font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 700;
+            line-height: 1.1; margin-top: 0.5rem;
+        }
+        .section {
+            margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px dashed rgba(163, 230, 53, 0.18);
+        }
+        .section-head { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .wpt {
+            font-family: var(--mono); font-size: 0.7rem; color: var(--magenta);
+            border: 1px solid rgba(232, 121, 249, 0.4); border-radius: 4px; padding: 0.1rem 0.45rem;
+        }
+        article h3 { font-family: var(--display); font-size: 1.4rem; font-weight: 600; }
+        .tool-badge {
+            margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem;
+            font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted);
+        }
+        .tool-badge .tech-icon { width: 22px; height: 22px; }
+        .tool-badge .tech-icon img { width: 16px; height: 16px; }
+        article p { color: #c2cdbf; margin-bottom: 1.1rem; }
+        article p strong { color: #fff; font-weight: 600; }
+        .lede { font-size: 1.12rem; color: #d6dfd3; }
+
+        .equation {
+            background: var(--bg-raised); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.2rem 1.25rem; margin: 1.25rem 0 1.5rem;
+            overflow-x: auto; font-size: 1.05rem; position: relative;
+        }
+        .equation::before, .equation::after {
+            content: ''; position: absolute; width: 10px; height: 10px; border-color: var(--accent); border-style: solid;
+        }
+        .equation::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .equation::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        .equation .katex-display { margin: 0.3rem 0; }
+        .where { list-style: none; display: grid; gap: 0.45rem; margin: 0 0 1.5rem; font-size: 0.92rem; }
+        .where li { color: #b6c2b2; padding: 0.55rem 0.9rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+
+        /* ===== Component video gallery ===== */
+        .vgallery {
+            border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+            background: var(--bg-raised); margin: 1.5rem 0 2rem;
+        }
+        .vtabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--border); }
+        .vtab {
+            appearance: none; background: none; border: 0; cursor: pointer;
+            padding: 0.85rem 0.5rem 0.8rem; color: var(--text-muted);
+            font-family: var(--display); font-size: 0.95rem; font-weight: 600; letter-spacing: 0.04em;
+            border-right: 1px solid var(--border); position: relative;
+            display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+            transition: color 200ms ease, background 200ms ease;
+        }
+        .vtab:last-child { border-right: 0; }
+        .vtab svg { width: 34px; height: 22px; color: currentColor; }
+        .vtab:hover { color: #fff; }
+        .vtab[aria-selected="true"] { color: var(--accent); background: var(--accent-soft); }
+        .vtab[aria-selected="true"]::after {
+            content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent);
+        }
+        .vtab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+        .vstage { position: relative; aspect-ratio: 16 / 9; background: #000; }
+        .vstage video { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .vstage .placeholder {
+            display: none; position: absolute; inset: 0;
+            flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; text-align: center;
+            background: repeating-linear-gradient(45deg, transparent 0 14px, rgba(163,230,53,0.04) 14px 28px);
+            color: var(--text-faint); font-family: var(--mono); font-size: 0.72rem;
+        }
+        .vstage.missing video { display: none; }
+        .vstage.missing .placeholder { display: flex; }
+        .placeholder strong { color: var(--text-muted); font-size: 0.82rem; }
+        .vcaption { padding: 0.8rem 1.1rem; font-size: 0.88rem; color: var(--text-muted); border-top: 1px solid var(--border); }
+        .vcaption b { color: #fff; font-family: var(--display); margin-right: 0.4rem; }
+
+        /* ===== Instrument panels (interactive) ===== */
+        .panel {
+            margin: 1.75rem 0 2.5rem;
+            border: 1px solid var(--border-accent); border-radius: 14px;
+            background: linear-gradient(180deg, #0e150f, var(--bg-raised));
+            overflow: hidden;
+        }
+        .panel-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.7rem 1.1rem; border-bottom: 1px solid var(--border);
+            font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.16em;
+        }
+        .panel-head .t { color: var(--accent); }
+        .panel-head .n { color: var(--text-faint); letter-spacing: 0.05em; }
+        .panel-canvas { position: relative; height: 320px; }
+        .panel-canvas.tall { height: 360px; }
+        .panel-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+        .controls {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1rem 1.5rem; padding: 1.1rem; border-top: 1px solid var(--border);
+        }
+        .ctrl label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+        .ctrl output { font-family: var(--mono); color: #fff; }
+        .ctrl select {
+            width: 100%; padding: 0.45rem 0.6rem; border-radius: 6px;
+            background: var(--bg); color: var(--text); border: 1px solid var(--border);
+            font-family: var(--mono); font-size: 0.8rem;
+        }
+        .ctrl select:focus-visible { outline: 2px solid var(--accent); }
+        input[type=range] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px; border-radius: 3px; transform: rotate(45deg);
+            background: var(--accent); box-shadow: 0 0 10px rgba(163,230,53,0.6); cursor: pointer;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 12px; height: 12px; border-radius: 3px; border: 0;
+            background: var(--accent); cursor: pointer;
+        }
+        input[type=range]:focus-visible { box-shadow: 0 0 0 3px rgba(163,230,53,0.3); }
+        .readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); border-top: 1px solid var(--border); }
+        .readout { padding: 0.75rem 1.1rem; border-right: 1px solid var(--border); }
+        .readout span { display: block; font-size: 0.7rem; color: var(--text-faint); }
+        .readout b { display: block; font-family: var(--mono); font-size: 1.05rem; color: #fff; font-weight: 600; }
+        .readout.hl b { color: var(--accent); }
+        .readout.mg b { color: var(--magenta); }
+
+        /* ===== Figures ===== */
+        figure { margin: 1.5rem 0 2.25rem; }
+        .img-box {
+            position: relative; border-radius: var(--radius); overflow: hidden;
+            background: var(--bg-raised); border: 1px solid var(--border);
+            aspect-ratio: 16 / 9; cursor: zoom-in;
+            transition: border-color 250ms ease, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
+        }
+        .img-box:not(.missing):hover {
+            z-index: 2; transform: translateY(-5px) scale(1.03); border-color: var(--border-accent);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(163,230,53,0.15);
+        }
+        .img-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .img-box.missing { cursor: default; }
+        .img-box.missing img { display: none; }
+        .img-box .placeholder {
+            display: none; position: absolute; inset: 0;
+            flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; text-align: center; padding: 1rem;
+            background: repeating-linear-gradient(45deg, transparent 0 14px, rgba(163,230,53,0.04) 14px 28px);
+            color: var(--text-faint); font-family: var(--mono); font-size: 0.72rem;
+        }
+        .img-box.missing .placeholder { display: flex; }
+        figcaption { margin-top: 0.7rem; font-size: 0.85rem; color: var(--text-faint); display: flex; gap: 0.5rem; }
+        figcaption .fig-no { font-family: var(--mono); color: var(--accent); flex-shrink: 0; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 1.25rem 0 2.25rem; }
+        .grid-2 figure { margin: 0; }
+        .grid-2 .img-box { aspect-ratio: 4 / 3; }
+
+        .compare {
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin: 1.25rem 0 2rem;
+        }
+        .compare-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.35rem;
+        }
+        .compare-card .lvl { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--magenta); }
+        .compare-card b { font-family: var(--display); font-size: 1.05rem; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+        .compare-card span { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; }
+        .compare-card .tech-icon { width: 22px; height: 22px; }
+
+        /* ===== Lightbox ===== */
+        .lightbox {
+            position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); padding: 2rem; cursor: zoom-out;
+        }
+        .lightbox.open { display: flex; animation: lb-fade 200ms ease; }
+        .lightbox img { max-width: 100%; max-height: 88vh; object-fit: contain; border-radius: 10px; animation: lb-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .lightbox-close {
+            position: absolute; top: 1.25rem; right: 1.25rem; width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 1.1rem; cursor: pointer;
+        }
+        .lightbox-caption { position: absolute; bottom: 1.25rem; left: 50%; transform: translateX(-50%); font-size: 0.85rem; color: var(--text-muted); text-align: center; max-width: 90%; }
+        @keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes lb-pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.85rem; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hud-ladder, .hud-tape .ticks { animation: none; }
+        }
+        @media (max-width: 980px) {
+            .hud-reticle, .hud-tape { display: none; }
+        }
+        @media (max-width: 720px) {
+            .nav-status { display: none; }
+            .grid-2, .compare { grid-template-columns: minmax(0, 1fr); }
+            .fp-row, .fp-row.sub { grid-template-columns: 60px minmax(0, 1fr); }
+            .fp-tool { display: none; }
+            .vtab { font-size: 0.75rem; }
+            .vtab svg { width: 26px; }
+            .tool-badge { margin-left: 0; }
+            .panel-canvas, .panel-canvas.tall { height: 260px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+
+    <nav class="topnav">
+        <a href="portfolio.html#expertise-wheel" class="back-link">← Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 01 — APPLIED AERODYNAMICS</div>
+    </nav>
+
+    <header class="hero" id="hero">
+        <!-- Cover video: save as "Syd Website Images/Applied Aerodynamics Page/Cover Video.mp4" -->
+        <video class="hero-video" id="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+            <source src="./Syd%20Website%20Images/Applied%20Aerodynamics%20Page/Cover%20Video.mp4" type="video/mp4">
+        </video>
+
+        <div class="hud" aria-hidden="true">
+            <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+            <svg class="hud-reticle" viewBox="0 0 300 300" fill="none" stroke="#a3e635" stroke-width="1.5">
+                <g class="hud-ladder" opacity="0.7">
+                    <path d="M60 150h70M170 150h70" stroke-width="2"/>
+                    <path d="M85 105h40v6M175 111v-6h40" />
+                    <path d="M85 195h40v-6M175 189v6h40" stroke-dasharray="6 4"/>
+                    <path d="M100 60h30v6M170 66v-6h30" opacity="0.6"/>
+                    <path d="M100 240h30v-6M170 234v6h30" stroke-dasharray="6 4" opacity="0.6"/>
+                    <text x="62" y="109" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">10</text>
+                    <text x="222" y="109" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">10</text>
+                    <text x="62" y="199" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">-10</text>
+                    <text x="222" y="199" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">-10</text>
+                </g>
+                <path d="M128 150h-14M172 150h14M150 128v-10" stroke="#e879f9" stroke-width="2"/>
+                <circle cx="150" cy="150" r="5" stroke="#e879f9" stroke-width="2"/>
+            </svg>
+            <div class="hud-tape left"><div class="ticks"></div><small>KTAS</small><b>447</b></div>
+            <div class="hud-tape right"><div class="ticks"></div><small>FT</small><b>36000</b></div>
+        </div>
+        <div class="video-missing">Add Cover Video.mp4 to Syd Website Images/Applied Aerodynamics Page/</div>
+
+        <div class="hero-content">
+            <span class="eyebrow">APPLIED AERODYNAMICS · FLIGHT LOG</span>
+            <h1>From drag counts<br>to <span>lift lines.</span></h1>
+            <p>Two applied aerodynamics projects: a full performance analysis of the Bombardier CRJ900 regional jet, and a study of how aerofoil and wing geometry shape the lift distribution on the Bushcat light aircraft.</p>
+            <div class="stack">
+                <span class="stack-label">TECH STACK</span>
+                <div class="stack-row">
+                    <span class="tech"><span class="tech-icon"><svg viewBox="0 0 26 26"><rect width="26" height="26" fill="#107c41"/><path d="M8 7.5h3.1l1.9 3.6 1.9-3.6H18l-3.4 5.5 3.6 5.5h-3.2l-2-3.7-2 3.7H7.8l3.6-5.5z" fill="#fff"/></svg></span> Excel</span>
+                    <span class="tech"><span class="tech-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt=""></span> Python</span>
+                    <span class="tech"><span class="tech-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" alt=""></span> MATLAB</span>
+                    <span class="tech"><span class="tech-icon"><svg viewBox="0 0 26 26"><rect width="26" height="26" fill="#1b2a4a"/><path d="M4 9h18l-3 9H7z" fill="none" stroke="#7dd3fc" stroke-width="1.2"/><path d="M8.5 9l-1 9M13 9v9M17.5 9l1 9M5.3 13.5h15.4" stroke="#7dd3fc" stroke-width="0.8"/><path d="M9 11.2h8M9 11.2v-3M17 11.2v-3" stroke="#fbbf24" stroke-width="1.3" fill="none"/></svg></span> Tornado VLM</span>
+                    <span class="tech"><span class="tech-icon"><svg viewBox="0 0 26 26"><rect width="26" height="26" fill="#f1f5f9"/><path d="M3 14c3-5 10-6.5 20-1.2C14 15.5 7 16 3 14z" fill="#2563eb"/><path d="M7 11V7.5M11 9.6V6M15 9.8V6.5M19 11V8.5" stroke="#dc2626" stroke-width="1.2" stroke-linecap="round"/></svg></span> XFLR5</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="flightplan" aria-label="Project overview">
+        <div class="fp-box">
+            <div class="fp-head"><span>FLIGHT PLAN</span><span>2 PROJECTS · 4 LEGS</span></div>
+            <a class="fp-row" href="#crj900"><span class="fp-wpt">WPT 01</span><span class="fp-name">CRJ900 aerodynamic performance</span><span class="fp-tool">EXCEL · PYTHON</span></a>
+            <a class="fp-row sub" href="#crj-drag"><span class="fp-wpt">01.A</span><span class="fp-name">Component drag build-up</span><span class="fp-tool">EXCEL</span></a>
+            <a class="fp-row sub" href="#crj-thrust"><span class="fp-wpt">01.B</span><span class="fp-name">Thrust curves, 0 to 36,000 ft</span><span class="fp-tool">PYTHON</span></a>
+            <a class="fp-row sub" href="#crj-turn"><span class="fp-wpt">01.C</span><span class="fp-name">Turn performance and E-M chart</span><span class="fp-tool">EXCEL</span></a>
+            <a class="fp-row" href="#bushcat"><span class="fp-wpt">WPT 02</span><span class="fp-name">Bushcat lift distribution study</span><span class="fp-tool">MATLAB · TORNADO · XFLR5</span></a>
+        </div>
+    </section>
+
+    <main>
+        <!-- ================= PROJECT 1: CRJ900 ================= -->
+        <article id="crj900">
+            <div class="proj-head">
+                <span class="proj-tag">PROJECT 01</span>
+                <h2>Aerodynamic performance of the Bombardier CRJ900</h2>
+            </div>
+            <p class="lede">A complete performance picture of a regional jet, built up from first principles: how much drag every part of the aircraft creates, how much thrust the engines can deliver as the aircraft climbs, and how tightly it can turn.</p>
+
+            <!-- 01.A Drag -->
+            <section class="section" id="crj-drag">
+                <div class="section-head">
+                    <span class="wpt">01.A</span>
+                    <h3>Component drag build-up</h3>
+                </div>
+                <p>Rather than treating the aircraft as one shape, the zero-lift drag was computed <strong>component by component</strong>: fuselage, wings, empennage and landing gear. Each part's skin friction is scaled by a form factor for its shape and an interference factor for how it sits next to other parts, then everything is summed against the wing reference area.</p>
+                <div class="equation">
+                    $$C_{D_0} = \frac{\sum_{c} C_{f,c}\, FF_c\, Q_c\, S_{\text{wet},c}}{S_{\text{ref}}} + C_{D_{\text{misc}}}$$
+                </div>
+                <ul class="where">
+                    <li>\(C_{f,c}\): flat-plate skin-friction coefficient of the component, from its Reynolds number and Mach number.</li>
+                    <li>\(FF_c\): form factor, which accounts for pressure drag due to thickness (fineness ratio for bodies, \(t/c\) and sweep for lifting surfaces).</li>
+                    <li>\(Q_c\): interference factor between the component and its neighbours.</li>
+                    <li>\(C_{D_{\text{misc}}}\): items that don't fit the build-up, such as the landing gear and upsweep.</li>
+                </ul>
+
+                <div class="vgallery" id="drag-gallery">
+                    <div class="vtabs" role="tablist" aria-label="Aircraft component">
+                        <button class="vtab" role="tab" aria-selected="true" data-video="Drag Fuselage" data-caption="Fuselage: the largest wetted area on the aircraft, so skin friction dominates its contribution.">
+                            <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 11c0-2.5 3-4 7-4h17c3 0 6 2 6 4s-3 4-6 4H9c-4 0-7-1.5-7-4z"/><path d="M8 9.5h2M12 9.5h2M16 9.5h2M20 9.5h2" stroke-linecap="round"/></svg>
+                            Fuselage
+                        </button>
+                        <button class="vtab" role="tab" aria-selected="false" data-video="Drag Wings" data-caption="Wings: drag from skin friction and thickness, corrected for sweep and the local Mach number.">
+                            <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4h6l12 14H26L17 10 8 18H2z" stroke-linejoin="round"/></svg>
+                            Wings
+                        </button>
+                        <button class="vtab" role="tab" aria-selected="false" data-video="Drag Empennage" data-caption="Empennage: the T-tail's horizontal and vertical stabilisers, treated as lifting surfaces.">
+                            <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 20l3-14h3l-1 14zM8 6h18" stroke-linejoin="round"/></svg>
+                            Empennage
+                        </button>
+                        <button class="vtab" role="tab" aria-selected="false" data-video="Drag Landing Gear" data-caption="Landing gear: a bluff-body drag increment that only applies with the gear extended.">
+                            <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 2v10M12 12h10"/><circle cx="12" cy="16" r="4"/><circle cx="22" cy="16" r="4"/></svg>
+                            Landing Gear
+                        </button>
+                    </div>
+                    <div class="vstage">
+                        <video id="drag-video" muted loop playsinline controls preload="metadata"></video>
+                        <div class="placeholder"><strong id="drag-missing-name">Drag Fuselage.mp4</strong>Add to Syd Website Images/Applied Aerodynamics Page/</div>
+                    </div>
+                    <div class="vcaption" id="drag-caption"></div>
+                </div>
+            </section>
+
+            <!-- 01.B Thrust -->
+            <section class="section" id="crj-thrust">
+                <div class="section-head">
+                    <span class="wpt">01.B</span>
+                    <h3>Thrust analysis from sea level to 36,000 ft</h3>
+                    <span class="tool-badge"><span class="tech-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt=""></span>PYTHON</span>
+                </div>
+                <p>A turbofan's thrust falls as the aircraft climbs because the air gets thinner. I wrote a Python model of the CRJ900's engines to produce <strong>thrust curves at altitudes from 0 to 36,000 ft</strong>, using the International Standard Atmosphere to get the air properties at each altitude.</p>
+                <p>The core of the model is the thrust lapse, which scales sea-level static thrust by the density ratio \(\sigma = \rho/\rho_0\):</p>
+                <div class="equation">
+                    $$\frac{T}{T_0} = \sigma^{\,m}, \qquad \sigma = \frac{\rho(h)}{\rho_0}$$
+                </div>
+                <p>The exponent \(m\) depends on the engine type and its bypass ratio. In the troposphere, density follows the ISA lapse rate up to 36,089 ft, which is why 36,000 ft is a natural ceiling for the analysis.</p>
+
+                <div class="panel" id="lapse-panel">
+                    <div class="panel-head"><span class="t">THRUST LAPSE · ISA</span><span class="n">Explainer: σ^m model, not the project's engine data</span></div>
+                    <div class="panel-canvas"><canvas id="lapse-canvas" role="img" aria-label="Thrust ratio falling with altitude from 1 at sea level, for the chosen lapse exponent"></canvas></div>
+                    <div class="controls">
+                        <div class="ctrl">
+                            <label for="lapse-h">Altitude <output id="lapse-h-out">20,000 ft</output></label>
+                            <input type="range" id="lapse-h" min="0" max="36000" step="500" value="20000">
+                        </div>
+                        <div class="ctrl">
+                            <label for="lapse-m">Lapse exponent m <output id="lapse-m-out">0.80</output></label>
+                            <input type="range" id="lapse-m" min="0.5" max="1.2" step="0.05" value="0.8">
+                        </div>
+                    </div>
+                    <div class="readouts">
+                        <div class="readout"><span>Temperature</span><b id="lapse-t">–</b></div>
+                        <div class="readout"><span>Density</span><b id="lapse-rho">–</b></div>
+                        <div class="readout"><span>Density ratio σ</span><b id="lapse-sigma">–</b></div>
+                        <div class="readout hl"><span>Thrust ratio T/T₀</span><b id="lapse-tr">–</b></div>
+                    </div>
+                </div>
+
+                <figure>
+                    <div class="img-box" data-img="Thrust Curves"><img alt="CRJ900 thrust curves at altitudes from 0 to 36,000 ft"></div>
+                    <figcaption><span class="fig-no">FIG 1.1</span> CRJ900 thrust curves from 0 to 36,000 ft, generated in Python.</figcaption>
+                </figure>
+            </section>
+
+            <!-- 01.C Turn -->
+            <section class="section" id="crj-turn">
+                <div class="section-head">
+                    <span class="wpt">01.C</span>
+                    <h3>Turn performance: the energy-manoeuvrability chart</h3>
+                    <span class="tool-badge"><span class="tech-icon"><svg viewBox="0 0 26 26"><rect width="26" height="26" fill="#107c41"/><path d="M8 7.5h3.1l1.9 3.6 1.9-3.6H18l-3.4 5.5 3.6 5.5h-3.2l-2-3.7-2 3.7H7.8l3.6-5.5z" fill="#fff"/></svg></span>EXCEL</span>
+                </div>
+                <p>An energy-manoeuvrability (E-M) chart shows on one plot how fast an aircraft can turn at every airspeed. I built the CRJ900's E-M chart in Excel. It is bounded by two limits: at low speed the wing runs out of lift (the stall boundary), and at high speed the structure runs out of strength (the limit load factor). Where the two meet is the <strong>corner speed</strong>, which gives the fastest possible turn.</p>
+                <div class="equation">
+                    $$\omega = \frac{g\sqrt{n^2-1}}{V}, \qquad R = \frac{V^2}{g\sqrt{n^2-1}}, \qquad n_{\text{stall}} = \frac{\tfrac{1}{2}\rho V^2 S\, C_{L_{\max}}}{W}$$
+                </div>
+
+                <div class="panel" id="em-panel">
+                    <div class="panel-head"><span class="t">E-M DIAGRAM</span><span class="n">Explainer: turn kinematics with lift and load limits</span></div>
+                    <div class="panel-canvas tall"><canvas id="em-canvas" role="img" aria-label="Turn rate against airspeed with load-factor lines, turn-radius lines, the stall boundary and the corner speed"></canvas></div>
+                    <div class="controls">
+                        <div class="ctrl">
+                            <label for="em-h">Altitude <output id="em-h-out">10,000 ft</output></label>
+                            <input type="range" id="em-h" min="0" max="36000" step="1000" value="10000">
+                        </div>
+                        <div class="ctrl">
+                            <label for="em-ws">Wing loading W/S <output id="em-ws-out">500 kg/m²</output></label>
+                            <input type="range" id="em-ws" min="300" max="650" step="10" value="500">
+                        </div>
+                        <div class="ctrl">
+                            <label for="em-cl">C<sub>L,max</sub> <output id="em-cl-out">1.50</output></label>
+                            <input type="range" id="em-cl" min="1" max="2.4" step="0.05" value="1.5">
+                        </div>
+                        <div class="ctrl">
+                            <label for="em-n">Limit load factor <output id="em-n-out">2.5 g</output></label>
+                            <input type="range" id="em-n" min="1.5" max="4" step="0.1" value="2.5">
+                        </div>
+                    </div>
+                    <div class="readouts">
+                        <div class="readout"><span>1 g stall speed</span><b id="em-vs">–</b></div>
+                        <div class="readout mg"><span>Corner speed</span><b id="em-vc">–</b></div>
+                        <div class="readout hl"><span>Max turn rate</span><b id="em-wmax">–</b></div>
+                        <div class="readout"><span>Radius at corner</span><b id="em-r">–</b></div>
+                    </div>
+                </div>
+
+                <figure>
+                    <div class="img-box" data-img="EM Chart"><img alt="CRJ900 energy-manoeuvrability chart built in Excel"></div>
+                    <figcaption><span class="fig-no">FIG 1.2</span> CRJ900 energy-manoeuvrability chart, built in Excel.</figcaption>
+                </figure>
+            </section>
+        </article>
+
+        <!-- ================= PROJECT 2: BUSHCAT ================= -->
+        <article id="bushcat">
+            <div class="proj-head">
+                <span class="proj-tag">PROJECT 02</span>
+                <h2>Lift distribution on the Bushcat light aircraft</h2>
+            </div>
+            <p class="lede">How does the choice of aerofoil and the shape of the wing change how lift is spread across the span? This project varied both on the Bushcat light-sport aircraft and compared <strong>Prandtl's lifting-line theory</strong> against higher-fidelity vortex lattice and panel methods.</p>
+
+            <section class="section" id="bushcat-theory">
+                <div class="section-head">
+                    <span class="wpt">02.A</span>
+                    <h3>Prandtl's lifting-line theory</h3>
+                    <span class="tool-badge"><span class="tech-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" alt=""></span>MATLAB</span>
+                </div>
+                <p>Lifting-line theory models the wing as a single bound vortex along the span, shedding a sheet of trailing vortices. The circulation is written as a Fourier sine series, and the coefficients are found by enforcing the <strong>monoplane equation</strong> at stations across the span:</p>
+                <div class="equation">
+                    $$\alpha(\theta) - \alpha_{L=0}(\theta) = \sum_{n=1}^{N} A_n \sin n\theta \left(\frac{4b}{a_0\, c(\theta)} + \frac{n}{\sin\theta}\right)$$
+                </div>
+                <p>From the coefficients come the lift, the induced drag and the span efficiency factor \(e\), which measures how close the loading is to the ideal elliptical one:</p>
+                <div class="equation">
+                    $$C_L = \pi\, AR\, A_1, \qquad C_{D_i} = \pi\, AR \sum_{n} n A_n^2 = \frac{C_L^2}{\pi\, e\, AR}$$
+                </div>
+                <p>The aerofoil enters through its lift-curve slope \(a_0\) and zero-lift angle \(\alpha_{L=0}\). The wing geometry enters through the chord distribution \(c(\theta)\) (taper and aspect ratio) and through twist in \(\alpha(\theta)\).</p>
+
+                <div class="panel" id="llt-panel">
+                    <div class="panel-head"><span class="t">LIFTING-LINE SOLVER</span><span class="n">Live solution of the monoplane equation · N = 40</span></div>
+                    <div class="panel-canvas tall"><canvas id="llt-canvas" role="img" aria-label="Spanwise lift distribution compared with the elliptical distribution, with the wing planform drawn above"></canvas></div>
+                    <div class="controls">
+                        <div class="ctrl">
+                            <label for="llt-foil">Aerofoil</label>
+                            <select id="llt-foil">
+                                <option value="0">NACA 0012 · symmetric</option>
+                                <option value="-2.08" selected>NACA 2412 · 2% camber</option>
+                                <option value="-4.15">NACA 4412 · 4% camber</option>
+                                <option value="-6.23">NACA 6412 · 6% camber</option>
+                            </select>
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-ar">Aspect ratio <output id="llt-ar-out">7.0</output></label>
+                            <input type="range" id="llt-ar" min="4" max="14" step="0.5" value="7">
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-taper">Taper ratio λ <output id="llt-taper-out">1.00</output></label>
+                            <input type="range" id="llt-taper" min="0.2" max="1" step="0.05" value="1">
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-twist">Washout (tip twist) <output id="llt-twist-out">0.0°</output></label>
+                            <input type="range" id="llt-twist" min="0" max="6" step="0.5" value="0">
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-alpha">Root angle of attack <output id="llt-alpha-out">5.0°</output></label>
+                            <input type="range" id="llt-alpha" min="-2" max="12" step="0.5" value="5">
+                        </div>
+                    </div>
+                    <div class="readouts">
+                        <div class="readout hl"><span>Lift coefficient C<sub>L</sub></span><b id="llt-cl">–</b></div>
+                        <div class="readout"><span>Induced drag C<sub>Di</sub></span><b id="llt-cdi">–</b></div>
+                        <div class="readout mg"><span>Span efficiency e</span><b id="llt-e">–</b></div>
+                        <div class="readout"><span>Peak c<sub>l</sub>/C<sub>L</sub> at</span><b id="llt-peak">–</b></div>
+                    </div>
+                </div>
+                <p>The "peak \(c_l/C_L\)" readout shows where along the span the section lift coefficient is highest, which is roughly where the wing will stall first. A rectangular wing peaks at the root, which is benign. Strong taper pushes the peak towards the tip, which is why tapered wings usually need washout.</p>
+            </section>
+
+            <section class="section" id="bushcat-fidelity">
+                <div class="section-head">
+                    <span class="wpt">02.B</span>
+                    <h3>Comparing against higher-fidelity methods</h3>
+                </div>
+                <p>Lifting-line theory is fast but assumes a straight, high-aspect-ratio wing. To check how far it can be trusted on the Bushcat's geometry, the same configurations were modelled with methods that make fewer assumptions:</p>
+                <div class="compare">
+                    <div class="compare-card">
+                        <span class="lvl">FIDELITY · LOW</span>
+                        <b><span class="tech-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" alt=""></span> Lifting line</b>
+                        <span>Prandtl's single bound vortex, solved in MATLAB. Captures the spanwise loading from aspect ratio, taper and twist.</span>
+                    </div>
+                    <div class="compare-card">
+                        <span class="lvl">FIDELITY · MEDIUM</span>
+                        <b><span class="tech-icon"><svg viewBox="0 0 26 26"><rect width="26" height="26" fill="#1b2a4a"/><path d="M4 9h18l-3 9H7z" fill="none" stroke="#7dd3fc" stroke-width="1.2"/><path d="M8.5 9l-1 9M13 9v9M17.5 9l1 9M5.3 13.5h15.4" stroke="#7dd3fc" stroke-width="0.8"/><path d="M9 11.2h8M9 11.2v-3M17 11.2v-3" stroke="#fbbf24" stroke-width="1.3" fill="none"/></svg></span> Tornado VLM</b>
+                        <span>A vortex lattice of horseshoe vortices across span and chord, so chordwise loading, sweep and low aspect ratio are handled.</span>
+                    </div>
+                    <div class="compare-card">
+                        <span class="lvl">FIDELITY · HIGHER</span>
+                        <b><span class="tech-icon"><svg viewBox="0 0 26 26"><rect width="26" height="26" fill="#f1f5f9"/><path d="M3 14c3-5 10-6.5 20-1.2C14 15.5 7 16 3 14z" fill="#2563eb"/><path d="M7 11V7.5M11 9.6V6M15 9.8V6.5M19 11V8.5" stroke="#dc2626" stroke-width="1.2" stroke-linecap="round"/></svg></span> XFLR5</b>
+                        <span>Viscous aerofoil polars from XFoil combined with 3D panel and VLM analysis, so the real aerofoil shape and viscous effects are included.</span>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <figure>
+                        <div class="img-box" data-img="Bushcat Model"><img alt="Bushcat wing model"></div>
+                        <figcaption><span class="fig-no">FIG 2.1</span> Bushcat wing model.</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="img-box" data-img="Aerofoil Comparison"><img alt="Comparison of aerofoil shapes"></div>
+                        <figcaption><span class="fig-no">FIG 2.2</span> Aerofoil shapes compared.</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="img-box" data-img="XFLR5 Results"><img alt="XFLR5 lift distribution results"></div>
+                        <figcaption><span class="fig-no">FIG 2.3</span> XFLR5 analysis.</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="img-box" data-img="Lift Distribution Comparison"><img alt="Lift distribution: lifting-line theory compared with higher-fidelity results"></div>
+                        <figcaption><span class="fig-no">FIG 2.4</span> Lift distribution: lifting-line theory compared with the higher-fidelity methods.</figcaption>
+                    </figure>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <footer>© 2026 Gopolang Makgothi · Aerospace Engineer</footer>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" aria-label="Close">✕</button>
+        <img alt="">
+        <div class="lightbox-caption"></div>
+    </div>
+
+    <script>
+        const MEDIA_DIR = './Syd%20Website%20Images/Applied%20Aerodynamics%20Page/';
+        const DEG = Math.PI / 180;
+        const MONO = '"JetBrains Mono", monospace';
+        const ACCENT = '#a3e635', MAGENTA = '#e879f9', FAINT = '#66735f';
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function fitCanvas(canvas) {
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.clientWidth, h = canvas.clientHeight;
+            if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+                canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, w, h);
+            return { ctx, w, h };
+        }
+
+        // Shared axes: returns {X, Y} mapping data to pixels
+        function axes(ctx, w, h, o) {
+            const pad = { l: o.padL || 54, r: 18, t: o.padT || 22, b: 40 };
+            const X = x => pad.l + (x - o.x0) / (o.x1 - o.x0) * (w - pad.l - pad.r);
+            const Y = y => h - pad.b - (y - o.y0) / (o.y1 - o.y0) * (h - pad.t - pad.b);
+            ctx.font = `10px ${MONO}`; ctx.lineWidth = 1;
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            for (let y = o.y0; y <= o.y1 + 1e-9; y += o.dy) {
+                ctx.strokeStyle = Math.abs(y) < 1e-9 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.06)';
+                ctx.beginPath(); ctx.moveTo(pad.l, Y(y)); ctx.lineTo(w - pad.r, Y(y)); ctx.stroke();
+                ctx.fillStyle = FAINT; ctx.fillText(o.fy ? o.fy(y) : +y.toFixed(2), pad.l - 8, Y(y));
+            }
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            for (let x = o.x0; x <= o.x1 + 1e-9; x += o.dx) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.beginPath(); ctx.moveTo(X(x), pad.t); ctx.lineTo(X(x), h - pad.b); ctx.stroke();
+                ctx.fillStyle = FAINT; ctx.fillText(o.fx ? o.fx(x) : +x.toFixed(2), X(x), h - pad.b + 7);
+            }
+            ctx.fillText(o.xLabel, (pad.l + w - pad.r) / 2, h - 15);
+            ctx.save(); ctx.translate(12, (pad.t + h - pad.b) / 2); ctx.rotate(-Math.PI / 2);
+            ctx.fillText(o.yLabel, 0, 0); ctx.restore();
+            return { X, Y, pad };
+        }
+
+        // ===== ISA troposphere (valid to 36,089 ft) =====
+        function isa(hFt) {
+            const h = hFt * 0.3048, T = 288.15 - 0.0065 * h;
+            const p = 101325 * Math.pow(T / 288.15, 5.25588);
+            return { T, p, rho: p / (287.05 * T), a: Math.sqrt(1.4 * 287.05 * T) };
+        }
+
+        // ===== Hero video: show a hint when the file hasn't been added yet =====
+        const hero = document.getElementById('hero');
+        const heroVideo = document.getElementById('hero-video');
+        heroVideo.querySelector('source').addEventListener('error', () => {
+            heroVideo.remove();
+            hero.classList.add('no-video');
+        });
+        if (reduceMotion) { heroVideo.removeAttribute('autoplay'); heroVideo.pause(); }
+
+        // ===== Drag component video gallery =====
+        (function dragGallery() {
+            const tabs = [...document.querySelectorAll('#drag-gallery .vtab')];
+            const stage = document.querySelector('#drag-gallery .vstage');
+            const video = document.getElementById('drag-video');
+            const caption = document.getElementById('drag-caption');
+            const missingName = document.getElementById('drag-missing-name');
+            const EXT = ['mp4', 'webm', 'mov'];
+            let attempt = 0, current = null;
+
+            const tryLoad = () => {
+                if (attempt >= EXT.length) { stage.classList.add('missing'); return; }
+                video.src = MEDIA_DIR + encodeURIComponent(current) + '.' + EXT[attempt++];
+            };
+            video.addEventListener('error', tryLoad);
+            video.addEventListener('loadeddata', () => {
+                stage.classList.remove('missing');
+                if (!reduceMotion) video.play().catch(() => {});
+            });
+
+            function select(tab) {
+                tabs.forEach(t => t.setAttribute('aria-selected', t === tab));
+                current = tab.dataset.video;
+                caption.innerHTML = '<b>' + tab.textContent.trim() + '</b>' + tab.dataset.caption.replace(/^[^:]+:\s*/, '');
+                missingName.textContent = current + '.mp4';
+                stage.classList.remove('missing');
+                attempt = 0;
+                tryLoad();
+            }
+            tabs.forEach((t, i) => {
+                t.addEventListener('click', () => select(t));
+                t.addEventListener('keydown', e => {
+                    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+                    if (!d) return;
+                    const next = tabs[(i + d + tabs.length) % tabs.length];
+                    next.focus(); select(next);
+                });
+            });
+            select(tabs[0]);
+        })();
+
+        // ===== Thrust lapse panel =====
+        (function lapsePanel() {
+            const canvas = document.getElementById('lapse-canvas');
+            const inH = document.getElementById('lapse-h'), inM = document.getElementById('lapse-m');
+            const $ = id => document.getElementById(id);
+            const rho0 = isa(0).rho;
+
+            function update() {
+                const hNow = +inH.value, m = +inM.value;
+                $('lapse-h-out').textContent = hNow.toLocaleString('en-US') + ' ft';
+                $('lapse-m-out').textContent = m.toFixed(2);
+                const s = isa(hNow), sigma = s.rho / rho0;
+                $('lapse-t').textContent = (s.T - 273.15).toFixed(1) + ' °C';
+                $('lapse-rho').textContent = s.rho.toFixed(3) + ' kg/m³';
+                $('lapse-sigma').textContent = sigma.toFixed(3);
+                $('lapse-tr').textContent = (Math.pow(sigma, m) * 100).toFixed(1) + '%';
+
+                const { ctx, w, h } = fitCanvas(canvas);
+                const { X, Y } = axes(ctx, w, h, {
+                    x0: 0, x1: 36000, dx: 6000, y0: 0, y1: 1, dy: 0.2,
+                    xLabel: 'Altitude (ft)', yLabel: 'T / T₀',
+                    fx: x => (x / 1000) + 'k', fy: y => y.toFixed(1)
+                });
+                const trace = (mm, color, width, dash) => {
+                    ctx.beginPath();
+                    for (let i = 0; i <= 120; i++) {
+                        const hh = 36000 * i / 120, v = Math.pow(isa(hh).rho / rho0, mm);
+                        i ? ctx.lineTo(X(hh), Y(v)) : ctx.moveTo(X(hh), Y(v));
+                    }
+                    ctx.setLineDash(dash || []); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke(); ctx.setLineDash([]);
+                };
+                // Density ratio itself for reference
+                trace(1, 'rgba(255,255,255,0.3)', 1.2, [5, 4]);
+                ctx.shadowColor = 'rgba(163,230,53,0.6)'; ctx.shadowBlur = 8;
+                trace(m, ACCENT, 2.5);
+                ctx.shadowBlur = 0;
+
+                const v = Math.pow(sigma, m);
+                ctx.strokeStyle = 'rgba(232,121,249,0.6)'; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(X(hNow), Y(0)); ctx.lineTo(X(hNow), Y(v)); ctx.lineTo(X(0), Y(v)); ctx.stroke(); ctx.setLineDash([]);
+                ctx.beginPath(); ctx.arc(X(hNow), Y(v), 5, 0, Math.PI * 2); ctx.fillStyle = MAGENTA; ctx.fill();
+
+                ctx.font = `600 11px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+                ctx.fillStyle = ACCENT; ctx.fillText(`σ^${m.toFixed(2)}`, w - 24, 28);
+                ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillText('σ (density ratio)', w - 24, 44);
+            }
+            [inH, inM].forEach(el => el.addEventListener('input', update));
+            window.addEventListener('resize', update);
+            update();
+        })();
+
+        // ===== E-M diagram panel =====
+        (function emPanel() {
+            const canvas = document.getElementById('em-canvas');
+            const ins = ['em-h', 'em-ws', 'em-cl', 'em-n'].map(id => document.getElementById(id));
+            const $ = id => document.getElementById(id);
+            const g = 9.80665, KT = 0.514444;
+
+            function update() {
+                const [hFt, ws, clmax, nlim] = ins.map(i => +i.value);
+                $('em-h-out').textContent = hFt.toLocaleString('en-US') + ' ft';
+                $('em-ws-out').textContent = ws + ' kg/m²';
+                $('em-cl-out').textContent = clmax.toFixed(2);
+                $('em-n-out').textContent = nlim.toFixed(1) + ' g';
+
+                const rho = isa(hFt).rho, W_S = ws * g;
+                const nStall = V => 0.5 * rho * V * V * clmax / W_S;
+                const Vs = Math.sqrt(2 * W_S / (rho * clmax));
+                const Vc = Vs * Math.sqrt(nlim);
+                const omega = (n, V) => g * Math.sqrt(Math.max(n * n - 1, 0)) / V;
+                const wMax = omega(nlim, Vc) / DEG;
+                $('em-vs').textContent = (Vs / KT).toFixed(0) + ' KTAS';
+                $('em-vc').textContent = (Vc / KT).toFixed(0) + ' KTAS';
+                $('em-wmax').textContent = wMax.toFixed(1) + ' °/s';
+                $('em-r').textContent = (Vc * Vc / (g * Math.sqrt(nlim * nlim - 1)) / 1000).toFixed(2) + ' km';
+
+                const vMin = 80, vMax = 500;
+                const yMax = Math.max(6, Math.ceil(wMax * 1.25 / 2) * 2);
+                const { ctx, w, h, } = fitCanvas(canvas);
+                const { X, Y, pad } = axes(ctx, w, h, {
+                    x0: vMin, x1: vMax, dx: 60, y0: 0, y1: yMax, dy: yMax / 6,
+                    xLabel: 'True airspeed (kt)', yLabel: 'Turn rate (°/s)',
+                    fy: y => y.toFixed(yMax / 6 < 1 ? 1 : 0)
+                });
+                ctx.save();
+                ctx.beginPath(); ctx.rect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b); ctx.clip();
+
+                const plot = (fn, color, width, dash) => {
+                    ctx.beginPath(); let started = false;
+                    for (let i = 0; i <= 200; i++) {
+                        const kt = vMin + (vMax - vMin) * i / 200, y = fn(kt * KT);
+                        if (y === null || !isFinite(y)) { started = false; continue; }
+                        started ? ctx.lineTo(X(kt), Y(y)) : ctx.moveTo(X(kt), Y(y));
+                        started = true;
+                    }
+                    ctx.setLineDash(dash || []); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke(); ctx.setLineDash([]);
+                };
+
+                // Constant load-factor and constant-radius reference lines
+                ctx.font = `10px ${MONO}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+                [1.2, 1.5, 2, 3, 4].forEach(n => {
+                    plot(V => omega(n, V) / DEG, 'rgba(255,255,255,0.13)', 1);
+                    const kt = vMax - 30, y = omega(n, kt * KT) / DEG;
+                    if (y < yMax) { ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText(n + 'g', X(kt), Y(y) - 2); }
+                });
+                [500, 1000, 2000, 5000].forEach(R => {
+                    plot(V => V / R / DEG, 'rgba(163,230,53,0.14)', 1, [3, 4]);
+                    const kt = Math.min(vMax - 10, (yMax * 0.92 * DEG * R) / KT);
+                    if (kt > vMin) { ctx.fillStyle = 'rgba(163,230,53,0.45)'; ctx.fillText((R >= 1000 ? R / 1000 + ' km' : R + ' m'), X(kt) - 34, Y(kt * KT / R / DEG) - 2); }
+                });
+
+                // Envelope: stall boundary up to corner speed, then the structural limit
+                const env = V => {
+                    if (V < Vs) return null;
+                    const n = Math.min(nStall(V), nlim);
+                    return omega(n, V) / DEG;
+                };
+                ctx.beginPath(); let first = true;
+                for (let i = 0; i <= 300; i++) {
+                    const kt = vMin + (vMax - vMin) * i / 300, y = env(kt * KT);
+                    if (y === null) continue;
+                    first ? ctx.moveTo(X(kt), Y(y)) : ctx.lineTo(X(kt), Y(y)); first = false;
+                }
+                ctx.lineTo(X(vMax), Y(0)); ctx.lineTo(X(Math.max(vMin, Vs / KT)), Y(0)); ctx.closePath();
+                ctx.fillStyle = 'rgba(163,230,53,0.07)'; ctx.fill();
+                ctx.shadowColor = 'rgba(163,230,53,0.6)'; ctx.shadowBlur = 8;
+                plot(V => (V < Vs || nStall(V) > nlim) ? null : omega(nStall(V), V) / DEG, ACCENT, 2.5);
+                plot(V => V < Vc ? null : omega(nlim, V) / DEG, '#f87171', 2.5);
+                ctx.shadowBlur = 0;
+                ctx.restore();
+
+                // Corner point
+                const cx = X(Vc / KT), cy = Y(wMax);
+                if (Vc / KT <= vMax) {
+                    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fillStyle = MAGENTA; ctx.fill();
+                    ctx.font = `600 11px ${MONO}`; ctx.fillStyle = MAGENTA; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+                    ctx.fillText('corner speed', cx + 10, cy - 6);
+                }
+                ctx.font = `600 11px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+                ctx.fillStyle = ACCENT; ctx.fillText('stall boundary', w - 24, 28);
+                ctx.fillStyle = '#f87171'; ctx.fillText('structural limit', w - 24, 44);
+            }
+            ins.forEach(el => el.addEventListener('input', update));
+            window.addEventListener('resize', update);
+            update();
+        })();
+
+        // ===== Lifting-line solver =====
+        function solveLLT({ AR, taper, washout, alphaRoot, alphaL0, a0 = 2 * Math.PI, N = 40 }) {
+            // Half-span stations theta in (0, pi/2]; symmetric loading uses odd harmonics only.
+            const b = 2, cBar = b / AR, cRoot = 2 * cBar / (1 + taper);
+            const chord = eta => cRoot * (1 - (1 - taper) * Math.abs(eta));
+            const alphaAt = eta => (alphaRoot - washout * Math.abs(eta)) * DEG;
+            const ns = Array.from({ length: N }, (_, j) => 2 * j + 1);
+            const A = [], rhs = [];
+            for (let i = 0; i < N; i++) {
+                const th = (i + 1) * Math.PI / (2 * N), eta = Math.cos(th), c = chord(eta);
+                A.push(ns.map(n => Math.sin(n * th) * (4 * b / (a0 * c) + n / Math.sin(th))));
+                rhs.push(alphaAt(eta) - alphaL0 * DEG);
+            }
+            // Gaussian elimination with partial pivoting
+            for (let k = 0; k < N; k++) {
+                let p = k;
+                for (let r = k + 1; r < N; r++) if (Math.abs(A[r][k]) > Math.abs(A[p][k])) p = r;
+                [A[k], A[p]] = [A[p], A[k]]; [rhs[k], rhs[p]] = [rhs[p], rhs[k]];
+                for (let r = k + 1; r < N; r++) {
+                    const f = A[r][k] / A[k][k];
+                    for (let cc = k; cc < N; cc++) A[r][cc] -= f * A[k][cc];
+                    rhs[r] -= f * rhs[k];
+                }
+            }
+            const An = new Array(N);
+            for (let k = N - 1; k >= 0; k--) {
+                let s = rhs[k];
+                for (let cc = k + 1; cc < N; cc++) s -= A[k][cc] * An[cc];
+                An[k] = s / A[k][k];
+            }
+            const CL = Math.PI * AR * An[0];
+            const sumN = ns.reduce((s, n, j) => s + n * An[j] * An[j], 0);
+            const CDi = Math.PI * AR * sumN;
+            // Section loading c*cl = 4b * sum A_n sin(n theta)
+            const loading = eta => {
+                const th = Math.acos(Math.max(-1, Math.min(1, eta)));
+                return 4 * b * ns.reduce((s, n, j) => s + An[j] * Math.sin(n * th), 0);
+            };
+            return { CL, CDi, e: An[0] * An[0] / sumN, loading, chord, cBar, cRoot };
+        }
+
+        (function lltPanel() {
+            const canvas = document.getElementById('llt-canvas');
+            const foil = document.getElementById('llt-foil');
+            const ids = ['llt-ar', 'llt-taper', 'llt-twist', 'llt-alpha'];
+            const ins = ids.map(id => document.getElementById(id));
+            const $ = id => document.getElementById(id);
+
+            function update() {
+                const [AR, taper, washout, alphaRoot] = ins.map(i => +i.value);
+                $('llt-ar-out').textContent = AR.toFixed(1);
+                $('llt-taper-out').textContent = taper.toFixed(2);
+                $('llt-twist-out').textContent = washout.toFixed(1) + '°';
+                $('llt-alpha-out').textContent = alphaRoot.toFixed(1) + '°';
+                const r = solveLLT({ AR, taper, washout, alphaRoot, alphaL0: +foil.value });
+
+                $('llt-cl').textContent = r.CL.toFixed(3);
+                $('llt-cdi').textContent = r.CDi.toFixed(4);
+                $('llt-e').textContent = r.e.toFixed(3);
+
+                const { ctx, w, h } = fitCanvas(canvas);
+                const planH = 70;
+                const sign = r.CL >= 0 ? 1 : -1;
+                const norm = eta => r.loading(eta) / (r.cBar * Math.abs(r.CL) || 1);   // c*cl / (cBar*CL)
+                const clRatio = eta => r.loading(eta) / (r.chord(eta) * Math.abs(r.CL) || 1);
+
+                // Find peak section cl / CL
+                let peakEta = 0, peak = -Infinity;
+                for (let i = 0; i <= 200; i++) { const e = 0.98 * i / 200, v = clRatio(e) * sign; if (v > peak) { peak = v; peakEta = e; } }
+                $('llt-peak').textContent = Math.abs(r.CL) < 1e-4 ? '–' : `${(peakEta * 100).toFixed(0)}% semi-span`;
+
+                // Planform at the top
+                const midX = w / 2, halfW = (w - 120) / 2;
+                const chordPx = Math.min(planH - 18, halfW * 2 / AR * 1.0);
+                const scale = chordPx / r.cRoot;
+                const leY = 14;
+                ctx.beginPath();
+                ctx.moveTo(midX - halfW, leY + (r.cRoot - r.chord(1)) * scale * 0.25);
+                ctx.lineTo(midX, leY);
+                ctx.lineTo(midX + halfW, leY + (r.cRoot - r.chord(1)) * scale * 0.25);
+                ctx.lineTo(midX + halfW, leY + (r.cRoot - r.chord(1)) * scale * 0.25 + r.chord(1) * scale);
+                ctx.lineTo(midX, leY + r.cRoot * scale);
+                ctx.lineTo(midX - halfW, leY + (r.cRoot - r.chord(1)) * scale * 0.25 + r.chord(1) * scale);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(163,230,53,0.08)'; ctx.fill();
+                ctx.strokeStyle = 'rgba(163,230,53,0.6)'; ctx.lineWidth = 1.2; ctx.stroke();
+                ctx.font = `10px ${MONO}`; ctx.fillStyle = FAINT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                ctx.fillText('PLANFORM', 12, 10);
+
+                // Loading chart below
+                ctx.save(); ctx.translate(0, planH);
+                const yMax = 1.6;
+                const { X, Y } = axes(ctx, w, h - planH, {
+                    x0: -1, x1: 1, dx: 0.25, y0: 0, y1: yMax, dy: 0.4, padT: 12,
+                    xLabel: 'Spanwise station 2y/b', yLabel: 'c·cₗ / (c̄·C_L)',
+                    fx: x => x.toFixed(2), fy: y => y.toFixed(1)
+                });
+                const plot = (fn, color, width, dash) => {
+                    ctx.beginPath();
+                    for (let i = 0; i <= 200; i++) {
+                        const e = -1 + 2 * i / 200, v = Math.max(0, Math.min(yMax, fn(e)));
+                        i ? ctx.lineTo(X(e), Y(v)) : ctx.moveTo(X(e), Y(v));
+                    }
+                    ctx.setLineDash(dash || []); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke(); ctx.setLineDash([]);
+                };
+                // Elliptical reference: c*cl/(cBar*CL) = (4/pi) sqrt(1 - eta^2)
+                plot(e => 4 / Math.PI * Math.sqrt(Math.max(0, 1 - e * e)), 'rgba(255,255,255,0.45)', 1.4, [6, 4]);
+                if (Math.abs(r.CL) > 1e-4) {
+                    plot(e => clRatio(e) * sign, 'rgba(232,121,249,0.85)', 1.6, [2, 3]);
+                    ctx.beginPath();
+                    for (let i = 0; i <= 200; i++) { const e = -1 + 2 * i / 200; const v = Math.min(yMax, norm(e) * sign); i ? ctx.lineTo(X(e), Y(v)) : ctx.moveTo(X(e), Y(v)); }
+                    ctx.lineTo(X(1), Y(0)); ctx.lineTo(X(-1), Y(0)); ctx.closePath();
+                    ctx.fillStyle = 'rgba(163,230,53,0.1)'; ctx.fill();
+                    ctx.shadowColor = 'rgba(163,230,53,0.6)'; ctx.shadowBlur = 8;
+                    plot(e => norm(e) * sign, ACCENT, 2.5);
+                    ctx.shadowBlur = 0;
+                }
+                ctx.font = `600 11px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+                ctx.fillStyle = ACCENT; ctx.fillText('span loading', w - 24, 8);
+                ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText('elliptical', w - 24, 24);
+                ctx.fillStyle = MAGENTA; ctx.fillText('section cₗ / C_L', w - 24, 40);
+                ctx.restore();
+            }
+            [foil, ...ins].forEach(el => el.addEventListener('input', update));
+            window.addEventListener('resize', update);
+            update();
+        })();
+
+        // ===== Images: drop files into "Syd Website Images/Applied Aerodynamics Page/" =====
+        const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = lightbox.querySelector('img');
+        const lightboxCaption = lightbox.querySelector('.lightbox-caption');
+        document.querySelectorAll('.img-box[data-img]').forEach(box => {
+            const name = box.dataset.img;
+            const img = box.querySelector('img');
+            let i = 0;
+            const tryNext = () => {
+                if (i >= EXTENSIONS.length) {
+                    box.classList.add('missing');
+                    box.insertAdjacentHTML('beforeend',
+                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Images/Applied Aerodynamics Page/</div>`);
+                    return;
+                }
+                img.src = MEDIA_DIR + encodeURIComponent(name) + '.' + EXTENSIONS[i++];
+            };
+            img.addEventListener('error', tryNext);
+            tryNext();
+            box.addEventListener('click', () => {
+                if (box.classList.contains('missing')) return;
+                const caption = box.closest('figure')?.querySelector('figcaption');
+                lightboxImg.src = img.src; lightboxImg.alt = img.alt;
+                lightboxCaption.textContent = caption ? caption.textContent : '';
+                lightbox.classList.add('open');
+            });
+        });
+        lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
+
+        // ===== KaTeX =====
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ]
+            });
+        });
+
+        // ===== Progress bar =====
+        const progressBar = document.getElementById('progress');
+        window.addEventListener('scroll', () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            progressBar.style.width = (window.scrollY / max * 100) + '%';
+        }, { passive: true });
+    </script>
+</body>
+</html>
