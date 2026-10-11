@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Dynamics | Gopolang Makgothi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg: #070a1a;
+            --bg-raised: #0d1230;
+            --surface: rgba(255, 255, 255, 0.025);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(167, 139, 250, 0.38);
+            --text: #e6e8f5;
+            --text-muted: #9aa0c3;
+            --text-faint: #5f668f;
+            --accent: #a78bfa;
+            --accent-soft: rgba(167, 139, 250, 0.12);
+            --accent-2: #60a5fa;
+            --radius: 10px;
+            --display: 'Chakra Petch', 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.75;
+            -webkit-font-smoothing: antialiased;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(167, 139, 250, 0.45) rgba(0, 0, 0, 0.2);
+        }
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        body::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.45); border-radius: 4px; }
+
+        a { color: var(--accent); }
+
+        /* ===== Nav ===== */
+        .progress {
+            position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 60;
+            background: linear-gradient(90deg, var(--accent-2), var(--accent));
+        }
+        .topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.9rem clamp(1rem, 4vw, 2.5rem);
+            background: rgba(7, 10, 26, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.9rem; font-weight: 600;
+            transition: color 200ms ease, transform 200ms ease;
+        }
+        .back-link:hover { color: #fff; transform: translateX(-3px); }
+        .nav-status {
+            font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent);
+            display: flex; gap: 1.25rem;
+        }
+        .nav-status span { color: var(--text-faint); }
+
+        /* ===== Header ===== */
+        .hero {
+            padding: 9rem clamp(1rem, 6vw, 5rem) 3rem;
+            background:
+                radial-gradient(60% 90% at 85% 0%, rgba(124, 58, 237, 0.35) 0%, transparent 70%),
+                radial-gradient(50% 80% at 15% 10%, rgba(37, 99, 235, 0.25) 0%, transparent 70%);
+        }
+        .hero-inner { max-width: 900px; margin: 0 auto; }
+        .eyebrow {
+            font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.2em;
+            color: var(--accent); margin-bottom: 1rem; display: block;
+        }
+        .hero h1 {
+            font-family: var(--display); text-transform: uppercase;
+            font-size: clamp(2.4rem, 6vw, 4.2rem); line-height: 1; font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .hero h1 span { color: var(--accent); }
+        .hero p { margin-top: 1.25rem; font-size: clamp(1rem, 2vw, 1.15rem); color: #c9cde6; max-width: 620px; }
+
+        /* ===== Content ===== */
+        main {
+            max-width: 900px; margin: 0 auto;
+            padding: 2rem clamp(1rem, 4vw, 2.5rem) 6rem;
+        }
+        .proj-tag {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.2em; color: var(--accent);
+        }
+        .proj-tag::before { content: ''; width: 10px; height: 10px; border: 2px solid var(--accent); transform: rotate(45deg); }
+        article h2 {
+            font-family: var(--display); text-transform: uppercase;
+            font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 700;
+            line-height: 1.1; margin: 0.5rem 0 1.5rem;
+        }
+        article p { color: #c3c7e0; margin-bottom: 1.1rem; }
+        article p strong { color: #fff; font-weight: 600; }
+        .lede { font-size: 1.12rem; color: #d8dbef; }
+
+        .equation {
+            background: var(--bg-raised); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.2rem 1.25rem; margin: 1.25rem 0 1.5rem;
+            overflow-x: auto; overflow-y: hidden; scrollbar-width: none; font-size: 1.05rem; position: relative;
+        }
+        .equation::-webkit-scrollbar { display: none; }
+        .equation::before, .equation::after {
+            content: ''; position: absolute; width: 10px; height: 10px; border-color: var(--accent); border-style: solid;
+        }
+        .equation::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .equation::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        .equation .katex-display { margin: 0.3rem 0; }
+        .where { list-style: none; display: grid; gap: 0.45rem; margin: 0 0 1.5rem; font-size: 0.92rem; }
+        .where li { color: #b4b9d6; padding: 0.55rem 0.9rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+
+        /* ===== Instrument panel ===== */
+        .panel {
+            margin: 1.75rem 0 2.5rem;
+            border: 1px solid var(--border-accent); border-radius: 14px;
+            background: linear-gradient(180deg, #131a3f, var(--bg-raised));
+            overflow: hidden;
+        }
+        .panel-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.7rem 1.1rem; border-bottom: 1px solid var(--border);
+            font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.16em;
+        }
+        .panel-head .t { color: var(--accent); }
+        .panel-head .n { color: var(--text-faint); letter-spacing: 0.05em; margin-left: auto; }
+        .replay {
+            appearance: none; cursor: pointer; font: inherit; letter-spacing: 0.1em;
+            color: var(--accent); background: var(--accent-soft); border: 1px solid var(--border-accent);
+            border-radius: 6px; padding: 0.2rem 0.6rem; transition: background 150ms ease, color 150ms ease;
+        }
+        .replay:hover { background: var(--accent); color: #0b0820; }
+        .replay:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .panel-canvas { position: relative; height: 540px; }
+        .panel-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
+        .panel-canvas canvas.dragging { cursor: grabbing; }
+        .drag-hint {
+            position: absolute; right: 14px; bottom: 10px; pointer-events: none;
+            font-family: var(--mono); font-size: 0.65rem; color: var(--text-faint); letter-spacing: 0.08em;
+        }
+        .controls {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1rem 1.5rem; padding: 1.1rem; border-top: 1px solid var(--border);
+        }
+        .ctrl label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+        .ctrl output { font-family: var(--mono); color: #fff; }
+        input[type=range] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px; border-radius: 3px; transform: rotate(45deg);
+            background: var(--accent); box-shadow: 0 0 10px rgba(167,139,250,0.7); cursor: pointer;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 12px; height: 12px; border-radius: 3px; border: 0;
+            background: var(--accent); cursor: pointer;
+        }
+        input[type=range]:focus-visible { box-shadow: 0 0 0 3px rgba(167,139,250,0.35); }
+        .readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); border-top: 1px solid var(--border); }
+        .readout { padding: 0.75rem 1.1rem; border-right: 1px solid var(--border); }
+        .readout span { display: block; font-size: 0.7rem; color: var(--text-faint); }
+        .readout b { display: block; font-family: var(--mono); font-size: 1.05rem; color: #fff; font-weight: 600; }
+        .readout.hl b { color: var(--accent); }
+        .readout.mg b { color: var(--accent-2); }
+
+        footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.85rem; }
+
+        @media (max-width: 720px) {
+            .nav-status { display: none; }
+            .panel-head .n { display: none; }
+            .panel-canvas { height: 420px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+
+    <nav class="topnav">
+        <a href="portfolio.html#expertise-wheel" class="back-link">← Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 01 — FLIGHT DYNAMICS</div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-inner">
+            <span class="eyebrow">AERODYNAMICS · FLIGHT DYNAMICS</span>
+            <h1>Climbing<br>in <span>circles.</span></h1>
+            <p>How an aircraft moves through the air: the balance of lift, weight, thrust and drag in steady manoeuvres, and what each control input does to the flight path.</p>
+        </div>
+    </header>
+
+    <main>
+        <article id="spiral-climb">
+            <span class="proj-tag">MANOEUVRE 01</span>
+            <h2>The spiral climb</h2>
+            <p class="lede">A spiral climb is a <strong>steady climb and a level turn flown at the same time</strong>. The aircraft banks to turn at a constant rate while its excess power lifts it at a constant rate of climb, so its path traces a helix. It's how aircraft gain height over a fixed point, for example to climb out of a valley or stay over an airfield.</p>
+            <p>The turn and the climb can be treated separately. The bank angle \(\phi\) tilts the lift vector, and its horizontal part pulls the aircraft round the circle. For a given true airspeed \(V\), that sets the turn rate, the radius and the load factor:</p>
+            <div class="equation">
+                $$\omega = \frac{g\tan\phi}{V}, \qquad R = \frac{V^2}{g\tan\phi}, \qquad n = \frac{1}{\cos\phi}$$
+            </div>
+            <p>The climb comes from excess power. The rate of climb fixes the flight-path angle, and dividing the height to gain by it gives the time in the spiral, and from the turn rate, the number of full turns:</p>
+            <div class="equation">
+                $$\gamma = \sin^{-1}\!\left(\frac{RC}{V}\right), \qquad t = \frac{\Delta h}{RC}, \qquad N = \frac{\omega\, t}{2\pi}$$
+            </div>
+            <ul class="where">
+                <li>\(RC\): rate of climb, set by the excess power \((T - D)\,V / W\).</li>
+                <li>\(\Delta h\): height gained, here from the ground to 11,000 ft.</li>
+                <li>Banking raises the load factor, which raises induced drag and eats into the excess power. A steeper bank therefore turns tighter but climbs more slowly for the same engine.</li>
+            </ul>
+
+            <div class="panel" id="spiral-panel">
+                <div class="panel-head">
+                    <span class="t">SPIRAL CLIMB · 0 → 11,000 FT</span>
+                    <span class="n">Horizontal scale enlarged for clarity</span>
+                    <button type="button" class="replay" id="spiral-replay">↻ REPLAY</button>
+                </div>
+                <div class="panel-canvas">
+                    <canvas id="spiral-canvas" role="img" aria-label="Three-dimensional helix of an aircraft climbing in a steady left turn from the ground to 11,000 feet, with the aircraft drawing its trail as it climbs"></canvas>
+                    <span class="drag-hint">DRAG TO ROTATE</span>
+                </div>
+                <div class="controls">
+                    <div class="ctrl">
+                        <label for="sp-v">True airspeed <output id="sp-v-out">90 kt</output></label>
+                        <input type="range" id="sp-v" min="60" max="140" step="5" value="90">
+                    </div>
+                    <div class="ctrl">
+                        <label for="sp-phi">Bank angle φ <output id="sp-phi-out">30°</output></label>
+                        <input type="range" id="sp-phi" min="15" max="60" step="1" value="30">
+                    </div>
+                    <div class="ctrl">
+                        <label for="sp-rc">Rate of climb <output id="sp-rc-out">700 ft/min</output></label>
+                        <input type="range" id="sp-rc" min="300" max="2000" step="50" value="700">
+                    </div>
+                </div>
+                <div class="readouts">
+                    <div class="readout"><span>Turn radius</span><b id="sp-r">–</b></div>
+                    <div class="readout"><span>Turn rate</span><b id="sp-w">–</b></div>
+                    <div class="readout"><span>Load factor</span><b id="sp-n">–</b></div>
+                    <div class="readout"><span>Climb angle γ</span><b id="sp-g">–</b></div>
+                    <div class="readout mg"><span>Time to 11,000 ft</span><b id="sp-t">–</b></div>
+                    <div class="readout hl"><span>Turns to 11,000 ft</span><b id="sp-turns">–</b></div>
+                </div>
+            </div>
+            <p>Try it: a steeper bank tightens the helix and packs in more turns, a higher rate of climb stretches it out, and a faster airspeed widens it. The trail is coloured by altitude, and the dashed line drops from the aircraft to its ground track.</p>
+        </article>
+    </main>
+
+    <footer>© 2026 Gopolang Makgothi · Aerospace Engineer</footer>
+
+    <script>
+        const MONO = '"JetBrains Mono", monospace';
+        const ACCENT = '#a78bfa', ACCENT2 = '#60a5fa', FAINT = '#5f668f';
+        const DEG = Math.PI / 180, G = 9.80665, KT = 0.514444, FT = 0.3048;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function fitCanvas(canvas) {
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.clientWidth, h = canvas.clientHeight;
+            if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+                canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, w, h);
+            return { ctx, w, h };
+        }
+
+        // ===== Spiral climb: 3D helix traced by the aircraft =====
+        (function spiralPanel() {
+            const canvas = document.getElementById('spiral-canvas');
+            const panel = document.getElementById('spiral-panel');
+            const ins = ['sp-v', 'sp-phi', 'sp-rc'].map(id => document.getElementById(id));
+            const $ = id => document.getElementById(id);
+            const H = 11000;             // ft, top of the climb
+            const R_FIT = 6500;          // ft, radius that fills the view (horizontal scale is fixed)
+            const TILT = 0.36;           // rad, how far the camera looks down on the helix
+
+            let P;                       // current flight condition
+            function update() {
+                const [vKt, phiDeg, rcFpm] = ins.map(i => +i.value);
+                const V = vKt * KT, phi = phiDeg * DEG, rc = rcFpm * FT / 60;
+                const omega = G * Math.tan(phi) / V;                 // rad/s
+                const R = V * V / (G * Math.tan(phi)) / FT;          // ft
+                const t = H / rcFpm * 60;                            // s
+                const turns = omega * t / (2 * Math.PI);
+                P = { R, omega, t, turns, phi, gamma: Math.asin(Math.min(rc / V, 1)) };
+                $('sp-v-out').textContent = vKt + ' kt';
+                $('sp-phi-out').textContent = phiDeg + '°';
+                $('sp-rc-out').textContent = rcFpm.toLocaleString('en-US') + ' ft/min';
+                $('sp-r').textContent = Math.round(R).toLocaleString('en-US') + ' ft';
+                $('sp-w').textContent = (omega / DEG).toFixed(1) + ' °/s';
+                $('sp-n').textContent = (1 / Math.cos(phi)).toFixed(2) + ' g';
+                $('sp-g').textContent = (P.gamma / DEG).toFixed(1) + '°';
+                $('sp-t').textContent = Math.floor(t / 60) + ' min ' + String(Math.round(t % 60)).padStart(2, '0') + ' s';
+                $('sp-turns').textContent = turns.toFixed(1);
+            }
+
+            // Animation state: progress up the climb (0..1) and the camera azimuth
+            let frac = reduceMotion ? 1 : 0, hold = 0, azim = -0.6;
+            const duration = () => Math.min(Math.max(6 + P.turns * 0.6, 9), 22);   // s for the full climb
+
+            // Altitude colour ramp: blue → violet → fuchsia
+            const RAMP = [[59, 130, 246], [139, 92, 246], [217, 70, 239]];
+            const ramp = s => {
+                const k = Math.min(s, 0.9999) * 2, i = Math.floor(k), f = k - i;
+                return RAMP[i].map((c, j) => Math.round(c + (RAMP[i + 1][j] - c) * f));
+            };
+
+            function draw() {
+                const { ctx, w, h } = fitCanvas(canvas);
+                const sh = Math.min(w * 0.36, 330) / R_FIT;                // px per ft, horizontal
+                const ground = R_FIT * sh * Math.sin(TILT);                // ellipse half-height at the base
+                const base = h - ground - 26, top = 46;
+                const sv = (base - top) / H;                               // px per ft, vertical
+                const cx = 64 + (w - 64) / 2;
+                const ca = Math.cos(azim), sa = Math.sin(azim), st = Math.sin(TILT);
+                const proj = (x, y, z) => {
+                    const xr = x * ca - y * sa, d = x * sa + y * ca;
+                    return [cx + xr * sh, base - z * sv - d * sh * st, d];
+                };
+
+                // Ground: range rings and the ground track
+                ctx.lineWidth = 1;
+                [R_FIT / 3, 2 * R_FIT / 3, R_FIT].forEach((r, i) => {
+                    ctx.beginPath(); ctx.ellipse(cx, base, r * sh, r * sh * st, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(255,255,255,${0.05 + i * 0.015})`; ctx.stroke();
+                });
+                ctx.beginPath(); ctx.ellipse(cx, base, P.R * sh, P.R * sh * st, 0, 0, Math.PI * 2);
+                ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(167,139,250,0.4)'; ctx.stroke(); ctx.setLineDash([]);
+                ctx.font = `10px ${MONO}`; ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                ctx.fillText('GROUND TRACK', cx + P.R * sh + 8, base);
+
+                // Altitude ruler on the left, with faint level lines
+                const rx = 54;
+                ctx.textAlign = 'right';
+                for (let a = 0; a <= H; a += 1000) {
+                    const y = base - a * sv;
+                    ctx.strokeStyle = a % 5000 === 0 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)';
+                    ctx.beginPath(); ctx.moveTo(rx, y); ctx.lineTo(w - 16, y); ctx.stroke();
+                    ctx.fillStyle = FAINT; ctx.fillText(a ? (a / 1000) + 'k' : '0', rx - 8, y);
+                }
+                ctx.save(); ctx.translate(14, (base + top) / 2); ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center'; ctx.fillText('Altitude (ft)', 0, 0); ctx.restore();
+
+                // Helix axis
+                const [ax0, ay0] = proj(0, 0, 0), [, ay1] = proj(0, 0, H);
+                ctx.beginPath(); ctx.moveTo(ax0, ay0); ctx.lineTo(ax0, ay1);
+                ctx.setLineDash([2, 6]); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.stroke(); ctx.setLineDash([]);
+
+                // Trail: helix from the ground up to the aircraft, coloured by altitude, dimmed at the back
+                const theta = 2 * Math.PI * P.turns;
+                const segs = Math.min(5000, Math.max(400, Math.ceil(P.turns * 120)));
+                const pt = s => proj(P.R * Math.cos(theta * s), P.R * Math.sin(theta * s), H * s);
+                const n = Math.round(segs * frac);
+                let prev = pt(0);
+                ctx.lineCap = 'round';
+                for (let i = 1; i <= n; i++) {
+                    const s = i / segs, cur = pt(s);
+                    const depth = (prev[2] + cur[2]) / 2 / (P.R || 1);          // -1 front … +1 back
+                    const [r, g, b] = ramp(s);
+                    const alpha = 0.95 - 0.55 * (depth + 1) / 2;
+                    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
+                    ctx.lineWidth = 2.4 - 0.9 * (depth + 1) / 2;
+                    ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(cur[0], cur[1]); ctx.stroke();
+                    prev = cur;
+                }
+
+                // Aircraft, its drop line and ground shadow
+                const s = frac, ang = theta * s;
+                const x = P.R * Math.cos(ang), y = P.R * Math.sin(ang), z = H * s;
+                const [px, py] = proj(x, y, z), [gx, gy] = proj(x, y, 0);
+                ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(gx, gy);
+                ctx.setLineDash([3, 4]); ctx.strokeStyle = 'rgba(96,165,250,0.5)'; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+                ctx.beginPath(); ctx.ellipse(gx, gy, 5, 5 * st, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(96,165,250,0.55)'; ctx.fill();
+                // Level line from the ruler to the aircraft
+                ctx.beginPath(); ctx.moveTo(rx, py); ctx.lineTo(px, py);
+                ctx.setLineDash([2, 5]); ctx.strokeStyle = 'rgba(96,165,250,0.32)'; ctx.stroke(); ctx.setLineDash([]);
+                drawAircraft(ctx, proj, x, y, z, ang, sh, sv);
+
+                // HUD readout
+                const alt = Math.round(z / 10) * 10, hdg = ((-ang / DEG) % 360 + 360) % 360;   // left turn from north
+                const tNow = P.t * s;
+                ctx.font = `600 11px ${MONO}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                const hud = [
+                    ['ALT', alt.toLocaleString('en-US') + ' FT', ACCENT],
+                    ['HDG', String(Math.round(hdg) % 360).padStart(3, '0') + '°', '#fff'],
+                    ['TIME', Math.floor(tNow / 60) + ':' + String(Math.floor(tNow % 60)).padStart(2, '0'), '#fff'],
+                    ['TURN', (P.turns * s).toFixed(1) + ' / ' + P.turns.toFixed(1), ACCENT2],
+                ];
+                hud.forEach(([k, v, c], i) => {
+                    ctx.fillStyle = FAINT; ctx.fillText(k, rx + 14, 14 + i * 16);
+                    ctx.fillStyle = c; ctx.fillText(v, rx + 54, 14 + i * 16);
+                });
+            }
+
+            // Aircraft silhouette drawn in 3D: heading along the helix, banked into the (left) turn
+            const OUTLINE = [
+                [11, 0], [8, 1.2], [3, 1.4], [2, 11], [-1.5, 11], [-3, 1.4], [-9, 1], [-10, 4.5], [-12, 4.5],
+                [-11.5, 0], [-12, -4.5], [-10, -4.5], [-9, -1], [-3, -1.4], [-1.5, -11], [2, -11], [3, -1.4], [8, -1.2]
+            ];
+            function drawAircraft(ctx, proj, x, y, z, ang, sh, sv) {
+                const size = 1.25 / sh;                                  // ft per outline unit (~1.25 px)
+                const zs = sh / sv;                                      // keeps vertical offsets visually to scale
+                const fx = -Math.sin(ang), fy = Math.cos(ang);           // forward (counter-clockwise = left turn)
+                const rxv = fy, ryv = -fx;                               // right wing, horizontal
+                const cphi = Math.cos(P.phi), sphi = Math.sin(P.phi), tg = Math.tan(P.gamma);
+                const pts = OUTLINE.map(([f, r]) => {
+                    const df = f * size, dr = r * size;
+                    return proj(x + df * fx + dr * cphi * rxv, y + df * fy + dr * cphi * ryv,
+                        z + (df * tg + dr * sphi) * zs);                  // right wing up when banked left
+                });
+                ctx.beginPath();
+                pts.forEach(([X, Y], i) => i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y));
+                ctx.closePath();
+                ctx.shadowColor = 'rgba(255,255,255,0.8)'; ctx.shadowBlur = 12;
+                ctx.fillStyle = '#ffffff'; ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = ACCENT; ctx.lineWidth = 1; ctx.stroke();
+            }
+
+            // Loop: climb, hold at the top, start again. Camera drifts slowly unless dragged.
+            let raf = null, last = null, visible = false, dragging = false;
+            function tick(now) {
+                const dt = last === null ? 0 : Math.min((now - last) / 1000, 0.1);
+                last = now;
+                if (!dragging) azim += dt * 0.12;
+                if (frac < 1) frac = Math.min(1, frac + dt / duration());
+                else if ((hold += dt) > 2.5) { frac = 0; hold = 0; }
+                draw();
+                raf = visible ? requestAnimationFrame(tick) : null;
+            }
+            const start = () => { if (!raf && !reduceMotion) { last = null; raf = requestAnimationFrame(tick); } };
+
+            new IntersectionObserver(entries => {
+                visible = entries[0].isIntersecting;
+                if (visible) start();
+            }, { threshold: 0.3 }).observe(panel);
+
+            $('spiral-replay').addEventListener('click', () => { frac = 0; hold = 0; if (reduceMotion) { frac = 1; draw(); } });
+            ins.forEach(el => el.addEventListener('input', () => { update(); if (!raf) draw(); }));
+            window.addEventListener('resize', () => { if (!raf) draw(); });
+
+            // Drag to rotate the view
+            let lastX = 0;
+            canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging'); });
+            canvas.addEventListener('pointermove', e => {
+                if (!dragging) return;
+                azim += (e.clientX - lastX) * 0.01; lastX = e.clientX;
+                if (!raf) draw();
+            });
+            const endDrag = () => { dragging = false; canvas.classList.remove('dragging'); };
+            canvas.addEventListener('pointerup', endDrag);
+            canvas.addEventListener('pointercancel', endDrag);
+
+            update();
+            draw();
+        })();
+
+        // ===== KaTeX =====
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ]
+            });
+        });
+
+        // ===== Progress bar =====
+        const progressBar = document.getElementById('progress');
+        window.addEventListener('scroll', () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            progressBar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+        }, { passive: true });
+    </script>
+</body>
+</html>

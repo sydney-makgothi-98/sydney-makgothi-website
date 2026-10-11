@@ -373,6 +373,9 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(163,230,53,0.15);
         }
         .img-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        /* Images with a transparent background (e.g. the Carbon Cub model) sit on white */
+        .img-box.on-white { background: #fff; }
+        .lightbox img.on-white { background: #fff; }
         .img-box.missing { cursor: default; }
         .img-box.missing img { display: none; }
         .img-box .placeholder {
@@ -472,7 +475,7 @@
         <div class="hero-content">
             <span class="eyebrow">APPLIED AERODYNAMICS · FLIGHT LOG</span>
             <h1>From drag counts<br>to <span>lift lines.</span></h1>
-            <p>Two applied aerodynamics projects: a full performance analysis of the Bombardier CRJ900 regional jet, and a study of how aerofoil and wing geometry shape the lift distribution on the Bushcat light aircraft.</p>
+            <p>Two applied aerodynamics projects: a full performance analysis of the Bombardier CRJ900 regional jet, and a study of how aerofoil and wing geometry shape the lift distribution on the Carbon Cub light aircraft.</p>
             <div class="stack">
                 <span class="stack-label">TECH STACK</span>
                 <div class="stack-row">
@@ -493,7 +496,7 @@
             <a class="fp-row sub" href="#crj-drag"><span class="fp-wpt">01.A</span><span class="fp-name">Component drag build-up</span><span class="fp-tool">EXCEL</span></a>
             <a class="fp-row sub" href="#crj-thrust"><span class="fp-wpt">01.B</span><span class="fp-name">Thrust curves, 0 to 36,000 ft</span><span class="fp-tool">PYTHON</span></a>
             <a class="fp-row sub" href="#crj-turn"><span class="fp-wpt">01.C</span><span class="fp-name">Turn performance and E-M chart</span><span class="fp-tool">EXCEL</span></a>
-            <a class="fp-row" href="#bushcat"><span class="fp-wpt">WPT 02</span><span class="fp-name">Bushcat lift distribution study</span><span class="fp-tool">MATLAB · TORNADO · XFLR5</span></a>
+            <a class="fp-row" href="#carbon-cub"><span class="fp-wpt">WPT 02</span><span class="fp-name">Carbon Cub lift distribution study</span><span class="fp-tool">MATLAB · TORNADO · XFLR5</span></a>
             <a class="fp-row" href="#interactive"><span class="fp-wpt">WPT 03</span><span class="fp-name">Interactive graphs</span><span class="fp-tool">LIVE</span></a>
         </div>
     </section>
@@ -621,15 +624,15 @@
             </section>
         </article>
 
-        <!-- ================= PROJECT 2: BUSHCAT ================= -->
-        <article id="bushcat">
+        <!-- ================= PROJECT 2: CARBON CUB ================= -->
+        <article id="carbon-cub">
             <div class="proj-head">
                 <span class="proj-tag">PROJECT 02</span>
-                <h2>Lift distribution on the Bushcat light aircraft</h2>
+                <h2>Lift distribution on the Carbon Cub light aircraft</h2>
             </div>
-            <p class="lede">How does the choice of aerofoil and the shape of the wing change how lift is spread across the span? This project varied both on the Bushcat light-sport aircraft and compared <strong>Prandtl's lifting-line theory</strong> against higher-fidelity vortex lattice and panel methods.</p>
+            <p class="lede">How does the choice of aerofoil and the shape of the wing change how lift is spread across the span? This project varied both on the Carbon Cub light-sport aircraft and compared <strong>Prandtl's lifting-line theory</strong> against higher-fidelity vortex lattice and panel methods.</p>
 
-            <section class="section" id="bushcat-theory">
+            <section class="section" id="carbon-cub-theory">
                 <div class="section-head">
                     <span class="wpt">02.A</span>
                     <h3>Prandtl's lifting-line theory</h3>
@@ -648,12 +651,12 @@
 
             </section>
 
-            <section class="section" id="bushcat-fidelity">
+            <section class="section" id="carbon-cub-fidelity">
                 <div class="section-head">
                     <span class="wpt">02.B</span>
                     <h3>Comparing against higher-fidelity methods</h3>
                 </div>
-                <p>Lifting-line theory is fast but assumes a straight, high-aspect-ratio wing. To check how far it can be trusted on the Bushcat's geometry, the same configurations were modelled with methods that make fewer assumptions:</p>
+                <p>Lifting-line theory is fast but assumes a straight, high-aspect-ratio wing. To check how far it can be trusted on the Carbon Cub's geometry, the same configurations were modelled with methods that make fewer assumptions:</p>
                 <div class="compare">
                     <div class="compare-card">
                         <span class="lvl">FIDELITY · LOW</span>
@@ -674,8 +677,8 @@
 
                 <div class="grid-2">
                     <figure>
-                        <div class="img-box" data-img="Bushcat Model"><img alt="Bushcat wing model"></div>
-                        <figcaption><span class="fig-no">FIG 2.1</span> Bushcat wing model.</figcaption>
+                        <div class="img-box on-white" data-img="Carbon Cub Model"><img alt="Carbon Cub wing model"></div>
+                        <figcaption><span class="fig-no">FIG 2.1</span> Carbon Cub wing model.</figcaption>
                     </figure>
                     <figure>
                         <div class="img-box" data-img="Aerofoil Comparison"><img alt="Comparison of aerofoil shapes"></div>
@@ -1470,6 +1473,7 @@
                 if (box.classList.contains('missing')) return;
                 const caption = box.closest('figure')?.querySelector('figcaption');
                 lightboxImg.src = img.src; lightboxImg.alt = img.alt;
+                lightboxImg.classList.toggle('on-white', box.classList.contains('on-white'));
                 lightboxCaption.textContent = caption ? caption.textContent : '';
                 lightbox.classList.add('open');
             });
