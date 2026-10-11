@@ -684,15 +684,16 @@
                         <div class="img-box" data-img="Aerofoil Comparison"><img alt="Comparison of aerofoil shapes"></div>
                         <figcaption><span class="fig-no">FIG 2.2</span> Aerofoil shapes compared.</figcaption>
                     </figure>
-                    <figure>
-                        <div class="img-box" data-img="XFLR5 Results"><img alt="XFLR5 lift distribution results"></div>
-                        <figcaption><span class="fig-no">FIG 2.3</span> XFLR5 analysis.</figcaption>
-                    </figure>
-                    <figure>
-                        <div class="img-box" data-img="Lift Distribution Comparison"><img alt="Lift distribution: lifting-line theory compared with higher-fidelity results"></div>
-                        <figcaption><span class="fig-no">FIG 2.4</span> Lift distribution: lifting-line theory compared with the higher-fidelity methods.</figcaption>
-                    </figure>
                 </div>
+
+                <figure>
+                    <div class="panel" id="twist-panel">
+                        <div class="panel-head"><span class="t">LIFT DISTRIBUTION COMPARISON · XFLR5</span><span class="n">Wing twist from −2° to +2°</span></div>
+                        <div class="panel-canvas tall"><canvas id="twist-canvas" role="img" aria-label="Lift coefficient against spanwise location from minus 6 to 6 metres for wing twist of minus 2, minus 1, 0, 1 and 2 degrees. More twist raises and flattens the distribution: at minus 2 degrees it peaks at about 0.33 at the root, while at plus 2 degrees it is about 0.41 across most of the span with a slight dip at the root."></canvas></div>
+                    </div>
+                    <figcaption><span class="fig-no">FIG 2.3</span> Lift distribution comparison: lift coefficient along the span at various wing twists, from XFLR5.</figcaption>
+                </figure>
+                <p>Twist curves from Tornado and AVL are left out because they follow the same trend with only small differences. XFLR5 and AVL capture real-world conditions better, as they account for the finite wing, viscosity and boundary-layer effects.</p>
             </section>
         </article>
 
@@ -1319,6 +1320,60 @@
                 io.observe(panel);
             }
             window.addEventListener('resize', () => { if (!raf) draw(); });
+        })();
+
+        // ===== XFLR5 twist study: lift coefficient vs span (static) =====
+        (function twistPanel() {
+            const canvas = document.getElementById('twist-canvas');
+            // [twist °, colour, half-span points [y m, CL] from the tip (4.84 m) to the root]
+            const CURVES = [
+                [-2, '#60a5fa', [[4.84, 0.01], [4.75, 0.07], [4.5, 0.12], [4, 0.165], [3.5, 0.2], [3, 0.23], [2.5, 0.255], [2, 0.275], [1.5, 0.293], [1, 0.307], [0.5, 0.32], [0, 0.329]]],
+                [-1, '#fb923c', [[4.84, 0.015], [4.75, 0.09], [4.5, 0.15], [4, 0.2], [3.5, 0.235], [3, 0.262], [2.5, 0.283], [2, 0.3], [1.5, 0.315], [1, 0.328], [0.5, 0.34], [0, 0.348]]],
+                [0, '#a3e635', [[4.84, 0.03], [4.75, 0.12], [4.5, 0.18], [4, 0.24], [3.5, 0.275], [3, 0.3], [2.5, 0.32], [2, 0.335], [1.5, 0.347], [1, 0.357], [0.5, 0.363], [0, 0.366]]],
+                [1, '#22d3ee', [[4.84, 0.06], [4.75, 0.18], [4.5, 0.28], [4, 0.35], [3.5, 0.367], [3, 0.375], [2.5, 0.38], [2, 0.383], [1.5, 0.384], [1, 0.385], [0.5, 0.385], [0, 0.385]]],
+                [2, '#e879f9', [[4.84, 0.12], [4.75, 0.24], [4.5, 0.33], [4, 0.39], [3.5, 0.405], [3, 0.411], [2.5, 0.414], [2, 0.415], [1.5, 0.414], [1, 0.411], [0.5, 0.407], [0, 0.405]]],
+            ];
+            // Mirror each half-span about the root into a full-span polyline, left tip to right tip
+            const full = half => [...half.map(([y, c]) => [-y, c]), ...half.slice(0, -1).reverse()];
+            const spline = pts => {
+                const out = [];
+                for (let i = 0; i < pts.length - 1; i++) {
+                    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+                    for (let s = 0; s < 8; s++) {
+                        const t = s / 8, t2 = t * t, t3 = t2 * t;
+                        out.push([0, 1].map(k => 0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * t +
+                            (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3)));
+                    }
+                }
+                out.push(pts[pts.length - 1]);
+                return out;
+            };
+            const lines = CURVES.map(([tw, c, half]) => [tw, c, spline(full(half))]);
+
+            function draw() {
+                const { ctx, w, h } = fitCanvas(canvas);
+                const legendW = w < 520 ? 0 : 120;
+                const { X, Y } = axes(ctx, w, h, {
+                    x0: -6, x1: 6, dx: 2, y0: 0, y1: 0.45, dy: 0.05, padR: 18 + legendW, padT: legendW ? 22 : 48,
+                    xLabel: 'Spanwise location (m)', yLabel: 'Lift coefficient', fy: y => y.toFixed(2)
+                });
+                lines.forEach(([, c, pts]) => {
+                    ctx.beginPath();
+                    pts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y)));
+                    ctx.strokeStyle = c; ctx.lineWidth = 2.2; ctx.shadowColor = c; ctx.shadowBlur = 5;
+                    ctx.stroke(); ctx.shadowBlur = 0;
+                });
+                // Legend: to the right of the plot, or across the top on narrow screens
+                ctx.font = `600 11px ${MONO}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+                lines.forEach(([tw, c], i) => {
+                    const label = 'Twist ' + (tw > 0 ? '+' : tw < 0 ? '−' : '') + Math.abs(tw) + '°';
+                    const lx = legendW ? w - legendW + 4 : 60 + (i % 3) * 92, ly = legendW ? 60 + i * 22 : 12 + Math.floor(i / 3) * 16;
+                    ctx.fillStyle = c; ctx.fillRect(lx, ly - 1.5, 16, 3);
+                    ctx.fillText(label, lx + 22, ly);
+                });
+            }
+            window.addEventListener('resize', draw);
+            draw();
         })();
 
         // ===== Lifting-line solver =====
