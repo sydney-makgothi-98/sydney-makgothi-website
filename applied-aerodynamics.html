@@ -1187,10 +1187,10 @@
                     [400, [[38,5.443],[40,5.73],[42,6.016],[44,6.303],[46,6.589],[48,6.875],[50,7.162],[52,7.449],[54,7.735],[56,8.021],[58,8.308],[60,8.594],[62,8.881],[64,9.167],[66,9.454],[68,9.74],[70,10.027],[72,10.313],[74,10.6],[76,10.886],[78,11.173],[80,11.459],[82,11.746],[84,12.032],[86,12.319],[88,12.605],[90,12.892],[92,13.178],[94,13.464],[96,13.751],[98,14.037],[100,14.324],[102,14.61],[104,14.897],[106,15.183],[108,15.47],[110,15.756],[112,16.043],[114,16.329],[116,16.616],[118,16.902],[120,17.189],[122,17.475],[124,17.762],[126,18.048],[128,18.335],[130,18.621],[132,18.908],[134,19.194],[136,19.481],[138,19.767]]],
                 ],
                 sep: [
-                    [2000, '#34d399', [[81,-0.098],[86,1.892],[91,3.318],[96,4.178],[101,4.474],[106,4.204],[111,3.37],[116,1.97],[121,0]]],
+                    [2000, '#16a34a', [[81,-0.098],[86,1.892],[91,3.318],[96,4.178],[101,4.474],[106,4.204],[111,3.37],[116,1.97],[121,0]]],
                     [1000, '#facc15', [[40,7],[50,8.5],[76,11],[98,10],[116,8],[126,6],[130,4],[135,0]]],
-                    [0, '#fb923c', [[47,14.702],[81.81,15.352],[90.9,15.517],[99.99,15.196],[109.08,14.388],[118.17,13.095],[127.26,11.316],[136.35,9.05],[145.44,6.299],[156.55,0]]],
-                    [-300, '#f87171', [[58,22.052],[89.99,23.028],[99.99,23.276],[109.99,22.794],[119.99,21.583],[129.99,19.643],[139.99,16.974],[149.99,13.576],[159.98,9.449],[172.21,0]]],
+                    [0, '#c084fc', [[47,14.702],[81.81,15.352],[90.9,15.517],[99.99,15.196],[109.08,14.388],[118.17,13.095],[127.26,11.316],[136.35,9.05],[145.44,6.299],[156.55,0]]],
+                    [-300, '#fb923c', [[58,22.052],[89.99,23.028],[99.99,23.276],[109.99,22.794],[119.99,21.583],[129.99,19.643],[139.99,16.974],[149.99,13.576],[159.98,9.449],[172.21,0]]],
                 ],
             };
 
@@ -1221,9 +1221,13 @@
             $('emx-wi').textContent = corner[1].toFixed(1) + ' °/s';
             $('emx-ws').textContent = sustained[1].toFixed(1) + ' °/s';
 
-            // Draw animation: reference lines fade in, then the stall line, then each SEP contour
-            const GRID_MS = 900, STALL_MS = 1600, SEP_MS = 1800, STAGGER_MS = 700;
-            const SEP_START = GRID_MS + STALL_MS - 300;
+            // Structural limit: the 5 g line, which starts at the corner speed
+            const limit = nLines.find(([n]) => +n === 5)[1];
+            const STALL_C = '#7dd3fc', LIMIT_C = '#ef4444';
+
+            // Draw animation: reference lines fade in, then the stall line, the structural limit, then each SEP contour
+            const GRID_MS = 900, STALL_MS = 1600, LIMIT_MS = 1400, SEP_MS = 1800, STAGGER_MS = 700;
+            const SEP_START = GRID_MS + STALL_MS + LIMIT_MS - 400;
             const TOTAL_MS = SEP_START + STAGGER_MS * (seps.length - 1) + SEP_MS;
             let elapsed = reduceMotion ? TOTAL_MS : 0;
             const prog = (start, dur) => {
@@ -1267,8 +1271,14 @@
 
                 // Stall line
                 const stallP = prog(GRID_MS, STALL_MS);
-                ctx.shadowColor = 'rgba(163,230,53,0.6)'; ctx.shadowBlur = 8;
-                line(stall, stallP, ACCENT, 2.6);
+                ctx.shadowColor = 'rgba(125,211,252,0.6)'; ctx.shadowBlur = 8;
+                line(stall, stallP, STALL_C, 2.6);
+                ctx.shadowBlur = 0;
+
+                // Structural limit, continuing from the corner once the stall line reaches it
+                const limitP = prog(GRID_MS + STALL_MS, LIMIT_MS);
+                ctx.shadowColor = 'rgba(239,68,68,0.6)'; ctx.shadowBlur = 8;
+                line(limit, limitP, LIMIT_C, 2.6);
                 ctx.shadowBlur = 0;
 
                 // SEP contours, one after another, with a leading dot while drawing
@@ -1290,7 +1300,7 @@
                 }
 
                 // Legend (top right, clear of the curves), each entry appears with its line
-                const items = [['stall line', ACCENT, stallP],
+                const items = [['stall line', STALL_C, stallP], ['structural limit (5 g)', LIMIT_C, limitP],
                     ...seps.map(([v, c], i) => ['SEP ' + (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' ft/min', c, prog(SEP_START + i * STAGGER_MS, SEP_MS)])];
                 ctx.font = `600 10px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
                 items.forEach(([label, c, show], i) => {
