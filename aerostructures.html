@@ -491,7 +491,7 @@
 
     <header class="hero">
         <video class="hero-bg" id="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
-            <source src="./Syd%20Website%20Images/Aerostructures%20Page/Cover%20Video.mp4" type="video/mp4">
+            <source src="./Syd%20Website%20Assets/Aerostructures%20Page/Cover%20Video.mp4" type="video/mp4">
         </video>
         <div class="hero-content">
             <span class="eyebrow">AEROSTRUCTURES · PROJECT LOG</span>
@@ -499,9 +499,9 @@
             <p>A look at my aerostructures work from a structural engineer's point of view — from root-to-tip wing bending to a pressurised fuselage frame — and how I combined hand methods, code and finite element analysis to back up every result.</p>
             <div class="hero-meta">
                 <span class="chip"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" alt=""> MATLAB</span>
-                <span class="chip"><img src="./Syd%20Website%20Images/Icons/msc.png" alt=""> MSC Nastran</span>
-                <span class="chip"><img src="./Syd%20Website%20Images/Icons/msc.png" alt=""> MSC Patran</span>
-                <span class="chip"><img src="./Syd%20Website%20Images/Icons/inventor.png" alt=""> Autodesk Inventor</span>
+                <span class="chip"><img src="./Syd%20Website%20Assets/Icons/msc.png" alt=""> MSC Nastran</span>
+                <span class="chip"><img src="./Syd%20Website%20Assets/Icons/msc.png" alt=""> MSC Patran</span>
+                <span class="chip"><img src="./Syd%20Website%20Assets/Icons/inventor.png" alt=""> Autodesk Inventor</span>
                 <span class="chip"><svg class="chip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" stroke-linejoin="round"/></svg> Energy Methods</span>
             </div>
         </div>
@@ -749,7 +749,7 @@
                     </a>
                     <a class="cta has-preview" href="https://github.com/sydney-makgothi-98" target="_blank" rel="noopener">
                         <span class="cta-preview" aria-hidden="true">
-                            <img src="./Syd%20Website%20Images/Aerostructures%20Page/Code%20Preview.png" alt="" loading="lazy">
+                            <img src="./Syd%20Website%20Assets/Aerostructures%20Page/Code%20Preview.png" alt="" loading="lazy">
                             <span class="cta-preview-label">MATLAB · code preview</span>
                         </span>
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
@@ -773,8 +773,8 @@
     </div>
 
     <script>
-        // ===== Images: drop files into "Syd Website Images/Aerostructures Page/" with any common extension =====
-        const IMG_DIR = './Syd%20Website%20Images/Aerostructures%20Page/';
+        // ===== Images: drop files into "Syd Website Assets/Aerostructures Page/" with any common extension =====
+        const IMG_DIR = './Syd%20Website%20Assets/Aerostructures%20Page/';
         const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 
         document.querySelectorAll('.img-box[data-img]').forEach(box => {
@@ -792,7 +792,7 @@
                     }
                     box.classList.add('missing');
                     box.insertAdjacentHTML('beforeend',
-                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Images/Aerostructures Page/</div>`);
+                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Assets/Aerostructures Page/</div>`);
                     return;
                 }
                 img.src = IMG_DIR + encodeURIComponent(name) + '.' + EXTENSIONS[i++];
@@ -909,12 +909,6 @@
             window.addEventListener('resize', render);
         }
 
-        // ===== Cover video: respect reduced-motion preference =====
-        const heroVideo = document.getElementById('hero-video');
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            heroVideo.removeAttribute('autoplay');
-            heroVideo.pause();
-        }
 
         // ===== Wing result charts (digitised from the FE results) =====
         const WING_CHARTS = {

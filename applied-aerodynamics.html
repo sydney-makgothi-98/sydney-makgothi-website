@@ -78,31 +78,37 @@
             display: flex; align-items: flex-end;
             padding: 8rem clamp(1rem, 6vw, 5rem) 4.5rem;
             overflow: hidden;
-            background: radial-gradient(90% 70% at 70% 30%, #13210f 0%, var(--bg) 70%);
+            background: radial-gradient(90% 70% at 70% 30%, rgba(19,33,15,0.55) 0%, transparent 70%);
         }
-        .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .hero-video {
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+            mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+        }
         .hero::after {
             content: ''; position: absolute; inset: 0; pointer-events: none;
+            mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
             background:
                 linear-gradient(90deg, rgba(6,8,7,0.88) 0%, rgba(6,8,7,0.4) 50%, rgba(6,8,7,0.15) 100%),
-                linear-gradient(180deg, rgba(6,8,7,0.2) 0%, rgba(6,8,7,0) 50%, var(--bg) 100%);
+                linear-gradient(180deg, rgba(6,8,7,0.2) 0%, rgba(6,8,7,0) 100%);
         }
-        .hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+        /* HUD runs behind the whole page, faded so content stays readable */
+        /* --hud-x/--hud-y set the reticle centre, --hud-s scales the whole HUD; tapes are placed relative to it */
+        .hud { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.4; --hud-s: 0.75; --hud-x: calc(100% - 240px); --hud-y: 250px; }
         .hud svg { position: absolute; }
-        .hud-reticle { left: 68%; top: 44%; width: 300px; height: 300px; transform: translate(-50%, -50%); }
+        .hud-reticle { left: var(--hud-x); top: var(--hud-y); width: calc(300px * var(--hud-s)); height: calc(300px * var(--hud-s)); transform: translate(-50%, -50%); }
         .hud-ladder { animation: roll 9s ease-in-out infinite; transform-origin: 150px 150px; }
         @keyframes roll {
             0%, 100% { transform: rotate(-4deg) translateY(-6px); }
             50% { transform: rotate(5deg) translateY(8px); }
         }
         .hud-tape {
-            position: absolute; top: 24%; height: 44%; width: 64px;
+            position: absolute; top: calc(var(--hud-y) - 160px * var(--hud-s)); height: calc(320px * var(--hud-s)); width: calc(64px * var(--hud-s));
             border-top: 1px solid rgba(163,230,53,0.35); border-bottom: 1px solid rgba(163,230,53,0.35);
             overflow: hidden;
             mask-image: linear-gradient(180deg, transparent, #000 20%, #000 80%, transparent);
         }
-        .hud-tape.left { left: calc(68% - 250px); }
-        .hud-tape.right { left: calc(68% + 186px); }
+        .hud-tape.left { left: calc(var(--hud-x) - 250px * var(--hud-s)); }
+        .hud-tape.right { left: calc(var(--hud-x) + 186px * var(--hud-s)); }
         .hud-tape .ticks {
             position: absolute; left: 0; right: 0; top: -100%; height: 300%;
             background: repeating-linear-gradient(180deg, transparent 0 23px, rgba(163,230,53,0.5) 23px 24px);
@@ -124,12 +130,6 @@
         .hud-corner.tr { top: 88px; right: 22px; border-width: 2px 2px 0 0; }
         .hud-corner.bl { bottom: 22px; left: 22px; border-width: 0 0 2px 2px; }
         .hud-corner.br { bottom: 22px; right: 22px; border-width: 0 2px 2px 0; }
-        .video-missing {
-            position: absolute; z-index: 1; right: clamp(1rem, 4vw, 2.5rem); bottom: 2.2rem;
-            font-family: var(--mono); font-size: 0.7rem; color: var(--text-faint);
-            display: none;
-        }
-        .hero.no-video .video-missing { display: block; }
 
         .hero-content { position: relative; z-index: 2; max-width: 680px; }
         .eyebrow {
@@ -230,8 +230,9 @@
         .equation {
             background: var(--bg-raised); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 1.2rem 1.25rem; margin: 1.25rem 0 1.5rem;
-            overflow-x: auto; font-size: 1.05rem; position: relative;
+            overflow-x: auto; overflow-y: hidden; scrollbar-width: none; font-size: 1.05rem; position: relative;
         }
+        .equation::-webkit-scrollbar { display: none; }
         .equation::before, .equation::after {
             content: ''; position: absolute; width: 10px; height: 10px; border-color: var(--accent); border-style: solid;
         }
@@ -265,6 +266,11 @@
         .vtab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
         .vstage { position: relative; aspect-ratio: 16 / 9; background: #000; }
         .vstage video { width: 100%; height: 100%; object-fit: contain; display: block; }
+        /* Vertical (Shorts) videos: the whole gallery narrows to the video's own proportions */
+        .vgallery { --vh: min(78vh, 720px); transition: max-width 300ms ease; }
+        .vgallery.portrait { max-width: calc(var(--vh) * var(--ar)); margin-inline: auto; }
+        .vgallery.portrait .vstage { aspect-ratio: var(--ar); }
+        .vgallery.portrait .vtab { font-size: 0.78rem; padding-inline: 0.25rem; }
         .vstage .placeholder {
             display: none; position: absolute; inset: 0;
             flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; text-align: center;
@@ -293,6 +299,34 @@
         .panel-head .n { color: var(--text-faint); letter-spacing: 0.05em; }
         .panel-canvas { position: relative; height: 320px; }
         .panel-canvas.tall { height: 360px; }
+        figure .panel { margin: 0; }
+        .try-link { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.04em; }
+        .try-link a { text-decoration: none; }
+        .try-link a:hover { text-decoration: underline; }
+        .panel-canvas.xtall { height: 440px; }
+        /* Chart image cards (CF34 engine, CRJ900): pop up at the top right while hovering a chart */
+        .engine-pop {
+            position: absolute; top: 14px; right: 74px; z-index: 2; width: 190px;
+            background: #fff; border: 1px solid var(--border-accent); border-radius: 10px;
+            padding: 0.5rem 0.5rem 0.4rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0; transform: translateY(-6px) scale(0.96); transform-origin: top right;
+            transition: opacity 250ms ease, transform 250ms ease; pointer-events: none;
+        }
+        .engine-pop img { width: 100%; display: block; }
+        .engine-pop span { display: block; margin-top: 0.3rem; text-align: center; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; color: #1d2a1a; }
+        .panel-canvas:hover .engine-pop { opacity: 1; transform: none; pointer-events: auto; }
+        .panel-canvas.pop-closed .engine-pop { opacity: 0; transform: translateY(-6px) scale(0.96); pointer-events: none; }
+        .engine-pop.photo { width: 230px; right: 176px; background: var(--bg-raised); padding: 0.35rem 0.35rem 0.4rem; }
+        .engine-pop.photo img { border-radius: 6px; }
+        .engine-pop.photo span { color: var(--text-muted); }
+        .engine-close {
+            position: absolute; top: -9px; right: -9px; width: 22px; height: 22px;
+            display: grid; place-items: center; border-radius: 50%; cursor: pointer;
+            background: var(--bg-raised); color: var(--accent); border: 1px solid var(--border-accent);
+            font-size: 0.9rem; line-height: 1; transition: background 150ms ease, color 150ms ease;
+        }
+        .engine-close:hover { background: var(--accent); color: #0a0f08; }
+        .engine-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .panel-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
         .controls {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -398,10 +432,32 @@
             .vtab svg { width: 26px; }
             .tool-badge { margin-left: 0; }
             .panel-canvas, .panel-canvas.tall { height: 260px; }
+            .panel-canvas.xtall { height: 340px; }
         }
     </style>
 </head>
 <body>
+    <div class="hud" aria-hidden="true">
+        <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+        <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+        <svg class="hud-reticle" viewBox="0 0 300 300" fill="none" stroke="#a3e635" stroke-width="1.5">
+            <g class="hud-ladder" opacity="0.7">
+                <path d="M60 150h70M170 150h70" stroke-width="2"/>
+                <path d="M85 105h40v6M175 111v-6h40" />
+                <path d="M85 195h40v-6M175 189v6h40" stroke-dasharray="6 4"/>
+                <path d="M100 60h30v6M170 66v-6h30" opacity="0.6"/>
+                <path d="M100 240h30v-6M170 234v6h30" stroke-dasharray="6 4" opacity="0.6"/>
+                <text x="62" y="109" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">10</text>
+                <text x="222" y="109" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">10</text>
+                <text x="62" y="199" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">-10</text>
+                <text x="222" y="199" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">-10</text>
+            </g>
+            <path d="M128 150h-14M172 150h14M150 128v-10" stroke="#e879f9" stroke-width="2"/>
+            <circle cx="150" cy="150" r="5" stroke="#e879f9" stroke-width="2"/>
+        </svg>
+        <div class="hud-tape left"><div class="ticks"></div><small>KTAS</small><b>447</b></div>
+        <div class="hud-tape right"><div class="ticks"></div><small>FT</small><b>36000</b></div>
+    </div>
     <div class="progress" id="progress"></div>
 
     <nav class="topnav">
@@ -410,34 +466,9 @@
     </nav>
 
     <header class="hero" id="hero">
-        <!-- Cover video: save as "Syd Website Images/Applied Aerodynamics Page/Cover Video.mp4" -->
-        <video class="hero-video" id="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
-            <source src="./Syd%20Website%20Images/Applied%20Aerodynamics%20Page/Cover%20Video.mp4" type="video/mp4">
+        <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+            <source src="./Syd%20Website%20Assets/Applied%20Aerodynamics%20Page/Cover%20Video.mp4" type="video/mp4">
         </video>
-
-        <div class="hud" aria-hidden="true">
-            <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
-            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
-            <svg class="hud-reticle" viewBox="0 0 300 300" fill="none" stroke="#a3e635" stroke-width="1.5">
-                <g class="hud-ladder" opacity="0.7">
-                    <path d="M60 150h70M170 150h70" stroke-width="2"/>
-                    <path d="M85 105h40v6M175 111v-6h40" />
-                    <path d="M85 195h40v-6M175 189v6h40" stroke-dasharray="6 4"/>
-                    <path d="M100 60h30v6M170 66v-6h30" opacity="0.6"/>
-                    <path d="M100 240h30v-6M170 234v6h30" stroke-dasharray="6 4" opacity="0.6"/>
-                    <text x="62" y="109" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">10</text>
-                    <text x="222" y="109" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">10</text>
-                    <text x="62" y="199" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">-10</text>
-                    <text x="222" y="199" fill="#a3e635" stroke="none" font-family="JetBrains Mono" font-size="10">-10</text>
-                </g>
-                <path d="M128 150h-14M172 150h14M150 128v-10" stroke="#e879f9" stroke-width="2"/>
-                <circle cx="150" cy="150" r="5" stroke="#e879f9" stroke-width="2"/>
-            </svg>
-            <div class="hud-tape left"><div class="ticks"></div><small>KTAS</small><b>447</b></div>
-            <div class="hud-tape right"><div class="ticks"></div><small>FT</small><b>36000</b></div>
-        </div>
-        <div class="video-missing">Add Cover Video.mp4 to Syd Website Images/Applied Aerodynamics Page/</div>
-
         <div class="hero-content">
             <span class="eyebrow">APPLIED AERODYNAMICS · FLIGHT LOG</span>
             <h1>From drag counts<br>to <span>lift lines.</span></h1>
@@ -457,12 +488,13 @@
 
     <section class="flightplan" aria-label="Project overview">
         <div class="fp-box">
-            <div class="fp-head"><span>FLIGHT PLAN</span><span>2 PROJECTS · 4 LEGS</span></div>
+            <div class="fp-head"><span>FLIGHT PLAN</span><span>2 PROJECTS · 3 LIVE GRAPHS</span></div>
             <a class="fp-row" href="#crj900"><span class="fp-wpt">WPT 01</span><span class="fp-name">CRJ900 aerodynamic performance</span><span class="fp-tool">EXCEL · PYTHON</span></a>
             <a class="fp-row sub" href="#crj-drag"><span class="fp-wpt">01.A</span><span class="fp-name">Component drag build-up</span><span class="fp-tool">EXCEL</span></a>
             <a class="fp-row sub" href="#crj-thrust"><span class="fp-wpt">01.B</span><span class="fp-name">Thrust curves, 0 to 36,000 ft</span><span class="fp-tool">PYTHON</span></a>
             <a class="fp-row sub" href="#crj-turn"><span class="fp-wpt">01.C</span><span class="fp-name">Turn performance and E-M chart</span><span class="fp-tool">EXCEL</span></a>
             <a class="fp-row" href="#bushcat"><span class="fp-wpt">WPT 02</span><span class="fp-name">Bushcat lift distribution study</span><span class="fp-tool">MATLAB · TORNADO · XFLR5</span></a>
+            <a class="fp-row" href="#interactive"><span class="fp-wpt">WPT 03</span><span class="fp-name">Interactive graphs</span><span class="fp-tool">LIVE</span></a>
         </div>
     </section>
 
@@ -494,26 +526,26 @@
 
                 <div class="vgallery" id="drag-gallery">
                     <div class="vtabs" role="tablist" aria-label="Aircraft component">
-                        <button class="vtab" role="tab" aria-selected="true" data-video="Drag Fuselage" data-caption="Fuselage: the largest wetted area on the aircraft, so skin friction dominates its contribution.">
+                        <button class="vtab" role="tab" aria-selected="true" data-video="Fuselage" data-caption="Fuselage: the largest wetted area on the aircraft, so skin friction dominates its contribution.">
                             <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 11c0-2.5 3-4 7-4h17c3 0 6 2 6 4s-3 4-6 4H9c-4 0-7-1.5-7-4z"/><path d="M8 9.5h2M12 9.5h2M16 9.5h2M20 9.5h2" stroke-linecap="round"/></svg>
                             Fuselage
                         </button>
-                        <button class="vtab" role="tab" aria-selected="false" data-video="Drag Wings" data-caption="Wings: drag from skin friction and thickness, corrected for sweep and the local Mach number.">
+                        <button class="vtab" role="tab" aria-selected="false" data-video="Wings" data-caption="Wings: drag from skin friction and thickness, corrected for sweep and the local Mach number.">
                             <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 4h6l12 14H26L17 10 8 18H2z" stroke-linejoin="round"/></svg>
                             Wings
                         </button>
-                        <button class="vtab" role="tab" aria-selected="false" data-video="Drag Empennage" data-caption="Empennage: the T-tail's horizontal and vertical stabilisers, treated as lifting surfaces.">
+                        <button class="vtab" role="tab" aria-selected="false" data-video="Tail" data-caption="Empennage: the T-tail's horizontal and vertical stabilisers, treated as lifting surfaces.">
                             <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 20l3-14h3l-1 14zM8 6h18" stroke-linejoin="round"/></svg>
                             Empennage
                         </button>
-                        <button class="vtab" role="tab" aria-selected="false" data-video="Drag Landing Gear" data-caption="Landing gear: a bluff-body drag increment that only applies with the gear extended.">
+                        <button class="vtab" role="tab" aria-selected="false" data-video="Landing gear" data-caption="Landing gear: a bluff-body drag increment that only applies with the gear extended.">
                             <svg viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 2v10M12 12h10"/><circle cx="12" cy="16" r="4"/><circle cx="22" cy="16" r="4"/></svg>
                             Landing Gear
                         </button>
                     </div>
                     <div class="vstage">
-                        <video id="drag-video" muted loop playsinline controls preload="metadata"></video>
-                        <div class="placeholder"><strong id="drag-missing-name">Drag Fuselage.mp4</strong>Add to Syd Website Images/Applied Aerodynamics Page/</div>
+                        <video id="drag-video" autoplay muted loop playsinline preload="auto"></video>
+                        <div class="placeholder"><strong id="drag-missing-name">Fuselage.mp4</strong>Add to Syd Website Assets/Applied Aerodynamics Page/</div>
                     </div>
                     <div class="vcaption" id="drag-caption"></div>
                 </div>
@@ -532,31 +564,25 @@
                     $$\frac{T}{T_0} = \sigma^{\,m}, \qquad \sigma = \frac{\rho(h)}{\rho_0}$$
                 </div>
                 <p>The exponent \(m\) depends on the engine type and its bypass ratio. In the troposphere, density follows the ISA lapse rate up to 36,089 ft, which is why 36,000 ft is a natural ceiling for the analysis.</p>
-
-                <div class="panel" id="lapse-panel">
-                    <div class="panel-head"><span class="t">THRUST LAPSE · ISA</span><span class="n">Explainer: σ^m model, not the project's engine data</span></div>
-                    <div class="panel-canvas"><canvas id="lapse-canvas" role="img" aria-label="Thrust ratio falling with altitude from 1 at sea level, for the chosen lapse exponent"></canvas></div>
-                    <div class="controls">
-                        <div class="ctrl">
-                            <label for="lapse-h">Altitude <output id="lapse-h-out">20,000 ft</output></label>
-                            <input type="range" id="lapse-h" min="0" max="36000" step="500" value="20000">
-                        </div>
-                        <div class="ctrl">
-                            <label for="lapse-m">Lapse exponent m <output id="lapse-m-out">0.80</output></label>
-                            <input type="range" id="lapse-m" min="0.5" max="1.2" step="0.05" value="0.8">
-                        </div>
-                    </div>
-                    <div class="readouts">
-                        <div class="readout"><span>Temperature</span><b id="lapse-t">–</b></div>
-                        <div class="readout"><span>Density</span><b id="lapse-rho">–</b></div>
-                        <div class="readout"><span>Density ratio σ</span><b id="lapse-sigma">–</b></div>
-                        <div class="readout hl"><span>Thrust ratio T/T₀</span><b id="lapse-tr">–</b></div>
-                    </div>
-                </div>
+                <p class="try-link"><a href="#ia-lapse">Try it: interactive thrust-lapse graph ↓</a></p>
 
                 <figure>
-                    <div class="img-box" data-img="Thrust Curves"><img alt="CRJ900 thrust curves at altitudes from 0 to 36,000 ft"></div>
-                    <figcaption><span class="fig-no">FIG 1.1</span> CRJ900 thrust curves from 0 to 36,000 ft, generated in Python.</figcaption>
+                    <div class="panel" id="thrust-panel">
+                        <div class="panel-head"><span class="t">THRUST CURVES · 0–36,000 FT</span><span class="n">T(M) = aM³ + bM² + cM + d at each altitude</span></div>
+                        <div class="panel-canvas tall">
+                            <div class="engine-pop">
+                                <button type="button" class="engine-close" aria-label="Close engine image">&times;</button>
+                                <img src="./Syd%20Website%20Assets/Applied%20Aerodynamics%20Page/CF34-Engine.png" alt="" loading="lazy">
+                                <span>GE CF34-8C5 · CRJ900 ENGINE</span>
+                            </div>
+                            <canvas id="thrust-canvas" role="img" aria-label="Turbofan thrust in kilograms-force against Mach number at eight altitudes from sea level to 36,000 ft; thrust falls with altitude, from about 12,800 kgf static at sea level to about 2,500 kgf at 36,000 ft"></canvas></div>
+                        <div class="readouts">
+                            <div class="readout"><span>Static thrust, sea level</span><b id="thr-sl">–</b></div>
+                            <div class="readout"><span>Static thrust, 36,000 ft</span><b id="thr-cr">–</b></div>
+                            <div class="readout hl"><span>Thrust kept at 36,000 ft</span><b id="thr-ratio">–</b></div>
+                        </div>
+                    </div>
+                    <figcaption><span class="fig-no">FIG 1.1</span> CRJ900 thrust curves from 0 to 36,000 ft, generated from the Python thrust model.</figcaption>
                 </figure>
             </section>
 
@@ -571,39 +597,26 @@
                 <div class="equation">
                     $$\omega = \frac{g\sqrt{n^2-1}}{V}, \qquad R = \frac{V^2}{g\sqrt{n^2-1}}, \qquad n_{\text{stall}} = \frac{\tfrac{1}{2}\rho V^2 S\, C_{L_{\max}}}{W}$$
                 </div>
-
-                <div class="panel" id="em-panel">
-                    <div class="panel-head"><span class="t">E-M DIAGRAM</span><span class="n">Explainer: turn kinematics with lift and load limits</span></div>
-                    <div class="panel-canvas tall"><canvas id="em-canvas" role="img" aria-label="Turn rate against airspeed with load-factor lines, turn-radius lines, the stall boundary and the corner speed"></canvas></div>
-                    <div class="controls">
-                        <div class="ctrl">
-                            <label for="em-h">Altitude <output id="em-h-out">10,000 ft</output></label>
-                            <input type="range" id="em-h" min="0" max="36000" step="1000" value="10000">
-                        </div>
-                        <div class="ctrl">
-                            <label for="em-ws">Wing loading W/S <output id="em-ws-out">500 kg/m²</output></label>
-                            <input type="range" id="em-ws" min="300" max="650" step="10" value="500">
-                        </div>
-                        <div class="ctrl">
-                            <label for="em-cl">C<sub>L,max</sub> <output id="em-cl-out">1.50</output></label>
-                            <input type="range" id="em-cl" min="1" max="2.4" step="0.05" value="1.5">
-                        </div>
-                        <div class="ctrl">
-                            <label for="em-n">Limit load factor <output id="em-n-out">2.5 g</output></label>
-                            <input type="range" id="em-n" min="1.5" max="4" step="0.1" value="2.5">
-                        </div>
-                    </div>
-                    <div class="readouts">
-                        <div class="readout"><span>1 g stall speed</span><b id="em-vs">–</b></div>
-                        <div class="readout mg"><span>Corner speed</span><b id="em-vc">–</b></div>
-                        <div class="readout hl"><span>Max turn rate</span><b id="em-wmax">–</b></div>
-                        <div class="readout"><span>Radius at corner</span><b id="em-r">–</b></div>
-                    </div>
-                </div>
+                <p class="try-link"><a href="#ia-em">Try it: interactive E-M diagram ↓</a></p>
 
                 <figure>
-                    <div class="img-box" data-img="EM Chart"><img alt="CRJ900 energy-manoeuvrability chart built in Excel"></div>
-                    <figcaption><span class="fig-no">FIG 1.2</span> CRJ900 energy-manoeuvrability chart, built in Excel.</figcaption>
+                    <div class="panel" id="emx-panel">
+                        <div class="panel-head"><span class="t">E-M CHART · EXCEL MODEL</span><span class="n">SEP contours over load-factor and turn-radius lines</span></div>
+                        <div class="panel-canvas xtall">
+                            <div class="engine-pop photo">
+                                <button type="button" class="engine-close" aria-label="Close aircraft image">&times;</button>
+                                <img src="./Syd%20Website%20Assets/Applied%20Aerodynamics%20Page/CRJ900.avif" alt="" loading="lazy">
+                                <span>BOMBARDIER CRJ900</span>
+                            </div>
+                            <canvas id="emx-canvas" role="img" aria-label="Energy-manoeuvrability chart of turn rate in degrees per second against velocity in metres per second, with the stall line, constant load-factor lines from 1.5 g to 5 g, constant turn-radius lines from 400 m to 1000 m, and specific excess power contours from 2000 down to minus 300 feet per minute"></canvas></div>
+                        <div class="readouts">
+                            <div class="readout"><span>1 g stall speed</span><b id="emx-vs">–</b></div>
+                            <div class="readout mg"><span>Corner speed (5 g)</span><b id="emx-vc">–</b></div>
+                            <div class="readout"><span>Max instantaneous turn</span><b id="emx-wi">–</b></div>
+                            <div class="readout hl"><span>Max sustained turn (SEP = 0)</span><b id="emx-ws">–</b></div>
+                        </div>
+                    </div>
+                    <figcaption><span class="fig-no">FIG 1.2</span> Energy-manoeuvrability chart, plotted from the Excel model.</figcaption>
                 </figure>
             </section>
         </article>
@@ -631,45 +644,8 @@
                     $$C_L = \pi\, AR\, A_1, \qquad C_{D_i} = \pi\, AR \sum_{n} n A_n^2 = \frac{C_L^2}{\pi\, e\, AR}$$
                 </div>
                 <p>The aerofoil enters through its lift-curve slope \(a_0\) and zero-lift angle \(\alpha_{L=0}\). The wing geometry enters through the chord distribution \(c(\theta)\) (taper and aspect ratio) and through twist in \(\alpha(\theta)\).</p>
+                <p class="try-link"><a href="#ia-llt">Try it: interactive lifting-line solver ↓</a></p>
 
-                <div class="panel" id="llt-panel">
-                    <div class="panel-head"><span class="t">LIFTING-LINE SOLVER</span><span class="n">Live solution of the monoplane equation · N = 40</span></div>
-                    <div class="panel-canvas tall"><canvas id="llt-canvas" role="img" aria-label="Spanwise lift distribution compared with the elliptical distribution, with the wing planform drawn above"></canvas></div>
-                    <div class="controls">
-                        <div class="ctrl">
-                            <label for="llt-foil">Aerofoil</label>
-                            <select id="llt-foil">
-                                <option value="0">NACA 0012 · symmetric</option>
-                                <option value="-2.08" selected>NACA 2412 · 2% camber</option>
-                                <option value="-4.15">NACA 4412 · 4% camber</option>
-                                <option value="-6.23">NACA 6412 · 6% camber</option>
-                            </select>
-                        </div>
-                        <div class="ctrl">
-                            <label for="llt-ar">Aspect ratio <output id="llt-ar-out">7.0</output></label>
-                            <input type="range" id="llt-ar" min="4" max="14" step="0.5" value="7">
-                        </div>
-                        <div class="ctrl">
-                            <label for="llt-taper">Taper ratio λ <output id="llt-taper-out">1.00</output></label>
-                            <input type="range" id="llt-taper" min="0.2" max="1" step="0.05" value="1">
-                        </div>
-                        <div class="ctrl">
-                            <label for="llt-twist">Washout (tip twist) <output id="llt-twist-out">0.0°</output></label>
-                            <input type="range" id="llt-twist" min="0" max="6" step="0.5" value="0">
-                        </div>
-                        <div class="ctrl">
-                            <label for="llt-alpha">Root angle of attack <output id="llt-alpha-out">5.0°</output></label>
-                            <input type="range" id="llt-alpha" min="-2" max="12" step="0.5" value="5">
-                        </div>
-                    </div>
-                    <div class="readouts">
-                        <div class="readout hl"><span>Lift coefficient C<sub>L</sub></span><b id="llt-cl">–</b></div>
-                        <div class="readout"><span>Induced drag C<sub>Di</sub></span><b id="llt-cdi">–</b></div>
-                        <div class="readout mg"><span>Span efficiency e</span><b id="llt-e">–</b></div>
-                        <div class="readout"><span>Peak c<sub>l</sub>/C<sub>L</sub> at</span><b id="llt-peak">–</b></div>
-                    </div>
-                </div>
-                <p>The "peak \(c_l/C_L\)" readout shows where along the span the section lift coefficient is highest, which is roughly where the wing will stall first. A rectangular wing peaks at the root, which is benign. Strong taper pushes the peak towards the tip, which is why tapered wings usually need washout.</p>
             </section>
 
             <section class="section" id="bushcat-fidelity">
@@ -716,6 +692,128 @@
                 </div>
             </section>
         </article>
+
+        <!-- ================= INTERACTIVE GRAPHS ================= -->
+        <article id="interactive">
+            <div class="proj-head">
+                <span class="proj-tag">INTERACTIVE</span>
+                <h2>Interactive Graphs</h2>
+            </div>
+            <p class="lede">Play around with some parameters to see how thrust, excess power and lift vary.</p>
+
+            <section class="section" id="ia-lapse">
+                <div class="section-head">
+                    <span class="wpt">03.A</span>
+                    <h3>Thrust lapse with altitude</h3>
+                </div>
+                <p><strong>What it shows:</strong> how much of its sea-level thrust a jet engine keeps as it climbs. An engine's thrust depends on the mass of air it takes in, so as the air thins with altitude, thrust falls with it.</p>
+                <p><strong>How to use it:</strong> drag the altitude slider to read off the temperature, density and density ratio from the International Standard Atmosphere, and the share of sea-level thrust left at that height. The lapse exponent \(m\) sets how strongly thrust follows density: at \(m = 1\) thrust falls exactly with density (the dashed line), and lower values describe an engine that holds on to its thrust better.</p>
+                <div class="panel" id="lapse-panel">
+                    <div class="panel-head"><span class="t">THRUST LAPSE · ISA</span><span class="n">Explainer: σ^m model, not the project's engine data</span></div>
+                    <div class="panel-canvas"><canvas id="lapse-canvas" role="img" aria-label="Thrust ratio falling with altitude from 1 at sea level, for the chosen lapse exponent"></canvas></div>
+                    <div class="controls">
+                        <div class="ctrl">
+                            <label for="lapse-h">Altitude <output id="lapse-h-out">20,000 ft</output></label>
+                            <input type="range" id="lapse-h" min="0" max="36000" step="500" value="20000">
+                        </div>
+                        <div class="ctrl">
+                            <label for="lapse-m">Lapse exponent m <output id="lapse-m-out">0.80</output></label>
+                            <input type="range" id="lapse-m" min="0.5" max="1.2" step="0.05" value="0.8">
+                        </div>
+                    </div>
+                    <div class="readouts">
+                        <div class="readout"><span>Temperature</span><b id="lapse-t">–</b></div>
+                        <div class="readout"><span>Density</span><b id="lapse-rho">–</b></div>
+                        <div class="readout"><span>Density ratio σ</span><b id="lapse-sigma">–</b></div>
+                        <div class="readout hl"><span>Thrust ratio T/T₀</span><b id="lapse-tr">–</b></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="ia-em">
+                <div class="section-head">
+                    <span class="wpt">03.B</span>
+                    <h3>Turn performance: the E-M diagram</h3>
+                </div>
+                <p><strong>What it shows:</strong> how quickly an aircraft can turn at each airspeed. The lime line is the stall boundary: below it the wing can't make enough lift to pull a tighter turn. The red line is the structural limit, the most g the airframe is allowed to take. Where they meet is the <strong>corner speed</strong>, the speed for the fastest possible turn.</p>
+                <p><strong>How to use it:</strong> climbing thins the air and pushes the stall boundary to higher speeds. A heavier wing loading \(W/S\) does the same, while a higher \(C_{L,\max}\) (for example with flaps) lets the wing pull harder at low speed. Raising the limit load factor lifts the structural limit and moves the corner speed up. The faint lines are constant load factor (white) and constant turn radius (dashed).</p>
+                <div class="panel" id="em-panel">
+                    <div class="panel-head"><span class="t">E-M DIAGRAM</span><span class="n">Explainer: turn kinematics with lift and load limits</span></div>
+                    <div class="panel-canvas tall"><canvas id="em-canvas" role="img" aria-label="Turn rate against airspeed with load-factor lines, turn-radius lines, the stall boundary and the corner speed"></canvas></div>
+                    <div class="controls">
+                        <div class="ctrl">
+                            <label for="em-h">Altitude <output id="em-h-out">10,000 ft</output></label>
+                            <input type="range" id="em-h" min="0" max="36000" step="1000" value="10000">
+                        </div>
+                        <div class="ctrl">
+                            <label for="em-ws">Wing loading W/S <output id="em-ws-out">500 kg/m²</output></label>
+                            <input type="range" id="em-ws" min="300" max="650" step="10" value="500">
+                        </div>
+                        <div class="ctrl">
+                            <label for="em-cl">C<sub>L,max</sub> <output id="em-cl-out">1.50</output></label>
+                            <input type="range" id="em-cl" min="1" max="2.4" step="0.05" value="1.5">
+                        </div>
+                        <div class="ctrl">
+                            <label for="em-n">Limit load factor <output id="em-n-out">2.5 g</output></label>
+                            <input type="range" id="em-n" min="1.5" max="4" step="0.1" value="2.5">
+                        </div>
+                    </div>
+                    <div class="readouts">
+                        <div class="readout"><span>1 g stall speed</span><b id="em-vs">–</b></div>
+                        <div class="readout mg"><span>Corner speed</span><b id="em-vc">–</b></div>
+                        <div class="readout hl"><span>Max turn rate</span><b id="em-wmax">–</b></div>
+                        <div class="readout"><span>Radius at corner</span><b id="em-r">–</b></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="ia-llt">
+                <div class="section-head">
+                    <span class="wpt">03.C</span>
+                    <h3>Lift across the span: lifting-line solver</h3>
+                </div>
+                <p><strong>What it shows:</strong> how lift is spread along a wing from root to tip, solved live with Prandtl's lifting-line theory and compared with the ideal elliptical distribution, which gives the least induced drag for a given amount of lift.</p>
+                <p><strong>How to use it:</strong> pick an aerofoil (more camber gives more lift at the same angle of attack), then change the wing's aspect ratio, taper and washout to reshape the loading. The readouts show the lift coefficient, the induced drag and the span efficiency \(e\), where 1 means a perfectly elliptical loading.</p>
+                <div class="panel" id="llt-panel">
+                    <div class="panel-head"><span class="t">LIFTING-LINE SOLVER</span><span class="n">Live solution of the monoplane equation · N = 40</span></div>
+                    <div class="panel-canvas tall"><canvas id="llt-canvas" role="img" aria-label="Spanwise lift distribution compared with the elliptical distribution, with the wing planform drawn above"></canvas></div>
+                    <div class="controls">
+                        <div class="ctrl">
+                            <label for="llt-foil">Aerofoil</label>
+                            <select id="llt-foil">
+                                <option value="0">NACA 0012 · symmetric</option>
+                                <option value="-2.08" selected>NACA 2412 · 2% camber</option>
+                                <option value="-4.15">NACA 4412 · 4% camber</option>
+                                <option value="-6.23">NACA 6412 · 6% camber</option>
+                            </select>
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-ar">Aspect ratio <output id="llt-ar-out">7.0</output></label>
+                            <input type="range" id="llt-ar" min="4" max="14" step="0.5" value="7">
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-taper">Taper ratio λ <output id="llt-taper-out">1.00</output></label>
+                            <input type="range" id="llt-taper" min="0.2" max="1" step="0.05" value="1">
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-twist">Washout (tip twist) <output id="llt-twist-out">0.0°</output></label>
+                            <input type="range" id="llt-twist" min="0" max="6" step="0.5" value="0">
+                        </div>
+                        <div class="ctrl">
+                            <label for="llt-alpha">Root angle of attack <output id="llt-alpha-out">5.0°</output></label>
+                            <input type="range" id="llt-alpha" min="-2" max="12" step="0.5" value="5">
+                        </div>
+                    </div>
+                    <div class="readouts">
+                        <div class="readout hl"><span>Lift coefficient C<sub>L</sub></span><b id="llt-cl">–</b></div>
+                        <div class="readout"><span>Induced drag C<sub>Di</sub></span><b id="llt-cdi">–</b></div>
+                        <div class="readout mg"><span>Span efficiency e</span><b id="llt-e">–</b></div>
+                        <div class="readout"><span>Peak c<sub>l</sub>/C<sub>L</sub> at</span><b id="llt-peak">–</b></div>
+                    </div>
+                </div>
+                <p>The "peak \(c_l/C_L\)" readout shows where along the span the section lift coefficient is highest, which is roughly where the wing will stall first. A rectangular wing peaks at the root, which is benign. Strong taper pushes the peak towards the tip, which is why tapered wings usually need washout.</p>
+            </section>
+        </article>
     </main>
 
     <footer>© 2026 Gopolang Makgothi · Aerospace Engineer</footer>
@@ -727,7 +825,7 @@
     </div>
 
     <script>
-        const MEDIA_DIR = './Syd%20Website%20Images/Applied%20Aerodynamics%20Page/';
+        const MEDIA_DIR = './Syd%20Website%20Assets/Applied%20Aerodynamics%20Page/';
         const DEG = Math.PI / 180;
         const MONO = '"JetBrains Mono", monospace';
         const ACCENT = '#a3e635', MAGENTA = '#e879f9', FAINT = '#66735f';
@@ -747,7 +845,7 @@
 
         // Shared axes: returns {X, Y} mapping data to pixels
         function axes(ctx, w, h, o) {
-            const pad = { l: o.padL || 54, r: 18, t: o.padT || 22, b: 40 };
+            const pad = { l: o.padL || 54, r: o.padR || 18, t: o.padT || 22, b: 40 };
             const X = x => pad.l + (x - o.x0) / (o.x1 - o.x0) * (w - pad.l - pad.r);
             const Y = y => h - pad.b - (y - o.y0) / (o.y1 - o.y0) * (h - pad.t - pad.b);
             ctx.font = `10px ${MONO}`; ctx.lineWidth = 1;
@@ -776,15 +874,6 @@
             return { T, p, rho: p / (287.05 * T), a: Math.sqrt(1.4 * 287.05 * T) };
         }
 
-        // ===== Hero video: show a hint when the file hasn't been added yet =====
-        const hero = document.getElementById('hero');
-        const heroVideo = document.getElementById('hero-video');
-        heroVideo.querySelector('source').addEventListener('error', () => {
-            heroVideo.remove();
-            hero.classList.add('no-video');
-        });
-        if (reduceMotion) { heroVideo.removeAttribute('autoplay'); heroVideo.pause(); }
-
         // ===== Drag component video gallery =====
         (function dragGallery() {
             const tabs = [...document.querySelectorAll('#drag-gallery .vtab')];
@@ -802,7 +891,16 @@
             video.addEventListener('error', tryLoad);
             video.addEventListener('loadeddata', () => {
                 stage.classList.remove('missing');
-                if (!reduceMotion) video.play().catch(() => {});
+                video.muted = true;
+                video.play().catch(() => {});
+            });
+
+            // Vertical Shorts: shrink the gallery to the video's own width and aspect ratio
+            const gallery = document.getElementById('drag-gallery');
+            video.addEventListener('loadedmetadata', () => {
+                const portrait = video.videoHeight > video.videoWidth;
+                gallery.classList.toggle('portrait', portrait);
+                if (portrait) gallery.style.setProperty('--ar', video.videoWidth / video.videoHeight);
             });
 
             function select(tab) {
@@ -876,6 +974,96 @@
             window.addEventListener('resize', update);
             update();
         })();
+
+        // ===== Thrust curves (cubic fits from the Python thrust model) =====
+        (function thrustPanel() {
+            const canvas = document.getElementById('thrust-canvas');
+            const panel = document.getElementById('thrust-panel');
+            const $ = id => document.getElementById(id);
+            // [altitude ft, [a, b, c, d], colour]; T(M) = aM³ + bM² + cM + d in kgf
+            const CURVES = [
+                [0,     [-10629, 26000, -15382, 12764],      '#f87171'],
+                [5000,  [-22469, 27076, -13617, 8617.3],     '#fb923c'],
+                [10000, [-5867, 7093, -6980, 7408],          '#facc15'],
+                [15000, [-6867.1, 8093.4, -6980, 6769.6],    '#a3e635'],
+                [20000, [-6867, 8093, -5980, 5554],          '#34d399'],
+                [25000, [-6200, 6478, -4055.9, 4376.3],      '#22d3ee'],
+                [30000, [-5150, 6475, -4187, 3670],          '#818cf8'],
+                [36000, [-5150.4, 6195.1, -3325.7, 2476.9],  '#e879f9'],
+            ];
+            const thrust = ([a, b, c, d], M) => ((a * M + b) * M + c) * M + d;
+            // Same Mach grid as the Python model: 0 to 7/8 of 150 m/s, over the speed of sound at 36,000 ft
+            const aCruise = 20.05 * Math.sqrt(288.16 - 0.0065 * 36000 * 0.3048);
+            const M_MAX = 150 * (CURVES.length - 1) / CURVES.length / aCruise;
+            const STEPS = 160;
+
+            const sl = thrust(CURVES[0][1], 0), cr = thrust(CURVES[7][1], 0);
+            $('thr-sl').textContent = Math.round(sl).toLocaleString('en-US') + ' kgf';
+            $('thr-cr').textContent = Math.round(cr).toLocaleString('en-US') + ' kgf';
+            $('thr-ratio').textContent = (cr / sl * 100).toFixed(0) + '%';
+
+            // Draw animation: curves trace in one after another, slowly
+            const DRAW_MS = 1800, STAGGER_MS = 600;
+            const TOTAL_MS = DRAW_MS + STAGGER_MS * (CURVES.length - 1);
+            let elapsed = reduceMotion ? TOTAL_MS : 0;
+
+            function draw() {
+                const { ctx, w, h } = fitCanvas(canvas);
+                const { X, Y } = axes(ctx, w, h, {
+                    x0: 0, x1: 0.45, dx: 0.05, y0: 0, y1: 14000, dy: 2000, padR: 64,
+                    xLabel: 'Mach number', yLabel: 'Thrust (kgf)',
+                    fx: x => x.toFixed(2), fy: y => y ? (y / 1000) + 'k' : '0'
+                });
+                CURVES.forEach(([alt, k, color], i) => {
+                    const t = Math.min(Math.max((elapsed - i * STAGGER_MS) / DRAW_MS, 0), 1);
+                    if (t <= 0) return;
+                    const ease = 1 - Math.pow(1 - t, 3);
+                    const end = ease * M_MAX, n = Math.max(1, Math.round(STEPS * ease));
+                    ctx.beginPath();
+                    for (let j = 0; j <= n; j++) {
+                        const M = end * j / n;
+                        j ? ctx.lineTo(X(M), Y(thrust(k, M))) : ctx.moveTo(X(M), Y(thrust(k, M)));
+                    }
+                    ctx.strokeStyle = color; ctx.lineWidth = 2.2;
+                    ctx.shadowColor = color; ctx.shadowBlur = 6;
+                    ctx.stroke(); ctx.shadowBlur = 0;
+                    // Leading dot while drawing, altitude label once finished
+                    const tipX = X(end), tipY = Y(thrust(k, end));
+                    if (t < 1) {
+                        ctx.beginPath(); ctx.arc(tipX, tipY, 3.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+                    } else {
+                        ctx.font = `600 10px ${MONO}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                        ctx.fillStyle = color;
+                        ctx.fillText(alt ? (alt / 1000) + 'k ft' : 'SL', tipX + 8, tipY);
+                    }
+                });
+            }
+
+            let raf = null, last = null;
+            function tick(now) {
+                if (last !== null) elapsed += now - last;
+                last = now;
+                draw();
+                raf = elapsed < TOTAL_MS ? requestAnimationFrame(tick) : null;
+            }
+            draw();
+            if (!reduceMotion) {
+                const io = new IntersectionObserver(entries => {
+                    if (!entries[0].isIntersecting) return;
+                    io.disconnect();
+                    raf = requestAnimationFrame(tick);
+                }, { threshold: 0.5 });
+                io.observe(panel);
+            }
+            window.addEventListener('resize', () => { if (!raf) draw(); });
+        })();
+
+        // ===== Chart image pop-ups: the × hides one until the pointer leaves and comes back to the chart =====
+        document.querySelectorAll('.engine-pop').forEach(pop => {
+            const stage = pop.parentElement;
+            pop.querySelector('.engine-close').addEventListener('click', () => stage.classList.add('pop-closed'));
+            stage.addEventListener('mouseleave', () => stage.classList.remove('pop-closed'));
+        });
 
         // ===== E-M diagram panel =====
         (function emPanel() {
@@ -971,6 +1159,163 @@
             ins.forEach(el => el.addEventListener('input', update));
             window.addEventListener('resize', update);
             update();
+        })();
+
+        // ===== E-M chart from the Excel model (EM-Chart.xlsx) =====
+        (function emxPanel() {
+            const canvas = document.getElementById('emx-canvas');
+            const panel = document.getElementById('emx-panel');
+            const $ = id => document.getElementById(id);
+            // Cached series from EM-Chart.xlsx ([V m/s, ω deg/s])
+            const EM = {
+                stall: [[36.87,0],[40.39,9.23],[43.63,12.623],[46.64,15.052],[49.47,17.005],[52.15,18.669],[54.69,20.139],[57.12,21.468],[59.46,22.689],[61.7,23.825],[63.87,24.892],[65.96,25.903],[67.99,26.864],[69.96,27.784],[71.88,28.668],[73.75,29.519],[75.57,30.341],[77.34,31.138],[79.08,31.912],[80.78,32.664],[82.45,33.397]],
+                n: [
+                    [1.5, [[46,14.282],[48,13.661],[50,13.092],[52,12.568],[54,12.085],[56,11.637],[58,11.222],[60,10.835],[62,10.474],[64,10.136],[66,9.819],[68,9.521],[70,9.241],[72,8.977],[74,8.728],[76,8.492],[78,8.269],[80,8.057],[82,7.855],[84,7.664],[86,7.481],[88,7.307],[90,7.141],[92,6.982],[94,6.831],[96,6.685],[98,6.546],[100,6.412],[102,6.284],[104,6.161],[106,6.043],[108,5.928],[110,5.819],[112,5.713],[114,5.611],[116,5.512],[118,5.417],[120,5.326],[122,5.237],[124,5.151],[126,5.068],[128,4.987],[130,4.91],[132,4.834],[134,4.761],[136,4.69],[138,4.621],[140,4.554],[142,4.489],[144,4.426],[146,4.364],[148,4.304],[150,4.246],[152,4.189],[154,4.134],[156,4.081],[158,4.028],[160,3.977],[162,3.928],[164,3.879],[166,3.832],[168,3.786],[170,3.741],[172,3.697],[174,3.654],[176,3.612],[178,3.571],[180,3.53]]],
+                    [2, [[54,18.029],[56,17.385],[58,16.785],[60,16.226],[62,15.702],[64,15.211],[66,14.751],[68,14.317],[70,13.908],[72,13.521],[74,13.156],[76,12.81],[78,12.481],[80,12.169],[82,11.872],[84,11.59],[86,11.32],[88,11.063],[90,10.817],[92,10.582],[94,10.357],[96,10.141],[98,9.934],[100,9.735],[102,9.544],[104,9.361],[106,9.184],[108,9.014],[110,8.85],[112,8.692],[114,8.54],[116,8.393],[118,8.25],[120,8.113],[122,7.98],[124,7.851],[126,7.726],[128,7.606],[130,7.489],[132,7.375],[134,7.265],[136,7.158],[138,7.055],[140,6.954],[142,6.856],[144,6.761],[146,6.668],[148,6.578],[150,6.49],[152,6.405],[154,6.322],[156,6.241],[158,6.162],[160,6.085],[162,6.01],[164,5.936],[166,5.865],[168,5.795],[170,5.727],[172,5.66],[174,5.595],[176,5.532],[178,5.469],[180,5.409],[182,5.349],[184,5.291],[186,5.234],[188,5.178],[190,5.124]]],
+                    [3, [[64,24.84],[66,24.088],[68,23.379],[70,22.711],[72,22.08],[74,21.483],[76,20.918],[78,20.382],[80,19.872],[82,19.387],[84,18.926],[86,18.486],[88,18.066],[90,17.664],[92,17.28],[94,16.913],[96,16.56],[98,16.222],[100,15.898],[102,15.586],[104,15.286],[106,14.998],[108,14.72],[110,14.453],[112,14.194],[114,13.945],[116,13.705],[118,13.473],[120,13.248],[122,13.031],[124,12.821],[126,12.617],[128,12.42],[130,12.229],[132,12.044],[134,11.864],[136,11.69],[138,11.52],[140,11.356],[142,11.196],[144,11.04],[146,10.889],[148,10.742],[150,10.598],[152,10.459],[154,10.323],[156,10.191],[158,10.062],[160,9.936],[162,9.813],[164,9.694],[166,9.577],[168,9.463],[170,9.352],[172,9.243],[174,9.137],[176,9.033],[178,8.931],[180,8.832],[182,8.735],[184,8.64],[186,8.547],[188,8.456],[190,8.367]]],
+                    [4, [[74,29.418],[76,28.643],[78,27.909],[80,27.211],[82,26.547],[84,25.915],[86,25.313],[88,24.737],[90,24.188],[92,23.662],[94,23.158],[96,22.676],[98,22.213],[100,21.769],[102,21.342],[104,20.932],[106,20.537],[108,20.156],[110,19.79],[112,19.437],[114,19.096],[116,18.766],[118,18.448],[120,18.141],[122,17.843],[124,17.556],[126,17.277],[128,17.007],[130,16.745],[132,16.492],[134,16.245],[136,16.007],[138,15.775],[140,15.549],[142,15.33],[144,15.117],[146,14.91],[148,14.709],[150,14.513],[152,14.322],[154,14.136],[156,13.954],[158,13.778],[160,13.606],[162,13.438],[164,13.274],[166,13.114],[168,12.958],[170,12.805],[172,12.656],[174,12.511],[176,12.369],[178,12.23],[180,12.094],[182,11.961],[184,11.831],[186,11.704],[188,11.579]]],
+                    [5, [[82,33.58],[84,32.781],[86,32.018],[88,31.291],[90,30.595],[92,29.93],[94,29.293],[96,28.683],[98,28.098],[100,27.536],[102,26.996],[104,26.477],[106,25.977],[108,25.496],[110,25.032],[112,24.585],[114,24.154],[116,23.738],[118,23.335],[120,22.947],[122,22.57],[124,22.206],[126,21.854],[128,21.512],[130,21.181],[132,20.86],[134,20.549],[136,20.247],[138,19.953],[140,19.668],[142,19.391],[144,19.122],[146,18.86],[148,18.605],[150,18.357],[152,18.116],[154,17.88],[156,17.651],[158,17.428],[160,17.21],[162,16.997],[164,16.79],[166,16.588],[168,16.39],[170,16.198],[172,16.009],[174,15.825],[176,15.645],[178,15.47],[180,15.298],[182,15.13],[184,14.965],[186,14.804],[188,14.647],[190,14.492],[192,14.341],[194,14.194],[196,14.049],[198,13.907],[200,13.768]]],
+                ],
+                R: [
+                    [1000, [[38,2.177],[40,2.292],[42,2.406],[44,2.521],[46,2.636],[48,2.75],[50,2.865],[52,2.979],[54,3.094],[56,3.209],[58,3.323],[60,3.438],[62,3.552],[64,3.667],[66,3.781],[68,3.896],[70,4.011],[72,4.125],[74,4.24],[76,4.354],[78,4.469],[80,4.584],[82,4.698],[84,4.813],[86,4.927],[88,5.042],[90,5.157],[92,5.271],[94,5.386],[96,5.5],[98,5.615],[100,5.73],[102,5.844],[104,5.959],[106,6.073],[108,6.188],[110,6.303],[112,6.417],[114,6.532],[116,6.646],[118,6.761],[120,6.875],[122,6.99],[124,7.105],[126,7.219],[128,7.334],[130,7.449],[132,7.563],[134,7.678],[136,7.792],[138,7.907],[140,8.021],[142,8.136],[144,8.251],[146,8.365],[148,8.48],[150,8.594],[152,8.709],[154,8.824],[156,8.938],[158,9.053],[160,9.167],[162,9.282],[164,9.396],[166,9.511],[168,9.626],[170,9.74],[172,9.855],[174,9.97],[176,10.084],[178,10.199],[180,10.313]]],
+                    [800, [[38,2.721],[40,2.865],[42,3.008],[44,3.151],[46,3.295],[48,3.438],[50,3.581],[52,3.724],[54,3.868],[56,4.011],[58,4.154],[60,4.297],[62,4.44],[64,4.584],[66,4.727],[68,4.87],[70,5.013],[72,5.157],[74,5.3],[76,5.443],[78,5.586],[80,5.73],[82,5.873],[84,6.016],[86,6.159],[88,6.303],[90,6.446],[92,6.589],[94,6.732],[96,6.875],[98,7.019],[100,7.162],[102,7.305],[104,7.449],[106,7.592],[108,7.735],[110,7.878],[112,8.021],[114,8.165],[116,8.308],[118,8.451],[120,8.594],[122,8.738],[124,8.881],[126,9.024],[128,9.167],[130,9.311],[132,9.454],[134,9.597],[136,9.74],[138,9.883],[140,10.027],[142,10.17],[144,10.313],[146,10.457],[148,10.6],[150,10.743],[152,10.886],[154,11.029],[156,11.173],[158,11.316],[160,11.459],[162,11.602],[164,11.746],[166,11.889],[168,12.032],[170,12.175],[172,12.319],[174,12.462],[176,12.605],[178,12.748],[180,12.892],[182,13.035],[184,13.178]]],
+                    [600, [[40,3.82],[42,4.011],[44,4.202],[46,4.393],[48,4.584],[50,4.775],[52,4.966],[54,5.157],[56,5.348],[58,5.539],[60,5.73],[62,5.921],[64,6.112],[66,6.303],[68,6.494],[70,6.684],[72,6.875],[74,7.066],[76,7.258],[78,7.449],[80,7.639],[82,7.83],[84,8.021],[86,8.212],[88,8.403],[90,8.594],[92,8.785],[94,8.976],[96,9.167],[98,9.358],[100,9.549],[102,9.74],[104,9.931],[106,10.122],[108,10.313],[110,10.504],[112,10.695],[114,10.886],[116,11.077],[118,11.268],[120,11.459],[122,11.65],[124,11.841],[126,12.032],[128,12.223],[130,12.414],[132,12.605],[134,12.796],[136,12.987],[138,13.178],[140,13.369],[142,13.56],[144,13.751],[146,13.942],[148,14.133],[150,14.324],[152,14.515],[154,14.706],[156,14.897],[158,15.088],[160,15.279],[162,15.47],[164,15.661],[166,15.852],[168,16.043],[170,16.234]]],
+                    [400, [[38,5.443],[40,5.73],[42,6.016],[44,6.303],[46,6.589],[48,6.875],[50,7.162],[52,7.449],[54,7.735],[56,8.021],[58,8.308],[60,8.594],[62,8.881],[64,9.167],[66,9.454],[68,9.74],[70,10.027],[72,10.313],[74,10.6],[76,10.886],[78,11.173],[80,11.459],[82,11.746],[84,12.032],[86,12.319],[88,12.605],[90,12.892],[92,13.178],[94,13.464],[96,13.751],[98,14.037],[100,14.324],[102,14.61],[104,14.897],[106,15.183],[108,15.47],[110,15.756],[112,16.043],[114,16.329],[116,16.616],[118,16.902],[120,17.189],[122,17.475],[124,17.762],[126,18.048],[128,18.335],[130,18.621],[132,18.908],[134,19.194],[136,19.481],[138,19.767]]],
+                ],
+                sep: [
+                    [2000, '#34d399', [[81,-0.098],[86,1.892],[91,3.318],[96,4.178],[101,4.474],[106,4.204],[111,3.37],[116,1.97],[121,0]]],
+                    [1000, '#facc15', [[40,7],[50,8.5],[76,11],[98,10],[116,8],[126,6],[130,4],[135,0]]],
+                    [0, '#fb923c', [[47,14.702],[81.81,15.352],[90.9,15.517],[99.99,15.196],[109.08,14.388],[118.17,13.095],[127.26,11.316],[136.35,9.05],[145.44,6.299],[156.55,0]]],
+                    [-300, '#f87171', [[58,22.052],[89.99,23.028],[99.99,23.276],[109.99,22.794],[119.99,21.583],[129.99,19.643],[139.99,16.974],[149.99,13.576],[159.98,9.449],[172.21,0]]],
+                ],
+            };
+
+            // Smooth like Excel's "smoothed line": Catmull-Rom through the points, sampled densely
+            const smooth = pts => {
+                if (pts.length < 3) return pts;
+                const out = [];
+                for (let i = 0; i < pts.length - 1; i++) {
+                    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+                    for (let s = 0; s < 10; s++) {
+                        const t = s / 10, t2 = t * t, t3 = t2 * t;
+                        out.push([0, 1].map(k => 0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * t +
+                            (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3)));
+                    }
+                }
+                out.push(pts[pts.length - 1]);
+                return out;
+            };
+            const stall = smooth(EM.stall);
+            const nLines = EM.n.map(([n, pts]) => [n, smooth(pts)]);
+            const rLines = EM.R.map(([r, pts]) => [r, smooth(pts)]);
+            const seps = EM.sep.map(([v, c, pts]) => [v, c, smooth(pts)]);
+
+            const corner = EM.stall[EM.stall.length - 1];
+            const sustained = EM.sep[2][2].reduce((a, b) => b[1] > a[1] ? b : a);
+            $('emx-vs').textContent = EM.stall[0][0].toFixed(1) + ' m/s';
+            $('emx-vc').textContent = corner[0].toFixed(1) + ' m/s';
+            $('emx-wi').textContent = corner[1].toFixed(1) + ' °/s';
+            $('emx-ws').textContent = sustained[1].toFixed(1) + ' °/s';
+
+            // Draw animation: reference lines fade in, then the stall line, then each SEP contour
+            const GRID_MS = 900, STALL_MS = 1600, SEP_MS = 1800, STAGGER_MS = 700;
+            const SEP_START = GRID_MS + STALL_MS - 300;
+            const TOTAL_MS = SEP_START + STAGGER_MS * (seps.length - 1) + SEP_MS;
+            let elapsed = reduceMotion ? TOTAL_MS : 0;
+            const prog = (start, dur) => {
+                const t = Math.min(Math.max((elapsed - start) / dur, 0), 1);
+                return 1 - Math.pow(1 - t, 3);
+            };
+
+            function draw() {
+                const { ctx, w, h } = fitCanvas(canvas);
+                const { X, Y, pad } = axes(ctx, w, h, {
+                    x0: 20, x1: 200, dx: 20, y0: 0, y1: 35, dy: 5,
+                    xLabel: 'Velocity (m/s)', yLabel: 'Turn rate (°/s)', fy: y => y.toFixed(0)
+                });
+                const line = (pts, frac, color, width, dash) => {
+                    const n = Math.round((pts.length - 1) * frac);
+                    if (n < 1) return null;
+                    ctx.beginPath();
+                    for (let j = 0; j <= n; j++) j ? ctx.lineTo(X(pts[j][0]), Y(pts[j][1])) : ctx.moveTo(X(pts[j][0]), Y(pts[j][1]));
+                    ctx.setLineDash(dash || []); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke(); ctx.setLineDash([]);
+                    return pts[n];
+                };
+                ctx.save();
+                ctx.beginPath(); ctx.rect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b); ctx.clip();
+
+                // Reference lines: constant load factor (white) and constant turn radius (lime, dashed)
+                ctx.globalAlpha = prog(0, GRID_MS);
+                ctx.font = `10px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+                nLines.forEach(([n, pts]) => {
+                    line(pts, 1, 'rgba(255,255,255,0.22)', 1);
+                    const e = pts[pts.length - 1];
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.fillText(n + 'g', X(e[0]) - 2, Y(e[1]) - 3);
+                });
+                rLines.forEach(([r, pts]) => {
+                    line(pts, 1, 'rgba(163,230,53,0.3)', 1, [4, 4]);
+                    const e = pts[pts.length - 1];
+                    ctx.fillStyle = 'rgba(163,230,53,0.6)';
+                    ctx.fillText('R ' + r + ' m', X(e[0]) - 2, Y(e[1]) - 3);
+                });
+                ctx.globalAlpha = 1;
+
+                // Stall line
+                const stallP = prog(GRID_MS, STALL_MS);
+                ctx.shadowColor = 'rgba(163,230,53,0.6)'; ctx.shadowBlur = 8;
+                line(stall, stallP, ACCENT, 2.6);
+                ctx.shadowBlur = 0;
+
+                // SEP contours, one after another, with a leading dot while drawing
+                seps.forEach(([v, color, pts], i) => {
+                    const f = prog(SEP_START + i * STAGGER_MS, SEP_MS);
+                    ctx.shadowColor = color; ctx.shadowBlur = 6;
+                    const tip = line(pts, f, color, 2.2);
+                    ctx.shadowBlur = 0;
+                    if (tip && f < 1) { ctx.beginPath(); ctx.arc(X(tip[0]), Y(tip[1]), 3.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); }
+                });
+                ctx.restore();
+
+                // Corner point, once the stall line reaches it
+                if (stallP >= 1) {
+                    const cx = X(corner[0]), cy = Y(corner[1]);
+                    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fillStyle = MAGENTA; ctx.fill();
+                    ctx.font = `600 11px ${MONO}`; ctx.fillStyle = MAGENTA; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                    ctx.fillText('corner speed', cx + 11, cy);
+                }
+
+                // Legend (top right, clear of the curves), each entry appears with its line
+                const items = [['stall line', ACCENT, stallP],
+                    ...seps.map(([v, c], i) => ['SEP ' + (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' ft/min', c, prog(SEP_START + i * STAGGER_MS, SEP_MS)])];
+                ctx.font = `600 10px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                items.forEach(([label, c, show], i) => {
+                    if (show <= 0) return;
+                    const y = pad.t + 10 + i * 16;
+                    ctx.globalAlpha = show;
+                    ctx.fillStyle = c; ctx.fillText(label, w - pad.r - 22, y);
+                    ctx.fillRect(w - pad.r - 16, y - 1, 12, 2.5);
+                    ctx.globalAlpha = 1;
+                });
+            }
+
+            let raf = null, last = null;
+            function tick(now) {
+                if (last !== null) elapsed += now - last;
+                last = now;
+                draw();
+                raf = elapsed < TOTAL_MS ? requestAnimationFrame(tick) : null;
+            }
+            draw();
+            if (!reduceMotion) {
+                const io = new IntersectionObserver(entries => {
+                    if (!entries[0].isIntersecting) return;
+                    io.disconnect();
+                    raf = requestAnimationFrame(tick);
+                }, { threshold: 0.5 });
+                io.observe(panel);
+            }
+            window.addEventListener('resize', () => { if (!raf) draw(); });
         })();
 
         // ===== Lifting-line solver =====
@@ -1101,7 +1446,7 @@
             update();
         })();
 
-        // ===== Images: drop files into "Syd Website Images/Applied Aerodynamics Page/" =====
+        // ===== Images: drop files into "Syd Website Assets/Applied Aerodynamics Page/" =====
         const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = lightbox.querySelector('img');
@@ -1114,7 +1459,7 @@
                 if (i >= EXTENSIONS.length) {
                     box.classList.add('missing');
                     box.insertAdjacentHTML('beforeend',
-                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Images/Applied Aerodynamics Page/</div>`);
+                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Assets/Applied Aerodynamics Page/</div>`);
                     return;
                 }
                 img.src = MEDIA_DIR + encodeURIComponent(name) + '.' + EXTENSIONS[i++];

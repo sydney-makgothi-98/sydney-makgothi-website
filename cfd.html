@@ -1313,8 +1313,8 @@
             }
         })();
 
-        // ===== Images: drop files into "Syd Website Images/CFD Page/" with any common extension =====
-        const IMG_DIR = './Syd%20Website%20Images/CFD%20Page/';
+        // ===== Images: drop files into "Syd Website Assets/CFD Page/" with any common extension =====
+        const IMG_DIR = './Syd%20Website%20Assets/CFD%20Page/';
         const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = lightbox.querySelector('img');
@@ -1328,7 +1328,7 @@
                 if (i >= EXTENSIONS.length) {
                     box.classList.add('missing');
                     box.insertAdjacentHTML('beforeend',
-                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Images/CFD Page/</div>`);
+                        `<div class="placeholder"><strong>${name}</strong>Add to Syd Website Assets/CFD Page/</div>`);
                     return;
                 }
                 img.src = IMG_DIR + encodeURIComponent(name) + '.' + EXTENSIONS[i++];
