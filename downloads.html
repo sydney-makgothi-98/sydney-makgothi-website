@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downloadable Files | Gopolang Makgothi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #05070d;
+            --bg-raised: #0b1020;
+            --surface: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(96, 165, 250, 0.35);
+            --text: #e5e9f2;
+            --text-muted: #9aa4b8;
+            --text-faint: #6b7489;
+            --accent: #60a5fa;
+            --accent-strong: #3b82f6;
+            --accent-soft: rgba(96, 165, 250, 0.1);
+            --matlab: #e16737;
+            --pdf: #f87171;
+            --zip: #fbbf24;
+            --radius: 14px;
+            --mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(59, 130, 246, 0.5) rgba(0, 0, 0, 0.2);
+        }
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        body::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
+
+        a { color: var(--accent); }
+
+        /* ===== Nav ===== */
+        .topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 1rem clamp(1rem, 4vw, 2.5rem);
+            background: rgba(5, 7, 13, 0.7);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.9rem; font-weight: 600;
+            transition: color 200ms ease, transform 200ms ease;
+        }
+        .back-link:hover { color: #fff; transform: translateX(-3px); }
+        .nav-tag {
+            font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.15em;
+            color: var(--accent);
+        }
+
+        /* ===== Hero ===== */
+        .hero {
+            padding: clamp(7rem, 14vw, 9rem) clamp(1rem, 4vw, 2.5rem) 2.5rem;
+            max-width: 1000px; margin: 0 auto;
+        }
+        .eyebrow {
+            font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.2em;
+            color: var(--accent); margin-bottom: 1rem;
+        }
+        .hero h1 {
+            font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 800; line-height: 1.1;
+            letter-spacing: -0.02em; margin-bottom: 1rem;
+        }
+        .hero p { color: var(--text-muted); max-width: 680px; font-size: 1.05rem; }
+
+        /* ===== Sections ===== */
+        main { max-width: 1000px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 2.5rem) 5rem; }
+        section { margin-top: 3rem; }
+        h2 {
+            font-size: 1.4rem; font-weight: 700; margin-bottom: 0.35rem;
+            display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
+        }
+        h2 .count { font-family: var(--mono); font-size: 0.75rem; color: var(--text-faint); font-weight: 400; }
+        .section-intro { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.25rem; }
+        h3 {
+            font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.15em; font-weight: 600;
+            color: var(--text-faint); text-transform: uppercase;
+            margin: 1.75rem 0 0.75rem;
+        }
+        h3 a { color: inherit; text-decoration: none; }
+        h3 a:hover { color: var(--accent); }
+
+        /* ===== File rows ===== */
+        .files { display: grid; gap: 0.6rem; }
+        .file {
+            display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem;
+            padding: 0.9rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            transition: border-color 200ms ease, background 200ms ease;
+        }
+        .file:hover { border-color: var(--border-accent); background: var(--accent-soft); }
+        .file-icon {
+            width: 42px; height: 42px; border-radius: 10px;
+            display: grid; place-items: center;
+            font-family: var(--mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.05em;
+            border: 1px solid currentColor;
+        }
+        .file-icon.m   { color: var(--matlab); background: rgba(225, 103, 55, 0.1); }
+        .file-icon.pdf { color: var(--pdf);    background: rgba(248, 113, 113, 0.1); }
+        .file-icon.zip { color: var(--zip);    background: rgba(251, 191, 36, 0.1); }
+        .file-icon.git { color: var(--text);   background: rgba(255, 255, 255, 0.05); }
+        .file-icon.git svg { width: 22px; height: 22px; }
+        .file-info { min-width: 0; }
+        .file-name {
+            font-family: var(--mono); font-size: 0.9rem; font-weight: 600; color: #fff;
+            overflow-wrap: anywhere;
+        }
+        .file-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; }
+        .file-meta { font-family: var(--mono); font-size: 0.7rem; color: var(--text-faint); margin-top: 0.15rem; }
+        .file-actions { display: flex; gap: 0.5rem; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.5rem 0.85rem; border-radius: 9px;
+            font-size: 0.8rem; font-weight: 600; text-decoration: none; white-space: nowrap;
+            transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+        }
+        .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .btn-primary { background: var(--accent-strong); color: #fff; border: 1px solid var(--accent-strong); }
+        .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+        .btn-ghost { color: var(--text-muted); border: 1px solid var(--border); }
+        .btn-ghost:hover { color: #fff; border-color: var(--border-accent); }
+
+        footer {
+            text-align: center; padding: 2.5rem 1rem;
+            color: var(--text-faint); font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 640px) {
+            .nav-tag { display: none; }
+            .file { grid-template-columns: auto minmax(0, 1fr); }
+            .file-actions { grid-column: 1 / -1; }
+            .file-actions .btn { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="portfolio.html" class="back-link">← Back to Portfolio</a>
+        <span class="nav-tag">DOWNLOADABLE FILES</span>
+    </nav>
+
+    <header class="hero">
+        <div class="eyebrow">DLC · CODE · POSTERS</div>
+        <h1>Downloadable Files</h1>
+        <p>Code, posters and project files from the work on this site. Download them directly, or view them on GitHub. Larger project files are on GitHub, where you can request access.</p>
+    </header>
+
+    <main>
+        <section id="direct">
+            <h2>Direct downloads <span class="count" id="direct-count"></span></h2>
+            <p class="section-intro">Every file here is free to download. Each one is also on GitHub if you'd rather browse it there.</p>
+
+            <h3><a href="applied-aerodynamics.html">Applied Aerodynamics</a></h3>
+            <div class="files" data-files="aero"></div>
+
+            <h3><a href="aerostructures.html">Aerostructures</a></h3>
+            <div class="files" data-files="structures"></div>
+
+            <h3>Aerostructures · individual source files</h3>
+            <div class="files" data-files="structures-src"></div>
+        </section>
+
+        <section id="request">
+            <h2>On GitHub: request access</h2>
+            <p class="section-intro">These project files are kept on GitHub. Open the repository to download them, or request access if a repository is restricted.</p>
+            <div class="files" data-files="repos"></div>
+        </section>
+    </main>
+
+    <footer>© 2026 Gopolang Makgothi · Aerospace Engineer</footer>
+
+    <script>
+        const REPO = 'https://github.com/sydney-makgothi-98/sydney-makgothi-website';
+        const SRC  = 'DLC/makgothi_source_code_1873991/';
+
+        // [path in repo, display name, description, type, size]
+        const FILES = {
+            aero: [
+                ['DLC/EM_Chart.m', 'EM_Chart.m', 'MATLAB function that draws an energy-manoeuvrability (E-M) chart with shaded SEP regions, stall line, structural limit, and load-factor and turn-radius lines. Propeller aircraft.', 'm', '12.6 KB'],
+                ['DLC/Worked_Example_EM_Chart.m', 'Worked_Example_EM_Chart.m', 'Worked example showing how to set up the input struct and call EM_Chart.', 'm', '2.9 KB'],
+            ],
+            structures: [
+                ['DLC/Structures_Poster.pdf', 'Structures_Poster.pdf', 'Project poster for the fuselage frame structural analysis.', 'pdf', '552 KB'],
+                ['DLC/Source_Code_Strucrures.zip', 'Source_Code_Structures.zip', 'All the MATLAB source code for the fuselage frame analysis in one archive.', 'zip', '31.5 KB'],
+            ],
+            'structures-src': [
+                [SRC + 'makgothi.m', 'makgothi.m', 'Main script: builds the rounded (2n+1)-gon frame with constant corner radius and outer arcs.', 'm', '50.9 KB'],
+                [SRC + 'geometricProperties.m', 'geometricProperties.m', 'Class for section geometry: pairwise distances, remapping and mid-plane thickness.', 'm', '9.9 KB'],
+                [SRC + 'SegmentAnalyzer.m', 'SegmentAnalyzer.m', 'Splits the frame into segments and organises their data.', 'm', '5.6 KB'],
+                [SRC + 'CenterLocator.m', 'CenterLocator.m', 'Class that computes angles, distances and coordinates for positioning circular arcs.', 'm', '3.4 KB'],
+                [SRC + 'arc_sketcher.m', 'arc_sketcher.m', 'Fits a circle through three points and generates the arc between them.', 'm', '2.5 KB'],
+                [SRC + 'find_middle.m', 'find_middle.m', 'Finds the middle segment of an array and extracts its central value(s).', 'm', '1.9 KB'],
+                [SRC + 'rotation_function.m', 'rotation_function.m', 'Rotates a point about the origin by a given angle.', 'm', '0.5 KB'],
+            ],
+        };
+
+        // [url, display name, description]
+        const REPOS = [
+            [REPO + '/tree/main/DLC', 'sydney-makgothi-website / DLC', 'The folder behind this page: every file above in one place.'],
+            ['https://github.com/sydney-makgothi-98/Tornado-VLM-MATLAB-Repo', 'Tornado-VLM-MATLAB-Repo', 'Tornado vortex-lattice MATLAB code used for the Applied Aerodynamics and Flight Dynamics work (source in T136_6_Export).'],
+            ['https://github.com/sydney-makgothi-98', 'CFD project files', 'Intake, slot jet and boundary-layer CFD cases from the CFD page. Request access on GitHub.'],
+        ];
+
+        const ICON_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>';
+        const ICON_GH = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>';
+        const LABEL = { m: 'MATLAB', pdf: 'PDF', zip: 'ZIP' };
+
+        const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
+
+        let total = 0;
+        document.querySelectorAll('[data-files]').forEach(box => {
+            const key = box.dataset.files;
+            if (key === 'repos') {
+                box.innerHTML = REPOS.map(([url, name, desc]) => `
+                    <div class="file">
+                        <div class="file-icon git">${ICON_GH}</div>
+                        <div class="file-info">
+                            <div class="file-name">${esc(name)}</div>
+                            <div class="file-desc">${esc(desc)}</div>
+                        </div>
+                        <div class="file-actions">
+                            <a class="btn btn-primary" href="${url}" target="_blank" rel="noopener">${ICON_GH} Open on GitHub</a>
+                        </div>
+                    </div>`).join('');
+                return;
+            }
+            box.innerHTML = FILES[key].map(([path, name, desc, type, size]) => {
+                total++;
+                const href = encodePath(path);
+                return `
+                    <div class="file">
+                        <div class="file-icon ${type}">${type === 'm' ? '.M' : type.toUpperCase()}</div>
+                        <div class="file-info">
+                            <div class="file-name">${esc(name)}</div>
+                            <div class="file-desc">${esc(desc)}</div>
+                            <div class="file-meta">${LABEL[type]} · ${size}</div>
+                        </div>
+                        <div class="file-actions">
+                            <a class="btn btn-primary" href="${href}" download="${esc(name)}">${ICON_DOWN} Download</a>
+                            <a class="btn btn-ghost" href="${REPO}/blob/main/${href}" target="_blank" rel="noopener">${ICON_GH} GitHub</a>
+                        </div>
+                    </div>`;
+            }).join('');
+        });
+        document.getElementById('direct-count').textContent = `${total} files`;
+    </script>
+</body>
+</html>

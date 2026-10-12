@@ -1,0 +1,1291 @@
+tic
+% ──────────────────────────────────────────────────────────────
+% Rounded (2n+1)-gon with constant corner radius and outer arcs
+% ──────────────────────────────────────────────────────────────
+clear; close all; clc;
+
+% ============================================================= %
+% INPUT PARAMETERS - PROF REID SECTION - START
+% ============================================================= %
+
+n = 2;
+R_out = 4250;
+
+h_1 = 60;
+h_2 = 30;
+
+small_x = 3; % MISMATCH IN THE X-DIRECTION
+small_y = -1; % MISMATCH IN THE Y-DIRECTION
+
+small_phi_deg = -1; 
+R_corner   = 1000;
+
+
+
+% ============================================================= %
+% GEOMETRY PARAMETERS - PROF REID SECTION - END
+% ============================================================= %
+
+
+
+
+
+% ============================================================= %
+% PHYSICAL PARAMETERS
+% ============================================================= %
+
+E = 73*10^3;          %  [MPa]
+t = 10;               %  [mm]
+L = 300;              %  [mm]
+arc_points = 400;    % 400 POINTS USE TO MAKE UP A SINGLE SEGMENT. 
+
+p_bar = 0.5;          % [bar]
+p_kpa = p_bar * 100;  % [kPa]
+p_MPa = p_bar * 0.1;  % [MPa]
+small_phi_rad = small_phi_deg* pi/180; % MISMATCH ROTATIONAL
+
+
+% ============================================================= %
+% SETUP
+% ============================================================= %
+locator = CenterLocator(R_corner, R_out);
+theta = 2*pi / (2*n + 1);
+num_sections = 2*n + 1;
+
+% ============================================================= %
+% PLOT CENTERED CIRCLE
+% ============================================================= %
+angle_range = linspace(0, 2*pi, 1000);
+x_center = R_corner * cos(angle_range);
+y_center = R_corner * sin(angle_range);
+% plot(x_center, y_center, 'k', 'LineWidth', 1.5)
+% hold on
+% axis equal
+
+% ============================================================= %
+% OUTER GEOMETRY
+% ============================================================= %
+[xc_base, yc_base] = locator.calculateCenter(theta);
+[gamma, omega] = locator.gammaOmegaFinder(theta);
+beta = 0.5 * theta;
+d = locator.offsetDistance(beta, omega);
+base_point = [xc_base; yc_base];
+
+x_outer = [];
+y_outer = [];
+for k = 0:(num_sections - 1)
+    rot_angle = k * theta;
+    [xc, yc] = rotation_function(rot_angle, base_point);
+    dir_angle = atan2(-yc, -xc);
+    arc_start = dir_angle - gamma;
+    arc_end = dir_angle + gamma;
+    arc_vec = linspace(arc_start, arc_end, arc_points);
+    
+    x_arc_outer = R_out * cos(arc_vec) + xc;
+    y_arc_outer = R_out * sin(arc_vec) + yc;
+    x_outer = [x_outer, x_arc_outer];
+    y_outer = [y_outer, y_arc_outer];
+end
+% plot(x_outer, y_outer, 'k', 'LineWidth', 2)
+
+% ============================================================= %
+% INNER GEOMETRY
+% ============================================================= %
+x_inner = [];
+y_inner = [];
+s = d - (R_out + h_1);
+
+x_start_base = 0;
+y_start_base = R_corner - h_2;
+start_pt_base = [x_start_base, y_start_base];
+
+x_mid_base = s * cos(pi/2 - beta);
+y_mid_base = s * sin(pi/2 - beta);
+mid_pt_base = [x_mid_base, y_mid_base];
+
+x_end_base = (R_corner - h_2) * cos(pi/2 - theta);
+y_end_base = (R_corner - h_2) * sin(pi/2 - theta);
+end_pt_base = [x_end_base, y_end_base];
+
+for k = 0:(num_sections - 1)
+    rot_angle = k * theta;
+    [x_start, y_start] = rotation_function(rot_angle, start_pt_base');
+    [x_mid, y_mid] = rotation_function(rot_angle, mid_pt_base');
+    [x_end, y_end] = rotation_function(rot_angle, end_pt_base');
+    
+    start_pt = [x_start, y_start];
+    mid_pt = [x_mid, y_mid];
+    end_pt = [x_end, y_end];
+    
+    [x_inner_arc, y_inner_arc] = arc_sketcher(start_pt, mid_pt, end_pt, arc_points);
+    x_inner = [x_inner, x_inner_arc];
+    y_inner = [y_inner, y_inner_arc];
+end
+% plot(x_inner, y_inner, 'k', 'LineWidth', 2)
+
+% ============================================================= %
+% MIDPOINT CALCULATION & GEOMETRIC PROPERTIES
+% ============================================================= %
+assert(length(x_inner) == length(x_outer));
+
+geometry_property_instance = geometricProperties(x_outer, y_outer, x_inner, y_inner, t);
+[x_inner_remapped, y_inner_remapped] = geometry_property_instance.remap_inner_to_outer();
+
+geometry_property_instance = geometricProperties(x_outer, y_outer, x_inner_remapped, y_inner_remapped, t);
+
+x_mid_array = (x_outer + x_inner_remapped) / 2;
+y_mid_array = (y_outer + y_inner_remapped) / 2;
+
+% plot(x_mid_array, y_mid_array, 'k--', 'LineWidth', 1.5)
+% 
+% legend('Center Circle', 'Outer Geometry', 'Inner Geometry', 'Midpoint', 'Location', 'best')
+% title(sprintf('Rounded %d-gon (n=%d)', 2*n+1, n))
+
+% ============================================================= %
+% INERTIA MOMENT
+% ============================================================= %
+[path_array, ~] = geometry_property_instance.path_estimator_midplane();
+[inertia_moment, c_array] = geometry_property_instance.inertia_moment_min_dist();
+c_array = c_array ./ 2;
+
+bending_stiffness = E .* inertia_moment;
+inverse_bending_stiffness = 1 ./ bending_stiffness;
+
+
+% figure(2)
+% plot(path_array, inertia_moment)
+% hold on
+
+
+
+% ============================================================= %
+% QUESTION 1 - MISMATCH ANALYSIS
+% ============================================================= %
+x_ref = 0;
+y_ref = y_mid_array(1);
+delta_x = x_ref - x_mid_array;
+delta_y = y_ref - y_mid_array;
+delta_x = -delta_x;   % adjustment
+delta_y = delta_y;    % adjustment
+
+[s_array_mid, s_total_mid] = geometry_property_instance.path_estimator_midplane();
+[s_array_outer, ~] = geometry_property_instance.path_estimator_general(x_outer, y_outer);
+
+% Integral matrix (flexibility)
+integral_matrix = [trapz(s_array_mid, inverse_bending_stiffness), ...
+                   trapz(s_array_mid, delta_y.*inverse_bending_stiffness), ...
+                   trapz(s_array_mid, -delta_x.*inverse_bending_stiffness); ...
+                   trapz(s_array_mid, delta_y.*inverse_bending_stiffness), ...
+                   trapz(s_array_mid, delta_y.^2.*inverse_bending_stiffness), ...
+                   trapz(s_array_mid, delta_x.*delta_y.*inverse_bending_stiffness); ...
+                   trapz(s_array_mid, delta_x.*inverse_bending_stiffness), ...
+                   trapz(s_array_mid, delta_x.*delta_y.*inverse_bending_stiffness), ...
+                   trapz(s_array_mid, delta_x.^2.*inverse_bending_stiffness)];
+
+% Axial strain energy terms (already calculated earlier but not used in matrix yet)
+dx = [diff(x_mid_array) x_mid_array(1)-x_mid_array(end)];
+dy = [diff(y_mid_array) y_mid_array(1)-y_mid_array(end)];
+ds = sqrt(dx.^2 + dy.^2);
+tx = dx ./ ds;
+ty = dy ./ ds;
+
+A_array = t .* c_array;
+inv_EI = 1 ./ (E .* inertia_moment);
+inv_EA = 1 ./ (E .* A_array);
+A_array_corrected = t .* (2 .* c_array);
+
+mismatch_matrix = [small_phi_rad; small_x; small_y];
+internal_load_matrix = integral_matrix \ mismatch_matrix;
+
+Ma_Q1 = internal_load_matrix(1);
+Na_Q1 = internal_load_matrix(2);
+Va_Q1 = internal_load_matrix(3);
+
+% Stresses Q1
+N_Q1 = Na_Q1.*tx + Va_Q1.*ty;
+M_question_1 = Ma_Q1 + Na_Q1.*delta_y + Va_Q1.*delta_x;
+sigma_Q1 = (N_Q1./A_array_corrected) + (M_question_1.*c_array)./inertia_moment;
+
+figure(1)
+plot(s_array_outer, sigma_Q1)
+title('Stress Distribution - Q1')
+
+% Displacement field Q1
+
+
+axial_strain_1     = N_Q1 ./ (E .* A_array);                             
+axial_disp_cum_1   = cumtrapz(s_array_mid, axial_strain_1);                
+
+% Project cumulative axial elongation onto x and y directions
+% tx, ty are the local tangent — elongation in tangent direction
+axial_u_x_1 = cumtrapz(s_array_mid, axial_strain_1 .* tx);                  % horizontal component
+axial_u_y_1 = cumtrapz(s_array_mid, axial_strain_1 .* ty);                  % vertical component
+
+
+
+fwd_MEI = cumtrapz(s_array_mid, M_question_1 .* inv_EI);
+fwd_MxEI = cumtrapz(s_array_mid, M_question_1 .* x_mid_array .* inv_EI);
+fwd_MyEI = cumtrapz(s_array_mid, M_question_1 .* y_mid_array .* inv_EI);
+
+tail_MEI = fwd_MEI(end) - fwd_MEI;
+tail_MxEI = fwd_MxEI(end) - fwd_MxEI;
+tail_MyEI = fwd_MyEI(end) - fwd_MyEI;
+
+delta_rot_Q1 = tail_MEI;
+delta_v_Q1  = x_mid_array .* tail_MEI - tail_MxEI + axial_u_x_1;
+delta_h_Q1  = tail_MyEI - y_mid_array .* tail_MEI + axial_u_y_1;
+
+
+% Plots Q1
+% theta_mid = s_array_mid ./ s_total_mid .* (2*pi);
+% figure(6)
+% subplot(3,1,1); plot(theta_mid, delta_rot_Q1, 'k', 'LineWidth', 1.5); yline(0,'k--'); grid on; title('Rotation \phi(s) — Q1')
+% subplot(3,1,2); plot(theta_mid, delta_h_Q1, 'b', 'LineWidth', 1.5); yline(0,'b--'); grid on; title('Horizontal u_x(s) — Q1')
+% subplot(3,1,3); plot(theta_mid, delta_v_Q1, 'r', 'LineWidth', 1.5); yline(0,'r--'); grid on; title('Vertical u_y(s) — Q1')
+
+
+%%                                                    SECTION 2 - PRESSURE ANALYSIS 
+
+
+% ============================================================= %
+% QUESTION 2 - PRESSURE ANALYSIS
+% ============================================================= %
+% Pressure moment calculation (M0)
+Fpx_array = [0]; Fpy_array = [0]; Fcross_array = [0];
+sum_Fx = 0; sum_Fy = 0; sum_cross = 0;
+x_arms_pressure = [];
+y_arms_pressure = [];
+
+for idx = 1:length(x_outer)-1
+    dx_seg = x_outer(idx+1) - x_outer(idx);
+    dy_seg = y_outer(idx+1) - y_outer(idx);
+
+    Fpx_seg = p_MPa * L * dy_seg;
+    Fpy_seg = p_MPa * L * -dx_seg;
+
+    x_force = (x_outer(idx) + x_outer(idx+1))/2;
+    y_force = (y_outer(idx) + y_outer(idx+1))/2;
+
+    x_arms_pressure = [x_arms_pressure, x_force];
+    y_arms_pressure = [y_arms_pressure, y_force];
+    
+    sum_Fx = sum_Fx + Fpx_seg;
+    sum_Fy = sum_Fy + Fpy_seg;
+    sum_cross = sum_cross + (Fpx_seg * y_force - Fpy_seg * x_force);
+    
+    Fpx_array = [Fpx_array, sum_Fx];
+    Fpy_array = [Fpy_array, sum_Fy];
+    Fcross_array = [Fcross_array, sum_cross];
+end
+
+x_arms_pressure = [0, x_arms_pressure];
+y_arms_pressure = [0, y_arms_pressure];
+
+Mpx = zeros(size(x_mid_array));
+Mpy = zeros(size(x_mid_array));
+for idx = 1:length(x_mid_array)
+    Mx = Fcross_array(idx) - y_mid_array(idx) * Fpx_array(idx);
+    My = x_mid_array(idx) * Fpy_array(idx);
+    Mpx(idx) = Mx;
+    Mpy(idx) = My;
+end
+Mp = Mpx + Mpy;
+
+pressure_rhs = [
+    trapz(s_array_mid, Mp .* inverse_bending_stiffness);
+    trapz(s_array_mid, Mp .* delta_y .* inverse_bending_stiffness);
+    trapz(s_array_mid, Mp .* delta_x .* inverse_bending_stiffness)
+];
+
+internal_load_matrix_pressure = integral_matrix \ -pressure_rhs;
+Ma_Q2 = internal_load_matrix_pressure(1);
+Na_Q2 = internal_load_matrix_pressure(2);
+Va_Q2 = internal_load_matrix_pressure(3);
+
+theta_array = atan2(ty, tx);   % 1 x n_pts, in radians
+
+% ── Total internal loads ──────────────────────────────────────────────────
+N_Q2 = Na_Q2 .* cos(theta_array) + Va_Q2 .* sin(theta_array) ...
+     + Fpy_array .* sin(theta_array) + Fpx_array .* cos(theta_array);   % 1 x n_pts
+
+axial_stress = N_Q2./A_array_corrected;
+
+M_question_2 = Mp + Ma_Q2 + Na_Q2.* delta_y + Va_Q2 .* delta_x;               % 1 x n_pts
+
+
+% ── Circumferential stress (outer fibre) ─────────────────────────────────
+
+%ISSUES START WITH THE INCLUSION OF AXIAL STRAIN ENERGY
+sigma_Q2 =  axial_stress + (M_question_2 .* c_array) ./ inertia_moment;                 % 1 x n_pts
+
+% ── Displacement field Q2 ─────────────────────────────────────────────────
+% Bending contribution (tail integrals — same structure as Q1)
+fwd_MEI_Q2  = cumtrapz(s_array_mid, M_question_2 .* inv_EI);
+fwd_MxEI_Q2 = cumtrapz(s_array_mid, M_question_2 .* x_mid_array .* inv_EI);
+fwd_MyEI_Q2 = cumtrapz(s_array_mid, M_question_2 .* y_mid_array .* inv_EI);
+
+tail_MEI_Q2  = fwd_MEI_Q2(end)  - fwd_MEI_Q2;
+tail_MxEI_Q2 = fwd_MxEI_Q2(end) - fwd_MxEI_Q2;
+tail_MyEI_Q2 = fwd_MyEI_Q2(end) - fwd_MyEI_Q2;
+
+% Axial contribution — cumulative, not a scalar
+% Axial strain epsilon = N / EA, integrated along arc = elongation up to each point
+
+axial_strain     = N_Q2 ./ (E .* A_array);                              
+axial_disp_cum   = cumtrapz(s_array_mid, axial_strain);                 
+
+% Project cumulative axial elongation onto x and y directions
+% tx, ty are the local tangent — elongation in tangent direction
+
+axial_u_x = cumtrapz(s_array_mid, axial_strain .* tx);                 
+axial_u_y = cumtrapz(s_array_mid, axial_strain .* ty);                  
+
+% Total displacements — bending + axial, NO axial added to rotation
+
+delta_rot_Q2 = tail_MEI_Q2;                                             
+delta_h_Q2   = tail_MyEI_Q2 - y_mid_array .* tail_MEI_Q2 + axial_u_x;  % horizontal
+delta_v_Q2   = x_mid_array  .* tail_MEI_Q2 - tail_MxEI_Q2 + axial_u_y; % vertical
+
+
+
+% figure(7); plot(s_array_mid, M_question_2); title('Moment Distribution - Q2'); grid on
+figure(2); 
+plot(s_array_outer, sigma_Q2);     
+title('Stress Distribution - Q2');  
+grid on
+
+theta_mid = s_array_mid ./ s_total_mid .* (2*pi);
+
+% figure(9)
+% subplot(3,1,1); plot(theta_mid, delta_rot_Q2, 'k', 'LineWidth', 1.5); yline(0,'k--'); grid on; title('Rotation \phi(s) — Q2')
+% subplot(3,1,2); plot(theta_mid, delta_h_Q2,   'b', 'LineWidth', 1.5); yline(0,'b--'); grid on; title('Horizontal u_x(s) — Q2')
+% subplot(3,1,3); plot(theta_mid, delta_v_Q2,   'r', 'LineWidth', 1.5); yline(0,'r--'); grid on; title('Vertical u_y(s) — Q2')
+
+ %%                                                      SECTION 3 - DATA ANALYSIS
+
+
+%______________________________________________________________________________________________________________________________
+
+
+%                                                          DATA EXTRACTION
+
+%______________________________________________________________________________________________________________________________
+
+
+
+% ============================================================= %
+% DATA EXTRACTION - QUESTION 1
+% ============================================================= %
+n_segments = num_sections;
+
+% Question 1
+stress_data_Q1 = SegmentAnalyzer(sigma_Q1, n_segments);
+stress_instance_Q1 = stress_data_Q1.process();
+[~, ~, sigmaQ1_first_frame_midpt, ] = stress_instance_Q1.getData();
+sigma_Q1_bottom_frame_midpoint = find_middle(sigma_Q1, n_segments);
+
+rotation_data_Q1 = SegmentAnalyzer(delta_rot_Q1, n_segments);
+rotation_instance_Q1 = rotation_data_Q1.process();
+[~, rotation_Q1_vertical_symmetry_point, ~, ~] = rotation_instance_Q1.getData();
+rotation_Q1_bottom_frame_midpoint = find_middle(delta_rot_Q1, n_segments);
+
+horz_displacement_data_Q1 = SegmentAnalyzer(delta_h_Q1, n_segments);
+horz_instance_Q1 = horz_displacement_data_Q1.process();
+[~, horz_disp_Q1_vertical_symmetry, ~, ~] = horz_instance_Q1.getData();
+horz_disp_Q1_bottom_frame = find_middle(delta_h_Q1, n_segments);
+
+vert_displacement_data_Q1 = SegmentAnalyzer(delta_v_Q1, n_segments);
+vert_instance_Q1 = vert_displacement_data_Q1.process();
+[~, vert_disp_Q1_vertical_symmetry, ~, ~] = vert_instance_Q1.getData();
+vert_disp_Q1_bottom_frame = find_middle(delta_v_Q1, n_segments);
+
+
+
+% ==================================== DELIVERABLES QUESTION 1 ========================================== %
+
+relative_rotation_Q1       = rotation_Q1_bottom_frame_midpoint;
+relative_displacement_horz_Q1 = horz_disp_Q1_bottom_frame;
+relative_displacement_vert_Q1 = vert_disp_Q1_bottom_frame;
+
+% ==================================== DELIVERABLES QUESTION 1 ========================================== %
+
+
+
+
+% ============================================================= %
+% DATA EXTRACTION - QUESTION 2
+% ============================================================= %
+
+stress_data_Q2 = SegmentAnalyzer(sigma_Q2, n_segments);
+stress_instance_Q2 = stress_data_Q2.process();
+[stress_Q2_segment_1, ~, stress_Q2_sigment_1_midpoint, ~] = stress_instance_Q2.getData();
+max_stress_sigma_Q2 = max(stress_Q2_segment_1);
+
+
+% target_angle_position = 0;
+% 
+% rotation_angle_array = [theta_mid', delta_rot_Q2'];
+% 
+% target_index = find(rotation_angle_array(:,1) == target_angle)
+
+% target_angle = pi / (2 * (2*n + 1));
+% 
+% rotation_angle_array = [theta_mid', delta_rot_Q2'];   
+% 
+% tolerance = 8e-3;
+% target_position = 0;
+% 
+% for vert_idx = 1 : length(rotation_angle_array(:,1))
+% 
+%     if rotation_angle_array(vert_idx, 1) - rotation_angle_array(vert_idx, 2) < tolerance
+% 
+%         [target_rotation] = rotation_angle_array(vert_idx,2);
+% 
+%     end 
+% 
+% end
+
+% target_angle = pi/(2*(2*n + 1));
+% theta_true = atan2(y_mid_array, x_mid_array);   
+% 
+% % Step 2: Find the TOP point (reference)
+% [~, top_idx] = max(y_mid_array);
+% 
+% % Step 3: Shift so TOP = 0
+% theta_ref = theta_true - theta_true(top_idx);
+% 
+% % Step 4: Wrap into [0, 2*pi]
+% theta_ref(theta_ref < 0) = theta_ref(theta_ref < 0) + 2*pi;
+% 
+% % Step 5: Convert to CLOCKWISE direction
+% theta_ref = 2*pi - theta_ref;
+% 
+% rotation_angle_array = [theta_ref', delta_rot_Q2'];
+% 
+% % ── Rotation at π/(2*(2n+1)) clockwise from top (Question ii) ────────────
+% 
+% for vert_index = 1: length(rotation_angle_array(:,1)')
+% 
+%     theta_value = rotation_angle_array(vert_index,1);
+% 
+%     if theta_value >= target_angle
+% 
+%         relative_rotation_Q2 = rotation_angle_array(vert_index,2);
+%         break
+% 
+%     end
+% 
+% end
+
+
+% Assuming these are already defined:
+%   x_mid_array, y_mid_array, delta_rot_Q2, n
+
+target_angle = pi / (2 * (2*n + 1));
+
+theta_true = atan2(y_mid_array, x_mid_array);
+
+% Step 2: Find the TOP point (highest y)
+[~, top_idx] = max(y_mid_array);
+
+% Step 3: Shift angles so that TOP point = 0
+theta_ref = theta_true - theta_true(top_idx);
+
+% Step 4: Wrap to [0, 2*pi]
+theta_ref = mod(theta_ref, 2*pi);
+
+% Step 5: Convert to CLOCKWISE angles from the top
+theta_clockwise = mod(2*pi - theta_ref, 2*pi);
+
+% Combine into one array: [clockwise_angle, delta_rot_Q2]
+rotation_angle_array = [theta_clockwise(:), delta_rot_Q2(:)];
+
+% ── Find the first point whose clockwise angle >= target_angle ────────────
+% This is the rotation at π/(2*(2n+1)) clockwise from the top
+
+idx = find(theta_clockwise >= target_angle, 1, 'first');
+
+if ~isempty(idx)
+    relative_rotation_Q2 = rotation_angle_array(idx, 2);
+    % fprintf('Found at vertex index %d (MATLAB 1-based)\n', idx);
+    % fprintf('Clockwise angle: %.4f rad (%.1f°)\n', ...
+    %         theta_clockwise(idx), rad2deg(theta_clockwise(idx)));
+else
+    warning('No point found with theta_clockwise >= target_angle. Taking the last point?');
+    relative_rotation_Q2 = rotation_angle_array(end, 2);
+end
+
+
+
+
+rotation_data_Q2 = SegmentAnalyzer(delta_rot_Q2, n_segments);
+rotation_instance_Q2 = rotation_data_Q2 .process();
+[~, rotation_disp_Q2_vertical_symmetry, ~,~] = rotation_instance_Q2.getData();
+% 
+% relative_rotation_Q2 = delta_rot_Q2(target_index);
+
+
+vert_displacement_data_Q2 = SegmentAnalyzer(delta_v_Q2, n_segments);
+vert_instance_Q2 = vert_displacement_data_Q2.process();
+[vert_displacments_segment_1, vert_disp_Q2_vertical_symmetry, ~, vert_disp_Q2_bottom_frame] = vert_instance_Q2.getData();
+relative_displacement_vert_Q2 = vert_disp_Q2_bottom_frame - vert_disp_Q2_vertical_symmetry;
+
+% =============================== ADDITIONAL PARAMETERS =================================== %
+
+
+num_points = length(s_array_mid);
+segment_length = floor(num_points / n_segments);
+
+% Generate indices for ALL 5 corners (end of each segment)
+corner_indices = segment_length * (1:n_segments);   % This gives you 5 indices
+
+% =============================== ADDITIONAL PARAMETERS =================================== %
+
+
+
+% ================== CORRECT RADIAL DISPLACEMENT (Q ii) ==================
+
+% ================================ METHOD 1 =============================== %
+
+% ======================= CORNER DEFORMATIONS ========================== %
+
+% num_points = length(s_array_mid);
+% 
+% % Calculate segment length - use floor to be safe
+% segment_length = floor(num_points / n_segments);
+% 
+% % Generate indices for ALL 5 corners (end of each segment)
+% corner_indices = segment_length * (1:n_segments);   % This gives you 5 indices
+% 
+% % Safety check - make sure we don't exceed array length
+% if corner_indices(end) > num_points
+%     corner_indices(end) = num_points;   % cap at last point if needed
+% end
+% 
+% % Now extract deformations for ALL 5 corners at once (vectorized)
+% delta_h_corners = delta_h_Q2(corner_indices);
+% delta_v_corners = delta_v_Q2(corner_indices);
+% 
+% % Corner index values original circle
+% 
+% angle_range = linspace(0, 2*pi, length(s_array_mid));
+% x_center_original = R_corner * cos(angle_range);
+% y_center_original = R_corner * sin(angle_range);
+% 
+% x_corners_original_circle = x_center_original(corner_indices);
+% y_corners_original_circle = y_center_original(corner_indices);
+% 
+% % ================== DEFORMED CIRCLE ============= %
+% 
+% x_corners_new_cirle = x_corners_original_circle - delta_h_corners;
+% y_corners_new_circle = y_corners_original_circle - delta_v_corners;
+% 
+% % ==================== RADIAL DISTANCE NEW CIRCLE =============== %
+% 
+% R_new = sqrt(x_corners_new_cirle(1)^2 + y_corners_new_circle(1)^2);
+% 
+% radial_displacement = R_new - R_corner;
+% 
+% u_r_corner = radial_displacement;
+
+
+
+
+% ================================ METHOD 2 =============================== %
+
+% ___________ STEP 1 ___________ %
+
+% % WE NEED TO GET THE DISPLACEMENTS ABOUT THE OUTER SURFACE NOT THE NEUTRAL!
+% 
+% % Bending contribution (tail integrals — same structure as Q1)
+% fwd_MEI_Q2_outer  = cumtrapz(s_array_outer, M_question_2 .* inv_EI);
+% fwd_MxEI_Q2_outer = cumtrapz(s_array_outer, M_question_2 .* x_outer .* inv_EI);
+% fwd_MyEI_Q2_outer = cumtrapz(s_array_outer, M_question_2 .* y_outer .* inv_EI);
+% 
+% tail_MEI_Q2_outer  = fwd_MEI_Q2_outer(end)  - fwd_MEI_Q2_outer;
+% tail_MxEI_Q2_outer = fwd_MxEI_Q2_outer(end) - fwd_MxEI_Q2_outer;
+% tail_MyEI_Q2_outer = fwd_MyEI_Q2_outer(end) - fwd_MyEI_Q2_outer;
+% 
+% % Axial contribution — cumulative, not a scalar
+% % Axial strain epsilon = N / EA, integrated along arc = elongation up to each point
+% axial_strain_2_outer     = N_Q2 ./ (E .* A_array);                              % epsilon(s)
+% axial_disp_cum_2_outer   = cumtrapz(s_array_outer, axial_strain_2_outer);                 % 1 x n_pts
+% 
+% % Project cumulative axial elongation onto x and y directions
+% % tx, ty are the local tangent — elongation in tangent direction
+% axial_u_x_2_outer = cumtrapz(s_array_outer, axial_strain_2_outer .* tx);                  % horizontal component
+% axial_u_y_2_outer = cumtrapz(s_array_outer, axial_strain_2_outer .* ty);                  % vertical component
+% 
+% % Total displacements — bending + axial, NO axial added to rotation
+% delta_rot_Q2_outer = tail_MEI_Q2_outer;                                             % rotation: bending only
+% delta_h_Q2_outer   = tail_MyEI_Q2_outer - y_outer .* tail_MEI_Q2_outer + axial_u_x_2_outer; % horizontal
+% delta_v_Q2_outer   = x_outer  .* tail_MEI_Q2_outer - tail_MxEI_Q2_outer + axial_u_y_2_outer;% vertical
+% 
+% % ___________ STEP 2 : GET RADIAL DISTANCES FROM ORGIN TO OUTER SURFACE ___________ %
+% 
+% radial_distance_array_outer = 0;
+% 
+% for idx = 1 : length(x_outer)
+% 
+%     pyth = sqrt(x_outer(idx)^2 + y_outer(idx)^2);
+% 
+%     radial_distance_array_outer(idx) = pyth; 
+% 
+% end
+% 
+% % ___________ STEP 3 : GET RADIAL DISPLACEMENTS ON OUTER RELATIVE TO ORIGIN SURFACE ___________ %
+% 
+% delta_r_array_outer = 0; 
+% 
+% for idx = 1: length(radial_distance_array_outer)
+% 
+%     delta_r = sqrt((x_outer(idx) + delta_h_Q2_outer(idx))^2 + ...
+%         (y_outer(idx) + delta_v_Q2_outer(idx))^2) - radial_distance_array_outer(idx);
+% 
+%     delta_r_array_outer(idx) = delta_r;
+% 
+% end 
+% 
+% u_r_corner  = delta_r_array_outer(corner_idx); % RADIAL DISPLACEMENT AT CORNER 1
+
+
+% ── RADIAL DISPLACEMENT AT ANY CORNER (neutral axis, relative to centre) ──
+%
+%   corner_idx = end of first segment = first corner clockwise from the top
+%   The radial displacement is:
+%       delta_r = |r_deformed| - |r_original|
+%   where r is measured from the global origin to the midplane point.
+
+% x_corner_mid = x_mid_array(corner_idx);
+% y_corner_mid = y_mid_array(corner_idx);
+% 
+% r_original   = sqrt(x_corner_mid^2 + y_corner_mid^2);
+% 
+% x_corner_new = x_corner_mid + delta_h_Q2(corner_idx);
+% y_corner_new = y_corner_mid + delta_v_Q2(corner_idx);
+% 
+% r_deformed   = sqrt(x_corner_new^2 + y_corner_new^2);
+% 
+% u_r_corner   = r_deformed - r_original;   % positive = outward
+
+
+
+% disp('✅ Analysis completed successfully!')
+% save('CorrectInertia.mat', 'inertia_moment')
+
+% =============================== METHOD 3 ====================== %
+
+
+% corner_idx = corner_indices(2);   % first corner clockwise from top (most common choice)
+% 
+% x_orig = x_mid_array(corner_idx);
+% y_orig = y_mid_array(corner_idx);
+% r_original = sqrt(x_orig^2 + y_orig^2);
+% 
+% x_new = x_orig + delta_h_Q2(corner_idx);
+% y_new = y_orig + delta_v_Q2(corner_idx);
+% r_deformed = sqrt(x_new^2 + y_new^2);
+% 
+% u_r_corner = r_deformed - r_original;   % outwards positive
+
+% ====================== CORRECT RADIAL DISPLACEMENT (Q ii) ======================
+% Radial displacement of neutral axis at ANY corner relative to the (deformed) centre
+
+% 1. Compute rigid-body translation of the frame centre
+%    (average displacement over the entire mid-surface)
+center_dx = mean(delta_h_Q2);
+center_dy = mean(delta_v_Q2);
+
+% fprintf('Centre translation: dx = %.4f mm, dy = %.4f mm\n', center_dx, center_dy);
+
+% 2. Use the 5 corner indices you already have
+x_orig_c = x_mid_array(corner_indices);
+y_orig_c = y_mid_array(corner_indices);
+r_orig_c = sqrt(x_orig_c.^2 + y_orig_c.^2);
+
+% 3. Deformed positions relative to the NEW centre
+x_new_c = x_orig_c + delta_h_Q2(corner_indices) - center_dx;
+y_new_c = y_orig_c + delta_v_Q2(corner_indices) - center_dy;
+
+r_new_c = sqrt(x_new_c.^2 + y_new_c.^2);
+
+% 4. Final radial displacement (outward = positive)
+u_r_all_corners = r_new_c - r_orig_c;
+
+% fprintf('\nRadial displacements at all 5 corners (relative to deformed centre):\n');
+% disp(u_r_all_corners');
+% 
+% % Use this value for the marksheet / poster
+u_r_corner = u_r_all_corners(2);   % any corner – they are now identical
+% % fprintf('\n✅ Value to use for marksheet (u_r_corner) = %.6f mm\n', u_r_corner);
+
+
+
+% ====================== CORRECT RADIAL DISPLACEMENT METHOD 4 ======================
+
+
+
+
+
+
+
+% ============================================================= %
+% EXPORT TO EXCEL
+% ============================================================= %
+% stress_data_martix_Q1 = [s_array_outer', sigma_Q1'];
+% disp_data_martix_Q1   = [s_array_mid', delta_h_Q1'];
+% stress_data_martix_Q2 = [s_array_outer', sigma_Q2'];
+% disp_data_martix_Q2   = [s_array_mid', delta_h_Q2'];
+% 
+% writematrix(stress_data_martix_Q1, 'FEA DATA CC.xlsx', 'Sheet', 'Question 1', 'Range', 'A4');
+% writematrix(disp_data_martix_Q1,   'FEA DATA 2.xlsx', 'Sheet', 'Question 1', 'Range', 'N4');
+% writematrix(stress_data_martix_Q2, 'FEA DATA Q2.xlsx', 'Sheet', 'Question 1', 'Range', 'E4');
+% writematrix(disp_data_martix_Q2,   'FEA DATA Q2.xlsx',   'Sheet', 'Question 2', 'Range', 'A4');
+
+% ============================================================= %
+% SEGMENT ANALYZER CLASS
+% ============================================================= %
+
+
+
+
+
+
+%% =============================================================================================================================================================================
+%                                                                               RESULTS TABLE
+% ==============================================================================================================================================================================
+
+% ======================== FEA DATA ===================== %
+
+sigmaQ1_first_frame_midpt_FEA = -4.88718;
+sigma_Q1_bottom_frame_midpoint_FEA = 1.898053;
+relative_rotation_Q1_FEA = -0.00794;
+relative_displacement_horz_Q1_FEA = -16.2163;
+relative_displacement_vert_Q1_FEA = -3.47541;
+stress_Q2_sigment_1_midpoint_FEA = 354.7712;
+max_stress_sigma_Q2_FEA = 361.5371;
+relative_rotation_Q2_FEA = 0.0386;
+relative_displacement_vert_Q2_FEA = -32.1088;
+u_r_corner_FEA = 5.620;
+
+
+
+%% ====================== RESULTS TABLE ======================
+
+%% ====================== RESULTS TABLE ======================
+
+% ======================== ROW DESCRIPTIONS ========================
+row_descriptions = { ...
+    'Circumferential stress on the outer surface of the frame at the centre of the first segment clockwise from the top of the frame (Question i). (Tensile stress is positive) Units : MPa', ...
+    'Circumferential stress on the outer surface of the frame at the centre of the bottommost segment (Question i). (Tensile stress is positive) Units : MPa', ...
+    'Rotation of the neutral axis at the centre of the bottommost segment relative to the vertical axis of symmetry (Question i). (Anticlockwise rotation is positive) Units : radians', ...
+    'Horizontal displacement of the neutral axis at the centre of the bottommost segment relative to the vertical axis of symmetry (Question i). (Displacement to right is positive) Units : mm', ...
+    'Vertical displacement of the neutral axis at the centre of the bottommost segment relative to the neutral axis at the top of the frame (Question i). (Upwards displacement is positive) Units : mm', ...
+    'Circumferential stress on the outer surface of the frame at the centre of the first segment clockwise from the top of the frame (Question ii). (Tensile stress is positive) Units : MPa', ...
+    'Maximum circumferential tensile stress on the outer surface of the frame in the first segment clockwise from the top of the frame (Question ii). (Tensile stress is positive) Units : MPa', ...
+    'Rotation of the neutral axis at an angle of π/2/(2n+1) clockwise from the top of the frame (Question ii). (Anticlockwise rotation is positive) Units : radians', ...
+    'Vertical displacement of the neutral axis at the centre of the bottommost segment relative to the neutral axis at the top of the frame (Question ii). (Upwards displacement is positive) Units : mm', ...
+    'Radial displacement of the neutral axis at any corner of the frame relative to the centre of the frame (Question ii). (Outwards displacement is positive) Units : mm'};
+
+% ======================== CEM ENTRIES ========================
+CEM_Entries = [ ...
+    sigmaQ1_first_frame_midpt; ...
+    sigma_Q1_bottom_frame_midpoint; ...
+    relative_rotation_Q1; ...
+    relative_displacement_horz_Q1; ...
+    relative_displacement_vert_Q1; ...
+    stress_Q2_sigment_1_midpoint; ...
+    max_stress_sigma_Q2; ...
+    relative_rotation_Q2; ...
+    relative_displacement_vert_Q2; ...
+    u_r_corner ];
+
+% ======================== FEM ENTRIES ========================
+FEM_Entries = [ ...
+    sigmaQ1_first_frame_midpt_FEA; ...
+    sigma_Q1_bottom_frame_midpoint_FEA; ...
+    relative_rotation_Q1_FEA; ...
+    relative_displacement_horz_Q1_FEA; ...
+    relative_displacement_vert_Q1_FEA; ...
+    stress_Q2_sigment_1_midpoint_FEA; ...
+    max_stress_sigma_Q2_FEA; ...
+    relative_rotation_Q2_FEA; ...
+    relative_displacement_vert_Q2_FEA; ...
+    u_r_corner_FEA ];
+
+% ======================== CREATE MATLAB TABLE ========================
+T = table(row_descriptions', CEM_Entries, FEM_Entries, ...
+          'VariableNames', {'Results', 'CEM', 'FEM'});
+
+% ======================== COMMAND WINDOW DISPLAY ========================
+disp(T);   % Clean display of the full table in Command Window
+
+% ======================== UI TABLE (pops up ONLY ONCE) ========================
+tableFigName = 'CEM Poster Results Table';
+
+% Check if the figure already exists → reuse it instead of creating a new one
+existingFig = findall(groot, 'Type', 'Figure', 'Name', tableFigName);
+
+if ~isempty(existingFig)
+    figure(existingFig);          % Bring existing figure to front
+    uit = findobj(existingFig, 'Type', 'uitable');  % Reuse the table
+    uit.Data = T;                 % Update data in case values changed
+else
+    % Create the UI figure only the first time
+    f = uifigure('Name', tableFigName, ...
+                 'Position', [80 80 1620 780]);
+
+    uit = uitable(f, ...
+        'Data', T, ...
+        'ColumnName', {'Result', 'CEM', 'FEM'}, ...
+        'ColumnWidth', {1050, 135, 135}, ...
+        'Position', [30 40 1550 700], ...
+        'FontName', 'Arial', ...
+        'FontSize', 12, ...
+        'RowStriping', 'on', ...
+        'ColumnEditable', false);
+
+    uit.BackgroundColor = [1 1 1; 0.96 0.98 1.00];
+end
+
+% data = [s_array_mid', theta_clockwise'];
+
+
+% fprintf('✅ UI Table is ready (shown only once per session).\n');
+% ============================================================================================================================================================================== %
+%                                                                         RESULTS TABLE 
+% ============================================================================================================================================================================== %
+
+
+
+% ============================================================= %
+% 3D VISUALISATION — INNER / MID / OUTER + FRAME SPACING
+% ============================================================= %
+
+% z0 = 0;
+% z1 = L;
+% 
+% figure('Name','3D Structure','Color','w')
+% ax = axes('Parent',gcf);
+% hold(ax,'on');
+% grid(ax,'on');
+% axis(ax,'equal');
+% view(ax, 35, 25);
+% xlabel(ax,'X [mm]'); ylabel(ax,'Y [mm]'); zlabel(ax,'Z [mm]');
+% title(ax, sprintf('3D Structure — Rounded %d-gon  (L = %d mm)', 2*n+1, L))
+% 
+% % ── colour palette ───────────────────────────────────────────
+% col_outer = [0.00 0.45 0.74];   % blue
+% col_mid   = [0.47 0.67 0.19];   % green
+% col_inner = [0.85 0.33 0.10];   % red/orange
+% col_frame = [0.30 0.30 0.30];   % dark grey frame rings
+% col_skin  = [0.72 0.72 0.72];   % aluminium-grey skin
+% col_fill  = [0.60 0.60 0.60];   % slightly darker for end caps
+% 
+% % ── OUTER BARREL SURFACE (skin outer face) ───────────────────
+% N = length(x_outer);
+% X_os = [x_outer; x_outer];
+% Y_os = [y_outer; y_outer];
+% Z_os = [z0*ones(1,N); z1*ones(1,N)];
+% surf(ax, X_os, Y_os, Z_os, ...
+%      'FaceColor', col_skin, ...
+%      'EdgeColor', 'none', ...
+%      'FaceAlpha', 0.92, ...
+%      'FaceLighting', 'gouraud', ...
+%      'AmbientStrength', 0.4, ...
+%      'DiffuseStrength', 0.7, ...
+%      'SpecularStrength', 0.3);
+% 
+% % ── INNER BARREL SURFACE (skin inner face) ───────────────────
+% M = length(x_inner);
+% X_is = [x_inner; x_inner];
+% Y_is = [y_inner; y_inner];
+% Z_is = [z0*ones(1,M); z1*ones(1,M)];
+% surf(ax, X_is, Y_is, Z_is, ...
+%      'FaceColor', col_skin * 0.88, ...   % slightly darker inside
+%      'EdgeColor', 'none', ...
+%      'FaceAlpha', 0.85, ...
+%      'FaceLighting', 'gouraud', ...
+%      'AmbientStrength', 0.3, ...
+%      'DiffuseStrength', 0.6, ...
+%      'SpecularStrength', 0.2);
+% 
+% % ── END-CAP ANNULAR FACES (z = 0 and z = L) ─────────────────
+% x_wall = [x_outer, fliplr(x_inner), x_outer(1)];
+% y_wall = [y_outer, fliplr(y_inner), y_outer(1)];
+% 
+% for zf = [z0, z1]
+%     fill3(ax, x_wall, y_wall, zf*ones(size(x_wall)), ...
+%           col_fill, ...
+%           'FaceAlpha', 1.0, ...
+%           'EdgeColor', 'none');
+% end
+% 
+% % ── FRAME RING HIGHLIGHTS ────────────────────────────────────
+% for zf = [z0, z1]
+%     plot3(ax, [x_outer, x_outer(1)], [y_outer, y_outer(1)], ...
+%           zf*ones(1, N+1), ...
+%           'Color', col_frame, 'LineWidth', 4.0)
+%     plot3(ax, [x_inner, x_inner(1)], [y_inner, y_inner(1)], ...
+%           zf*ones(1, M+1), ...
+%           'Color', col_frame, 'LineWidth', 2.5)
+% end
+% 
+% % ── SURFACE CURVES (outer / mid / inner rings) ───────────────
+% for zf = [z0, z1]
+%     plot_ring(ax, x_outer,     y_outer,     zf, col_outer, 1.8)
+%     plot_ring(ax, x_mid_array, y_mid_array, zf, col_mid,   1.4)
+%     plot_ring(ax, x_inner,     y_inner,     zf, col_inner, 1.8)
+% end
+% 
+% % ── LONGITUDINAL CONNECTORS ──────────────────────────────────
+% n_conn   = 40;
+% idx_conn = round(linspace(1, N, n_conn+1));
+% idx_conn = idx_conn(1:end-1);
+% 
+% for ii = idx_conn
+%     plot3(ax, x_outer([ii ii]),     y_outer([ii ii]),     [z0 z1], ...
+%           'Color', col_outer, 'LineWidth', 0.8);
+%     plot3(ax, x_mid_array([ii ii]), y_mid_array([ii ii]), [z0 z1], ...
+%           'Color', col_mid,   'LineWidth', 0.8);
+%     plot3(ax, x_inner([ii ii]),     y_inner([ii ii]),     [z0 z1], ...
+%           'Color', col_inner, 'LineWidth', 0.8);
+% end
+% 
+% % ── LIGHTING ─────────────────────────────────────────────────
+% camlight(ax, 'headlight');
+% lighting(ax, 'gouraud');
+% 
+% % ── FRAME SPACING ANNOTATION ─────────────────────────────────
+% [~, ir] = max(x_outer);
+% xa     = x_outer(ir);
+% ya     = y_outer(ir);
+% margin = 0.10 * (max(x_outer) - min(x_outer));
+% 
+% plot3(ax, [xa+margin xa+margin], [ya ya], [z0 z1], 'k-', 'LineWidth', 1.4)
+% plot3(ax, [xa+margin xa+margin], [ya ya], [z0 z0], 'k^', ...
+%      'MarkerFaceColor','k','MarkerSize',7)
+% plot3(ax, [xa+margin xa+margin], [ya ya], [z1 z1], 'kv', ...
+%      'MarkerFaceColor','k','MarkerSize',7)
+% text(ax, xa+margin*1.35, ya, (z0+z1)/2, ...
+%      sprintf('L = %d mm', L), ...
+%      'FontSize', 10, 'VerticalAlignment', 'middle', 'HorizontalAlignment', 'left')
+% 
+% % ── LEGEND ───────────────────────────────────────────────────
+% h_leg = [ plot3(ax,NaN,NaN,NaN,'Color',col_outer,'LineWidth',2.0), ...
+%            plot3(ax,NaN,NaN,NaN,'Color',col_mid,  'LineWidth',2.0), ...
+%            plot3(ax,NaN,NaN,NaN,'Color',col_inner,'LineWidth',2.0), ...
+%            plot3(ax,NaN,NaN,NaN,'Color',col_frame,'LineWidth',3.5), ...
+%            patch(ax,NaN,NaN,col_skin,'EdgeColor','none') ];
+% legend(ax, h_leg, ...
+%        {'Outer surface','Mid surface','Inner surface','Frame ring','Skin'}, ...
+%        'Location','best')
+% 
+% hold(ax,'off')
+
+
+
+% ============================================================= %
+% 2D SKETCH — FIRST SEGMENT (plan view, X-Y plane)
+% ============================================================= %
+
+% % ── EXTRACT FIRST SEGMENT ────────────────────────────────────
+% total_pts   = length(x_outer);
+% pts_per_seg = floor(total_pts / num_sections);
+% idx_seg     = 1 : pts_per_seg;
+% 
+% xo = x_outer(idx_seg);      yo = y_outer(idx_seg);
+% xi = x_inner(idx_seg);      yi = y_inner(idx_seg);
+% xm = x_mid_array(idx_seg);  ym = y_mid_array(idx_seg);
+% 
+% % Arc-length along the first segment (for dimensioning)
+% dso  = sqrt(diff(xo).^2 + diff(yo).^2);
+% s_seg = [0, cumsum(dso)];
+% 
+% % ── COLOUR PALETTE ───────────────────────────────────────────
+% col_outer = [0.00 0.45 0.74];   % blue
+% col_mid   = [0.47 0.67 0.19];   % green
+% col_inner = [0.85 0.33 0.10];   % orange-red
+% col_close = [0.20 0.20 0.20];   % dark grey closing lines
+% col_fill  = [0.82 0.88 0.95];   % light blue skin fill
+% col_dim   = [0.40 0.40 0.40];   % dimension lines
+% 
+% figure('Name','2D First Segment Sketch','Color','w')
+% ax2 = axes('Parent',gcf);
+% hold(ax2,'on');
+% grid(ax2,'on');
+% axis(ax2,'equal');
+% xlabel(ax2,'X [mm]');
+% ylabel(ax2,'Y [mm]');
+% title(ax2, sprintf('2D Sketch — First Segment  (Rounded %d-gon)', 2*n+1))
+% 
+% % ── SKIN FILL (between outer and inner arcs) ─────────────────
+% x_fill = [xo,  fliplr(xi),  xo(1)];
+% y_fill = [yo,  fliplr(yi),  yo(1)];
+% fill(ax2, x_fill, y_fill, col_fill, ...
+%      'FaceAlpha', 0.55, 'EdgeColor', 'none');
+% 
+% % ── CLOSING LINES AT START (left cut) ────────────────────────
+% % Solid thick line from outer start to inner start
+% plot(ax2, [xo(1) xi(1)], [yo(1) yi(1)], ...
+%      'Color', col_close, 'LineWidth', 2.5, 'LineStyle', '-');
+% 
+% % ── CLOSING LINES AT END (right cut) ─────────────────────────
+% plot(ax2, [xo(end) xi(end)], [yo(end) yi(end)], ...
+%      'Color', col_close, 'LineWidth', 2.5, 'LineStyle', '-');
+% 
+% % ── MAIN CURVES ──────────────────────────────────────────────
+% plot(ax2, xo, yo, 'Color', col_outer, 'LineWidth', 2.2, 'DisplayName', 'Outer');
+% plot(ax2, xm, ym, 'Color', col_mid,   'LineWidth', 1.6, 'LineStyle', '--', 'DisplayName', 'Mid');
+% plot(ax2, xi, yi, 'Color', col_inner, 'LineWidth', 2.2, 'DisplayName', 'Inner');
+% 
+% % ── START / END MARKERS ──────────────────────────────────────
+% plot(ax2, xo(1),   yo(1),   'ko', 'MarkerFaceColor','k', 'MarkerSize', 6)
+% plot(ax2, xi(1),   yi(1),   'ko', 'MarkerFaceColor','k', 'MarkerSize', 6)
+% plot(ax2, xo(end), yo(end), 'ks', 'MarkerFaceColor','k', 'MarkerSize', 6)
+% plot(ax2, xi(end), yi(end), 'ks', 'MarkerFaceColor','k', 'MarkerSize', 6)
+% 
+% % ── THICKNESS ANNOTATION (at mid-arc, radial direction) ──────
+% mid_idx = round(pts_per_seg / 2);
+% % Radial outward unit vector at mid-point (points away from origin)
+% r_vec   = [xm(mid_idx), ym(mid_idx)];
+% r_hat   = r_vec / norm(r_vec);
+% 
+% % Points on inner and outer at mid
+% pt_i = [xi(mid_idx), yi(mid_idx)];
+% pt_o = [xo(mid_idx), yo(mid_idx)];
+% t_actual = norm(pt_o - pt_i);
+% 
+% % Draw dimension tick
+% offset_dim = 50;   % mm offset outward for the dimension line
+% p1 = pt_i - r_hat * offset_dim * 0.3;
+% p2 = pt_o + r_hat * offset_dim * 0.3;
+% plot(ax2, [pt_i(1) p1(1)], [pt_i(2) p1(2)], 'Color', col_dim, 'LineWidth', 0.9)
+% plot(ax2, [pt_o(1) p2(1)], [pt_o(2) p2(2)], 'Color', col_dim, 'LineWidth', 0.9)
+% plot(ax2, [p1(1) p2(1)],   [p1(2) p2(2)],   'Color', col_dim, 'LineWidth', 1.0)
+% % Arrow heads (small triangles via scatter)
+% quiver(ax2, p1(1), p1(2),  r_hat(1)*t_actual*0.25,  r_hat(2)*t_actual*0.25, ...
+%        0, 'Color', col_dim, 'MaxHeadSize', 1.5, 'LineWidth', 1.0)
+% quiver(ax2, p2(1), p2(2), -r_hat(1)*t_actual*0.25, -r_hat(2)*t_actual*0.25, ...
+%        0, 'Color', col_dim, 'MaxHeadSize', 1.5, 'LineWidth', 1.0)
+% text(ax2, p2(1) + r_hat(1)*30, p2(2) + r_hat(2)*30, ...
+%      sprintf('t = %g mm', t_actual), ...
+%      'FontSize', 9, 'Color', col_dim, ...
+%      'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom')
+% 
+% % ── RADII ANNOTATIONS (R_outer and R_inner at start point) ───
+% origin = [0, 0];
+% 
+% % Outer radius line
+% r_outer_meas = norm([xo(1), yo(1)]);
+% plot(ax2, [origin(1) xo(1)], [origin(2) yo(1)], ...
+%      'Color', col_outer, 'LineWidth', 0.9, 'LineStyle', ':')
+% text(ax2, xo(1)/2, yo(1)/2 + 60, ...
+%      sprintf('R_{outer arc} = %g mm', R_out), ...
+%      'FontSize', 9, 'Color', col_outer, 'HorizontalAlignment', 'center')
+% 
+% % Inner radius line  
+% plot(ax2, [origin(1) xi(1)], [origin(2) yi(1)], ...
+%      'Color', col_inner, 'LineWidth', 0.9, 'LineStyle', ':')
+% text(ax2, xi(1)/2 - 80, yi(1)/2, ...
+%      sprintf('R_{corner} = %g mm', R_corner), ...
+%      'FontSize', 9, 'Color', col_inner, 'HorizontalAlignment', 'center')
+% 
+% % ── ORIGIN MARKER ─────────────────────────────────────────────
+% plot(ax2, 0, 0, 'k+', 'MarkerSize', 10, 'LineWidth', 1.5)
+% text(ax2, 30, 30, 'O', 'FontSize', 10, 'FontWeight', 'bold')
+% 
+% % ── SEGMENT ANGLE ANNOTATION ─────────────────────────────────
+% % Draw the sector angle (theta) between start and end of segment
+% theta_deg = theta * 180/pi;
+% ang_radius = norm([xm(1), ym(1)]) * 0.35;
+% ang_vec    = linspace(atan2(ym(1), xm(1)), atan2(ym(end), xm(end)), 80);
+% plot(ax2, ang_radius*cos(ang_vec), ang_radius*sin(ang_vec), ...
+%      'Color', col_dim, 'LineWidth', 1.0, 'LineStyle', '-.')
+% ang_mid = ang_vec(round(end/2));
+% text(ax2, ang_radius*cos(ang_mid)*1.15, ang_radius*sin(ang_mid)*1.15, ...
+%      sprintf('\\theta = %.1f°', theta_deg), ...
+%      'FontSize', 9, 'Color', col_dim, 'HorizontalAlignment','center')
+% 
+% % ── LEGEND ───────────────────────────────────────────────────
+% legend(ax2, {'Outer','Mid (neutral axis)','Inner'}, ...
+%        'Location', 'best', 'FontSize', 9)
+% 
+% hold(ax2,'off')
+
+toc
+
+
+
+% ── LOCAL HELPER ─────────────────────────────────────────────
+% function plot_ring(ax_, x_, y_, z_, col_, lw_)
+%     plot3(ax_, [x_, x_(1)], [y_, y_(1)], z_*ones(1,length(x_)+1), ...
+%           'Color', col_, 'LineWidth', lw_);
+% end
+
+
+% ======================================== ADDITIONAL APPROACHS =============================================== %
+
+
+
+%_______________________________________________________________________________________________________________________________________________________
+%
+%                                                                  PRESSURE
+%                                                                  METHOD 2 — MOMENT MATRIX
+%
+%________________________________________________________________________________________________________________________________________________________
+
+% % ── LOOP 1: Build force and application-point arrays ─────────────────────
+% Fpx_array_M2   = [];
+% Fpy_array_M2   = [];
+% x_force_array  = [];
+% y_force_array  = [];
+% 
+% idx = 1;
+% while idx <= length(x_outer) - 1
+% 
+%     dx_seg = x_outer(idx+1) - x_outer(idx);
+%     dy_seg = y_outer(idx+1) - y_outer(idx);
+% 
+%     Fpx_seg = p_MPa * L *  dy_seg;
+%     Fpy_seg = p_MPa * L * -dx_seg;
+% 
+%     x_force = (x_outer(idx) + x_outer(idx+1)) / 2;
+%     y_force = (y_outer(idx) + y_outer(idx+1)) / 2;
+% 
+%     Fpx_array_M2  = [Fpx_array_M2,  Fpx_seg];
+%     Fpy_array_M2  = [Fpy_array_M2,  Fpy_seg];
+%     x_force_array = [x_force_array, x_force];
+%     y_force_array = [y_force_array, y_force];
+% 
+%     idx = idx + 1;
+% 
+% end
+% 
+% n_forces = length(Fpx_array_M2);
+% n_points = length(x_mid_array);
+% 
+% % ── LOOP 2+3: Build lower-triangular Moment_Matrix ───────────────────────
+% %
+% %   Moment_Matrix(j, i) = moment that segment i generates about point j
+% %   Only upstream segments (i < j) are non-zero — lower triangle only.
+% %
+% Moment_Matrix = zeros(n_points, n_forces);
+% 
+% ref_idx = 1;
+% while ref_idx <= n_points
+% 
+%     x_ref_j = x_mid_array(ref_idx);
+%     y_ref_j = y_mid_array(ref_idx);
+% 
+%     seg_idx = 1;
+%     while seg_idx <= ref_idx - 1
+% 
+%         arm_x = x_force_array(seg_idx) - x_ref_j;
+%         arm_y = y_force_array(seg_idx) - y_ref_j;
+% 
+%         Moment_Matrix(ref_idx, seg_idx) = Fpx_array_M2(seg_idx) * arm_y ...
+%                                         - Fpy_array_M2(seg_idx) * arm_x;
+% 
+%         seg_idx = seg_idx + 1;
+%     end
+% 
+%     ref_idx = ref_idx + 1;
+% end
+% 
+% % ── Total particular moment at each reference point ───────────────────────
+% Mp_M2 = sum(Moment_Matrix, 2)';   % 1 x n_points
+% 
+% % ── Pressure RHS for flexibility equations ───────────────────────────────
+% pressure_rhs_M2 = [
+%     trapz(s_array_mid, Mp_M2 .* inverse_bending_stiffness);
+%     trapz(s_array_mid, Mp_M2 .* delta_y .* inverse_bending_stiffness);
+%     trapz(s_array_mid, Mp_M2 .* delta_x .* inverse_bending_stiffness)
+% ];
+% 
+% % ── Solve for redundants ──────────────────────────────────────────────────
+% internal_loads_M2 = integral_matrix \ -pressure_rhs_M2;
+% 
+% Ma_M2 = internal_loads_M2(1);
+% Na_M2 = internal_loads_M2(2);
+% Va_M2 = internal_loads_M2(3);
+% 
+% fprintf('\n=== Method 2 — Pressure redundants ===\n');
+% fprintf('Ma_M2 = %.6e N·mm\n', Ma_M2);
+% fprintf('Na_M2 = %.6e N\n',    Na_M2);
+% fprintf('Va_M2 = %.6e N   (should be ~0 by symmetry)\n', Va_M2);
+% 
+% % ── Total internal loads ──────────────────────────────────────────────────
+% theta_array_M2 = atan2(ty, tx);   % true local tangent angle, 1 x n_pts
+% 
+% N_M2 = Na_M2 .* cos(theta_array_M2) + Va_M2 .* sin(theta_array_M2);   % 1 x n_pts
+% 
+% M_M2 = Mp_M2 + Ma_M2 + Na_M2 .* delta_y + Va_M2 .* delta_x;           % 1 x n_pts
+% 
+% % ── Circumferential stress (outer fibre) ─────────────────────────────────
+% sigma_M2 = N_M2 ./ A_array + (M_M2 .* c_array) ./ inertia_moment;     % 1 x n_pts
+% 
+% % ── Displacement field — Method 2 ────────────────────────────────────────
+% fwd_MEI_M2  = cumtrapz(s_array_mid, M_M2 .* inv_EI);
+% fwd_MxEI_M2 = cumtrapz(s_array_mid, M_M2 .* x_mid_array .* inv_EI);
+% fwd_MyEI_M2 = cumtrapz(s_array_mid, M_M2 .* y_mid_array .* inv_EI);
+% 
+% tail_MEI_M2  = fwd_MEI_M2(end)  - fwd_MEI_M2;
+% tail_MxEI_M2 = fwd_MxEI_M2(end) - fwd_MxEI_M2;
+% tail_MyEI_M2 = fwd_MyEI_M2(end) - fwd_MyEI_M2;
+% 
+% delta_rot_M2 = tail_MEI_M2;
+% delta_v_M2   = x_mid_array .* tail_MEI_M2 - tail_MxEI_M2;
+% delta_h_M2   = tail_MyEI_M2 - y_mid_array .* tail_MEI_M2;
+
+% fprintf('\n=== Method 2 — Displacement verification ===\n')
+% fprintf('Rotation at s=0 : %+.6e rad  (target: 0)\n', delta_rot_M2(1))
+% fprintf('Vert.    at s=0 : %+.6e mm   (target: 0)\n', delta_v_M2(1))
+% fprintf('Horiz.   at s=0 : %+.6e mm   (target: 0)\n', delta_h_M2(1))
+% 
+% % ── Comparison plots ──────────────────────────────────────────────────────
+% figure(11)
+% plot(s_array_mid, Mp,    'b--', 'LineWidth', 1.2); hold on
+% plot(s_array_mid, Mp_M2, 'r--', 'LineWidth', 1.2);
+% yline(0, 'k--'); grid on
+% legend('M_0 method 1', 'M_0 method 2', 'Location', 'best')
+% xlabel('Arc length s [mm]'); ylabel('M_0 [N·mm]')
+% title('Particular moment — method 1 vs method 2')
+% 
+% figure(12)
+% plot(s_array_mid, M_Q2, 'b', 'LineWidth', 1.5); hold on
+% plot(s_array_mid, M_M2, 'r', 'LineWidth', 1.5);
+% yline(0, 'k--'); grid on
+% legend('M_{total} method 1', 'M_{total} method 2', 'Location', 'best')
+% xlabel('Arc length s [mm]'); ylabel('M [N·mm]')
+% title('Total moment — method 1 vs method 2')
+% 
+% figure(13)
+% plot(s_array_mid, sigma_Q2, 'b', 'LineWidth', 1.5); hold on
+% plot(s_array_mid, sigma_M2, 'r', 'LineWidth', 1.5);
+% yline(0, 'k--'); grid on
+% legend('\sigma method 1', '\sigma method 2', 'Location', 'best')
+% xlabel('Arc length s [mm]'); ylabel('\sigma [MPa]')
+% title('Circumferential stress — method 1 vs method 2')
+% 
+% figure(14)
+% theta_mid = s_array_mid ./ s_total_mid .* (2*pi);
+% subplot(3,1,1)
+% plot(theta_mid, delta_rot_M2, 'k', 'LineWidth', 1.5)
+% yline(0,'k--'); grid on
+% xlabel('\theta [rad]'); ylabel('\phi [rad]')
+% title('Rotation \phi(s) — Method 2')
+% 
+% subplot(3,1,2)
+% plot(theta_mid, delta_h_M2, 'b', 'LineWidth', 1.5)
+% yline(0,'b--'); grid on
+% xlabel('\theta [rad]'); ylabel('u_x [mm]')
+% title('Horizontal displacement u_x(s) — Method 2')
+% 
+% subplot(3,1,3)
+% plot(theta_mid, delta_v_M2, 'r', 'LineWidth', 1.5)
+% yline(0,'r--'); grid on
+% xlabel('\theta [rad]'); ylabel('u_y [mm]')
+% title('Vertical displacement u_y(s) — Method 2')
+
+
