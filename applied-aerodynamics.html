@@ -304,6 +304,13 @@
         .try-link a { text-decoration: none; }
         .try-link a:hover { text-decoration: underline; }
         .panel-canvas.xtall { height: 440px; }
+        .panel-canvas.x3d { height: 540px; }
+        .panel-canvas.x3d canvas { cursor: grab; touch-action: pan-y; }
+        .panel-canvas.x3d canvas.dragging { cursor: grabbing; }
+        .drag-hint {
+            position: absolute; left: 14px; bottom: 10px; pointer-events: none;
+            font-family: var(--mono); font-size: 0.65rem; color: var(--text-faint); letter-spacing: 0.08em;
+        }
         /* Chart image cards (CF34 engine, CRJ900): pop up at the top right while hovering a chart */
         .engine-pop {
             position: absolute; top: 14px; right: 74px; z-index: 2; width: 190px;
@@ -436,6 +443,7 @@
             .tool-badge { margin-left: 0; }
             .panel-canvas, .panel-canvas.tall { height: 260px; }
             .panel-canvas.xtall { height: 340px; }
+            .panel-canvas.x3d { height: 500px; }
         }
     </style>
 </head>
@@ -491,7 +499,7 @@
 
     <section class="flightplan" aria-label="Project overview">
         <div class="fp-box">
-            <div class="fp-head"><span>FLIGHT PLAN</span><span>2 PROJECTS · 3 LIVE GRAPHS</span></div>
+            <div class="fp-head"><span>FLIGHT PLAN</span><span>2 PROJECTS · 4 LIVE GRAPHS</span></div>
             <a class="fp-row" href="#crj900"><span class="fp-wpt">WPT 01</span><span class="fp-name">CRJ900 aerodynamic performance</span><span class="fp-tool">EXCEL · PYTHON</span></a>
             <a class="fp-row sub" href="#crj-drag"><span class="fp-wpt">01.A</span><span class="fp-name">Component drag build-up</span><span class="fp-tool">EXCEL</span></a>
             <a class="fp-row sub" href="#crj-thrust"><span class="fp-wpt">01.B</span><span class="fp-name">Thrust curves, 0 to 36,000 ft</span><span class="fp-tool">PYTHON</span></a>
@@ -771,9 +779,49 @@
                 </div>
             </section>
 
-            <section class="section" id="ia-llt">
+            <section class="section" id="ia-sep3d">
                 <div class="section-head">
                     <span class="wpt">03.C</span>
+                    <h3>Specific excess power in 3D</h3>
+                </div>
+                <p><strong>What it shows:</strong> the E-M diagram with a third axis. The floor is the same airspeed–turn-rate plane, and the height of the surface is the specific excess power \(P_s\) at each point in the envelope. Specific excess power is the rate at which the aircraft can gain energy, either as height or as speed:</p>
+                <div class="equation">
+                    $$P_s = \frac{(T - D)\,V}{W} = \frac{dh}{dt} + \frac{V}{g}\frac{dV}{dt}$$
+                </div>
+                <p>The translucent sheet is \(P_s = 0\), steady level flight. Where the surface is <strong>above</strong> it (lime), the aircraft has power to spare and climbs while it turns. Where it is <strong>below</strong> it (red), drag beats thrust and the aircraft has to sink, or slow down, to hold that turn. The dashed line where they meet is the sustained-turn boundary.</p>
+                <p><strong>How to use it:</strong> watch the aircraft fly a loop around the envelope. It climbs, nose up, over the lime region and sinks, nose down, in the red region. The trace at the bottom right shows the height it gains and loses. Drag to rotate the view. Climbing higher, adding mass or taking away power all lower the surface, so more of the envelope sinks below the sheet.</p>
+                <div class="panel" id="sep3d-panel">
+                    <div class="panel-head"><span class="t">SEP SURFACE · 3D</span><span class="n">Excel model airframe · propeller thrust T = ηP/V</span></div>
+                    <div class="panel-canvas x3d">
+                        <canvas id="sep3d-canvas" role="img" aria-label="Three-dimensional surface of specific excess power over airspeed and turn rate, with an aircraft that climbs where the surface is above the zero plane and sinks where it is below"></canvas>
+                        <span class="drag-hint">DRAG TO ROTATE</span>
+                    </div>
+                    <div class="controls">
+                        <div class="ctrl">
+                            <label for="s3-h">Altitude <output id="s3-h-out">4,500 ft</output></label>
+                            <input type="range" id="s3-h" min="0" max="20000" step="500" value="4500">
+                        </div>
+                        <div class="ctrl">
+                            <label for="s3-m">Mass <output id="s3-m-out">1,000 kg</output></label>
+                            <input type="range" id="s3-m" min="700" max="1600" step="25" value="1000">
+                        </div>
+                        <div class="ctrl">
+                            <label for="s3-p">Engine power <output id="s3-p-out">670 hp</output></label>
+                            <input type="range" id="s3-p" min="250" max="900" step="10" value="670">
+                        </div>
+                    </div>
+                    <div class="readouts">
+                        <div class="readout hl"><span>Max SEP (1 g)</span><b id="s3-smax">–</b></div>
+                        <div class="readout"><span>Max level speed</span><b id="s3-vmax">–</b></div>
+                        <div class="readout mg"><span>Corner speed (5 g)</span><b id="s3-vc">–</b></div>
+                        <div class="readout"><span>Max sustained turn</span><b id="s3-ws">–</b></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="ia-llt">
+                <div class="section-head">
+                    <span class="wpt">03.D</span>
                     <h3>Lift across the span: lifting-line solver</h3>
                 </div>
                 <p><strong>What it shows:</strong> how lift is spread along a wing from root to tip, solved live with Prandtl's lifting-line theory and compared with the ideal elliptical distribution, which gives the least induced drag for a given amount of lift.</p>
@@ -1383,6 +1431,289 @@
                 });
             }
             window.addEventListener('resize', draw);
+            draw();
+        })();
+
+        // ===== 3D SEP surface: an aircraft flies a loop round the envelope, climbing where SEP > 0 and sinking where SEP < 0 =====
+        (function sep3dPanel() {
+            const canvas = document.getElementById('sep3d-canvas');
+            const panel = document.getElementById('sep3d-panel');
+            const ins = ['s3-h', 's3-m', 's3-p'].map(id => document.getElementById(id));
+            const $ = id => document.getElementById(id);
+            const g = 9.81, FPM = 196.85;
+            // Fixed airframe from the Excel E-M model; thrust = eta * P / V, 1 hp = 75 kgf.m/s
+            const S = 8.1, SPAN = 8.06, CD0 = 0.017, OSW = 0.83, ETA = 0.75, CLMAX = 1.66, NLIM = 5;
+            const K = 1 / (Math.PI * SPAN * SPAN / S * OSW);
+            const POS = [163, 230, 53], NEG = [248, 113, 113], DARK = [16, 22, 16];
+            const NU = 40, NV = 16, TILT = 0.5, LOOP_S = 18;
+            const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+            const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+
+            let M;                                                       // model for the current slider settings
+            let azBase = -0.7, sway = 0, t = 0, dh = 0, trace = [], trail = [];   // camera sways about azBase
+
+            function update() {
+                const [hFt, mass, hp] = ins.map(i => +i.value);
+                $('s3-h-out').textContent = hFt.toLocaleString('en-US') + ' ft';
+                $('s3-m-out').textContent = mass.toLocaleString('en-US') + ' kg';
+                $('s3-p-out').textContent = hp + ' hp';
+
+                const rho = isa(hFt).rho, W = mass * g, Pav = hp * 75 * g * ETA;
+                const sep = (V, n) => (Pav - 0.5 * rho * V ** 3 * S * CD0 - K * n * n * W * W * V / (0.5 * rho * V * V * S)) / W * FPM;
+                const nEnv = V => Math.min(0.5 * rho * V * V * S * CLMAX / W, NLIM);
+                const nAt = (V, ps) => Math.sqrt(Math.max((Pav - 0.5 * rho * V ** 3 * S * CD0 - ps / FPM * W) * 0.5 * rho * V * V * S / (K * W * W * V), 0));
+                const omega = (V, n) => g * Math.sqrt(Math.max(n * n - 1, 0)) / V / DEG;
+                const Vs = Math.sqrt(2 * W / (rho * S * CLMAX)), Vc = Vs * Math.sqrt(NLIM);
+
+                let Vmax = NaN;                                          // max level speed: SEP = 0 at 1 g
+                for (let V = 400; V > Vs; V -= 0.25) if (sep(V, 1) >= 0) { Vmax = V; break; }
+                const V0 = Vs, V1 = Math.max(isNaN(Vmax) ? 0 : Vmax * 1.06, Vc * 1.3);
+
+                // Surface grid: V across the envelope, load factor from 1 g up to the stall line / structural limit
+                const grid = [];
+                let zMax = -Infinity, zMin = 0, wTop = 0;
+                for (let i = 0; i <= NU; i++) {
+                    const V = V0 + (V1 - V0) * i / NU, ne = nEnv(V), row = [];
+                    for (let j = 0; j <= NV; j++) {
+                        const n = 1 + (ne - 1) * j / NV, s = sep(V, n), w = omega(V, n);
+                        row.push([V, w, s]);
+                        zMax = Math.max(zMax, s); zMin = Math.min(zMin, s); wTop = Math.max(wTop, w);
+                    }
+                    grid.push(row);
+                }
+
+                // Sustained-turn boundary (SEP = 0) and the best sustained turn
+                const zero = [];
+                let wSus = 0;
+                for (let i = 0; i <= 200; i++) {
+                    const V = V0 + (V1 - V0) * i / 200, n0 = nAt(V, 0);
+                    if (n0 >= 1 && n0 <= nEnv(V)) zero.push([V, omega(V, n0)]);
+                    const nS = Math.min(n0, nEnv(V));
+                    if (nS >= 1) wSus = Math.max(wSus, omega(V, nS));
+                }
+
+                const uC = Math.min((Vc - V0) / (V1 - V0), 0.92);
+                M = {
+                    sep, nEnv, omega, V0, V1, grid, zero, zMax: Math.max(zMax, 0), zMin, wTop: wTop * 1.06,
+                    zs: 0.95 / Math.max(zMax, -zMin, 1),
+                    // Loop through the envelope as (fraction of the speed range, fraction of the available pull)
+                    wps: [[0.08, 0.05], [0.5, 0.02], [0.97, 0.03], [0.88, 0.95], [uC, 1], [0.3, 0.75]],
+                };
+                $('s3-smax').textContent = Math.round(Math.max(...grid.map(r => r[0][2]))).toLocaleString('en-US') + ' ft/min';
+                $('s3-vmax').textContent = isNaN(Vmax) ? 'none' : Vmax.toFixed(1) + ' m/s';
+                $('s3-vc').textContent = Vc.toFixed(1) + ' m/s';
+                $('s3-ws').textContent = wSus > 0 ? wSus.toFixed(1) + ' °/s' : 'none';
+                dh = 0; trace = []; trail = [];
+            }
+
+            // Point on the loop (t in [0,1)): periodic Catmull-Rom through the waypoints
+            function pathAt(tt) {
+                const P = M.wps, N = P.length, k = ((tt % 1) + 1) % 1 * N, i = Math.floor(k), f = k - i;
+                const p0 = P[(i - 1 + N) % N], p1 = P[i], p2 = P[(i + 1) % N], p3 = P[(i + 2) % N];
+                const cr = d => 0.5 * (2 * p1[d] + (-p0[d] + p2[d]) * f + (2 * p0[d] - 5 * p1[d] + 4 * p2[d] - p3[d]) * f * f
+                    + (-p0[d] + 3 * p1[d] - 3 * p2[d] + p3[d]) * f * f * f);
+                const u = Math.min(Math.max(cr(0), 0), 1), q = Math.min(Math.max(cr(1), 0), 1);
+                const V = M.V0 + (M.V1 - M.V0) * u, n = 1 + (M.nEnv(V) - 1) * q;
+                return { V, n, w: M.omega(V, n), s: M.sep(V, n) };
+            }
+
+            const X = V => -1 + 2 * (V - M.V0) / (M.V1 - M.V0);
+            const Y = w => -1 + 2 * w / M.wTop;
+
+            function draw() {
+                const { ctx, w, h } = fitCanvas(canvas);
+                const narrow = w < 520;
+                const sc = narrow ? Math.min(w * 0.31, h * 0.27) : Math.min(w * 0.28, h * 0.3), cx = w * 0.5, cy = h * (narrow ? 0.64 : 0.54);
+                const azim = azBase + 0.45 * Math.sin(sway);
+                const ca = Math.cos(azim), sa = Math.sin(azim), st = Math.sin(TILT), ct = Math.cos(TILT);
+                const proj = (x, y, z) => {
+                    const xr = x * ca - y * sa, d = x * sa + y * ca;
+                    return [cx + xr * sc, cy - z * sc * 0.9 * ct - d * sc * st, d];
+                };
+                const zs = M.zs, zFloor = Math.min(M.zMin * zs, 0) - 0.15;
+                const line = (pts, style, width, dash) => {
+                    ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b));
+                    ctx.strokeStyle = style; ctx.lineWidth = width; ctx.setLineDash(dash || []); ctx.stroke(); ctx.setLineDash([]);
+                };
+                const poly = pts => { ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); };
+
+                // Floor: grid, envelope outline and axis labels
+                ctx.font = `10px ${MONO}`; ctx.textBaseline = 'middle';
+                const vStep = (M.V1 - M.V0) > 120 ? 40 : 20, wStep = M.wTop > 30 ? 10 : 5;
+                for (let V = Math.ceil(M.V0 / vStep) * vStep; V <= M.V1; V += vStep) {
+                    line([proj(X(V), -1, zFloor), proj(X(V), 1, zFloor)], 'rgba(255,255,255,0.06)', 1);
+                    const [lx, ly] = proj(X(V), -1.12, zFloor);
+                    ctx.fillStyle = FAINT; ctx.textAlign = 'center'; ctx.fillText(V, lx, ly);
+                }
+                for (let wv = 0; wv <= M.wTop; wv += wStep) {
+                    line([proj(-1, Y(wv), zFloor), proj(1, Y(wv), zFloor)], 'rgba(255,255,255,0.06)', 1);
+                    const [lx, ly] = proj(1.1, Y(wv), zFloor);
+                    ctx.fillStyle = FAINT; ctx.textAlign = 'center'; ctx.fillText(wv, lx, ly);
+                }
+                const [vlx, vly] = proj(0, -1.3, zFloor), [wlx, wly] = proj(1.3, 0, zFloor);
+                ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.textAlign = 'center';
+                ctx.fillText('V (m/s)', vlx, vly); ctx.fillText('ω (°/s)', wlx, wly);
+                const env = M.grid.map(r => [r[NV][0], r[NV][1]]);
+                line([...env, [M.V1, 0], [M.V0, 0], env[0]].map(([V, wv]) => proj(X(V), Y(wv), zFloor)), 'rgba(163,230,53,0.3)', 1.2);
+
+                // SEP axis at the back corner of the floor
+                const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+                const [bx, by] = corners.reduce((a, c) => proj(c[0], c[1], 0)[2] > proj(a[0], a[1], 0)[2] ? c : a);
+                const step = [500, 1000, 2000, 5000].find(s => (M.zMax - M.zMin) / s <= 6) || 10000;
+                line([proj(bx, by, zFloor), proj(bx, by, M.zMax * zs + 0.05)], 'rgba(255,255,255,0.18)', 1);
+                ctx.textAlign = 'right';
+                for (let v = Math.ceil(M.zMin / step) * step; v <= M.zMax; v += step) {
+                    const [tx, ty] = proj(bx, by, v * zs);
+                    line([[tx - 4, ty], [tx + 4, ty]], 'rgba(255,255,255,0.3)', 1);
+                    ctx.fillStyle = v === 0 ? '#fff' : FAINT;
+                    ctx.fillText((v > 0 ? '+' : '') + v.toLocaleString('en-US'), tx - 7, ty);
+                }
+                const [ax, ay] = proj(bx, by, M.zMax * zs + 0.18);
+                ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillText('SEP (ft/min)', ax, ay);
+
+                // Surface quads, split by the sign of SEP and drawn back to front
+                const below = [], above = [];
+                for (let i = 0; i < NU; i++) for (let j = 0; j < NV; j++) {
+                    const c = [M.grid[i][j], M.grid[i + 1][j], M.grid[i + 1][j + 1], M.grid[i][j + 1]];
+                    const pts = c.map(([V, wv, s]) => proj(X(V), Y(wv), s * zs));
+                    const s = (c[0][2] + c[1][2] + c[2][2] + c[3][2]) / 4;
+                    const d = (pts[0][2] + pts[1][2] + pts[2][2] + pts[3][2]) / 4;
+                    (s < 0 ? below : above).push({ pts, s, d });
+                }
+                const quad = ({ pts, s }) => {
+                    const k = s >= 0 ? Math.min(s / Math.max(M.zMax, 1), 1) : Math.min(-s / Math.max(-M.zMin, 1), 1);
+                    poly(pts);
+                    ctx.fillStyle = rgba(mix(DARK, s >= 0 ? POS : NEG, 0.35 + 0.65 * k), 0.9); ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.6; ctx.stroke();
+                };
+                below.sort((a, b) => b.d - a.d).forEach(quad);
+
+                // Zero plane (level flight) over the envelope, and the sustained-turn boundary on it
+                poly([...env, [M.V1, 0], [M.V0, 0]].map(([V, wv]) => proj(X(V), Y(wv), 0)));
+                ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+                if (M.zero.length > 1) line(M.zero.map(([V, wv]) => proj(X(V), Y(wv), 0)), 'rgba(255,255,255,0.75)', 1.4, [5, 4]);
+
+                above.sort((a, b) => b.d - a.d).forEach(quad);
+
+                // Trail on the surface, coloured by climb / sink
+                for (let i = 1; i < trail.length; i++) {
+                    const a = trail[i - 1], b = trail[i];
+                    line([proj(a[0], a[1], a[2]), proj(b[0], b[1], b[2])],
+                        rgba(b[3] >= 0 ? [236, 252, 203] : [254, 202, 202], (i / trail.length) * 0.9), 2);
+                }
+
+                // Aircraft on the surface, with a drop line to the zero plane
+                const p = pathAt(t), q = pathAt(t + 0.004);
+                const x = X(p.V), y = Y(p.w), z = p.s * zs, col = p.s >= 0 ? POS : NEG;
+                const [px, py] = proj(x, y, z), [zx, zy] = proj(x, y, 0);
+                line([[px, py], [zx, zy]], rgba(col, 0.7), 1.2, [3, 3]);
+                ctx.beginPath(); ctx.arc(zx, zy, 2.5, 0, Math.PI * 2); ctx.fillStyle = rgba(col, 0.8); ctx.fill();
+                drawAircraft(ctx, proj, x, y, z, X(q.V) - x, Y(q.w) - y, p, col);
+
+                // HUD
+                const climbing = p.s >= 0;
+                ctx.font = `600 11px ${MONO}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                [['V', p.V.toFixed(1) + ' m/s', '#fff'], ['ω', p.w.toFixed(1) + ' °/s', '#fff'], ['n', p.n.toFixed(2) + ' g', '#fff'],
+                 ['SEP', (climbing ? '+' : '−') + Math.abs(Math.round(p.s)).toLocaleString('en-US') + ' ft/min', rgba(col, 1)]]
+                    .forEach(([k, v, c], i) => {
+                        ctx.fillStyle = FAINT; ctx.fillText(k, 16, 14 + i * 16);
+                        ctx.fillStyle = c; ctx.fillText(v, 52, 14 + i * 16);
+                    });
+                ctx.font = `700 12px ${MONO}`; ctx.fillStyle = rgba(col, 1);
+                ctx.fillText(climbing ? '▲ CLIMBING' : '▼ SINKING', 16, 84);
+
+                // Legend (wide screens only; the HUD needs the room on phones)
+                if (!narrow) {
+                ctx.font = `10px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                [['SEP > 0 · climbs', rgba(POS, 1)], ['SEP = 0 · level', '#fff'], ['SEP < 0 · sinks', rgba(NEG, 1)]].forEach(([k, c], i) => {
+                    ctx.fillStyle = c; ctx.fillRect(w - 26, 19 + i * 16, 10, 3);
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText(k, w - 32, 20 + i * 16);
+                });
+                }
+
+                // Height gained and lost over the loop
+                if (w > 480) {
+                    const bw = 170, bh = 64, bx0 = w - bw - 16, by0 = 84;
+                    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(bx0, by0, bw, bh);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1; ctx.strokeRect(bx0, by0, bw, bh);
+                    const span = Math.max(50, ...trace.map(([, v]) => Math.abs(v))) * 1.15;
+                    const TX = tt => bx0 + 6 + tt * (bw - 12), TY = v => by0 + bh / 2 - v / span * (bh / 2 - 6);
+                    line([[bx0, TY(0)], [bx0 + bw, TY(0)]], 'rgba(255,255,255,0.2)', 1, [2, 3]);
+                    for (let i = 1; i < trace.length; i++) {
+                        const a = trace[i - 1], b = trace[i];
+                        line([[TX(a[0]), TY(a[1])], [TX(b[0]), TY(b[1])]], rgba(b[2] >= 0 ? POS : NEG, 0.95), 1.6);
+                    }
+                    ctx.beginPath(); ctx.arc(TX(t % 1), TY(dh), 3, 0, Math.PI * 2); ctx.fillStyle = rgba(col, 1); ctx.fill();
+                    ctx.font = `9px ${MONO}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillStyle = FAINT;
+                    ctx.fillText('HEIGHT CHANGE OVER LOOP', bx0, by0 - 3);
+                    ctx.textAlign = 'right'; ctx.fillStyle = rgba(col, 1);
+                    ctx.fillText((dh >= 0 ? '+' : '−') + Math.abs(Math.round(dh)).toLocaleString('en-US') + ' ft', bx0 + bw, by0 - 3);
+                }
+            }
+
+            // Aircraft silhouette in 3D: heading along the path, banked for the load factor, nose up when climbing
+            const OUTLINE = [
+                [11, 0], [8, 1.2], [3, 1.4], [2, 11], [-1.5, 11], [-3, 1.4], [-9, 1], [-10, 4.5], [-12, 4.5],
+                [-11.5, 0], [-12, -4.5], [-10, -4.5], [-9, -1], [-3, -1.4], [-1.5, -11], [2, -11], [3, -1.4], [8, -1.2]
+            ];
+            function drawAircraft(ctx, proj, x, y, z, dx, dy, p, col) {
+                const len = Math.hypot(dx, dy) || 1, fx = dx / len, fy = dy / len, rx = fy, ry = -fx;
+                const size = 0.0105, phi = Math.acos(1 / Math.max(p.n, 1)), pitch = p.s >= 0 ? 0.35 : -0.35;
+                const pts = OUTLINE.map(([f, r]) => {
+                    const df = f * size, dr = r * size;
+                    return proj(x + df * fx + dr * Math.cos(phi) * rx, y + df * fy + dr * Math.cos(phi) * ry,
+                        z + df * pitch + dr * Math.sin(phi));
+                });
+                ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath();
+                ctx.shadowColor = rgba(col, 0.9); ctx.shadowBlur = 14;
+                ctx.fillStyle = '#ffffff'; ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = rgba(col, 1); ctx.lineWidth = 1; ctx.stroke();
+            }
+
+            // Loop: fly the path and integrate height from SEP; the camera drifts slowly unless dragged
+            function step(dt) {
+                const prev = t;
+                t += dt / LOOP_S;
+                if (Math.floor(t) !== Math.floor(prev)) { dh = 0; trace = []; }
+                const p = pathAt(t);
+                dh += p.s / 60 * dt;
+                trace.push([t % 1, dh, p.s]);
+                trail.push([X(p.V), Y(p.w), p.s * M.zs, p.s]);
+                if (trail.length > 70) trail.shift();
+            }
+            let raf = null, last = null, visible = false, dragging = false;
+            function tick(now) {
+                const dt = last === null ? 0 : Math.min((now - last) / 1000, 0.1);
+                last = now;
+                if (!dragging) sway += dt * 0.25;
+                step(dt);
+                draw();
+                raf = visible ? requestAnimationFrame(tick) : null;
+            }
+            const start = () => { if (!raf && !reduceMotion) { last = null; raf = requestAnimationFrame(tick); } };
+            new IntersectionObserver(entries => {
+                visible = entries[0].isIntersecting;
+                if (visible) start();
+            }, { threshold: 0.3 }).observe(panel);
+
+            ins.forEach(el => el.addEventListener('input', () => { update(); if (!raf) draw(); }));
+            window.addEventListener('resize', () => { if (!raf) draw(); });
+
+            let lastX = 0;
+            canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging'); });
+            canvas.addEventListener('pointermove', e => {
+                if (!dragging) return;
+                azBase += (e.clientX - lastX) * 0.01; lastX = e.clientX;
+                if (!raf) draw();
+            });
+            const endDrag = () => { dragging = false; canvas.classList.remove('dragging'); };
+            canvas.addEventListener('pointerup', endDrag);
+            canvas.addEventListener('pointercancel', endDrag);
+
+            update();
+            if (reduceMotion) t = 0.55;                                  // static view: aircraft in the hard pull at high speed
             draw();
         })();
 
