@@ -514,23 +514,27 @@
 
             <h3>CFD model and results</h3>
             <p>The hand calculations set the ramp angles and shock positions; the CFD model then shows how the real, viscous flow behaves, including shock–boundary layer interaction on the ramps and where the terminal shock settles.</p>
-            <div class="grid-2">
-                <figure>
-                    <div class="img-box" data-img="Intake Geometry"><img alt="Supersonic intake geometry"></div>
-                    <figcaption><span class="fig-no">FIG 1.1</span> Intake geometry and computational domain.</figcaption>
-                </figure>
-                <figure>
-                    <div class="img-box" data-img="Intake Mesh"><img alt="Intake mesh"></div>
-                    <figcaption><span class="fig-no">FIG 1.2</span> Mesh, refined around the ramps and cowl lip.</figcaption>
-                </figure>
-                <figure>
-                    <div class="img-box" data-img="Intake Mach Contour"><img alt="Mach number contour in the intake"></div>
-                    <figcaption><span class="fig-no">FIG 1.3</span> Mach number contour.</figcaption>
-                </figure>
-                <figure>
-                    <div class="img-box" data-img="Intake Pressure Contour"><img alt="Static pressure contour in the intake"></div>
-                    <figcaption><span class="fig-no">FIG 1.4</span> Static pressure contour.</figcaption>
-                </figure>
+            <figure>
+                <div class="img-box" data-img="Intake Geometry and Mesh" style="aspect-ratio: 1489 / 623;"><img alt="Intake geometry and mesh with inlet, outlet and wall boundaries labelled"></div>
+                <figcaption><span class="fig-no">FIG 1.1</span> Intake geometry and mesh with inflation layers, showing the inlet, outlet and walls.</figcaption>
+            </figure>
+            <figure>
+                <div class="img-box" data-img="Intake Contour Plots" style="aspect-ratio: 2441 / 729;"><img alt="Mach number contours in the intake for inviscid and viscous solutions"></div>
+                <figcaption><span class="fig-no">FIG 1.2</span> Mach number contours: inviscid (left) and viscous (right).</figcaption>
+            </figure>
+
+            <p>To follow the Mach number through the intake, probes were placed slightly above the symmetry axis, in both the inviscid and the viscous cases. The graph below plots the Mach number they record along the intake and compares it against the theoretical Mach number variation without friction effects, which comes from the ideal oblique shock relations above. Where the viscous and inviscid curves separate from each other and from the theory shows the effect of the boundary layer on the shock structure.</p>
+
+            <div class="lab" id="mach-lab">
+                <div class="lab-head">
+                    <span class="lab-title">MACH NUMBER ALONG THE INTAKE</span>
+                    <span class="lab-note">CFD probes (inviscid &amp; viscous) vs analytical shock solution</span>
+                </div>
+                <div class="lab-canvas"><canvas id="mach-canvas" role="img" aria-label="Animated line chart of Mach number against spanwise length for the upper and lower probes, inviscid and viscous, compared with the analytical solution"></canvas></div>
+                <div class="readouts" id="mach-readouts"></div>
+                <div class="lab-controls">
+                    <div class="ctrl"><button type="button" id="mach-replay" style="font: inherit; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--border-accent); border-radius: 999px; padding: 0.4rem 1rem; cursor: pointer;">↻ Replay</button></div>
+                </div>
             </div>
         </article>
 
@@ -593,17 +597,6 @@
                 <div class="lab-warn" id="jet-warn"></div>
             </div>
 
-            <h3>CFD model and results</h3>
-            <div class="grid-2">
-                <figure>
-                    <div class="img-box" data-img="Slot Jet Mach Contour"><img alt="Mach contour of the underexpanded slot jet"></div>
-                    <figcaption><span class="fig-no">FIG 2.1</span> Mach number contour of the plume.</figcaption>
-                </figure>
-                <figure>
-                    <div class="img-box" data-img="Slot Jet Pressure Contour"><img alt="Pressure contour of the underexpanded slot jet"></div>
-                    <figcaption><span class="fig-no">FIG 2.2</span> Static pressure contour showing the shock cells.</figcaption>
-                </figure>
-            </div>
         </article>
 
         <!-- ================= CASE 03: BOUNDARY LAYER ================= -->
@@ -663,16 +656,10 @@
             </div>
 
             <h3>CFD model and results</h3>
-            <div class="grid-2">
-                <figure>
-                    <div class="img-box" data-img="Wing Geometry"><img alt="Spirit of Innovation wing geometry"></div>
-                    <figcaption><span class="fig-no">FIG 3.1</span> Wing section geometry.</figcaption>
-                </figure>
-                <figure>
-                    <div class="img-box" data-img="Boundary Layer Result"><img alt="Boundary layer results along the wing"></div>
-                    <figcaption><span class="fig-no">FIG 3.2</span> Boundary layer development along the chord.</figcaption>
-                </figure>
-            </div>
+            <figure>
+                <div class="img-box" data-img="2D and 3D Contours"><img alt="2D and 3D contours of the Spirit of Innovation wing"></div>
+                <figcaption><span class="fig-no">FIG 3.1</span> 2D and 3D Contours.</figcaption>
+            </figure>
 
             <a class="cta" href="https://github.com/sydney-makgothi-98" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
@@ -1311,6 +1298,95 @@
                 }, { threshold: 0.5 });
                 obs.observe(canvas);
             }
+        })();
+
+        // ===== Mach number along the intake (digitised from the CFD probe plot) =====
+        (function machChart() {
+            const MACH_DATA = {"lowerInv":[3.4,3.4,3.36,3.2,3.26,2.9,2.43,2.18,2.13,2.17,2.21,2.24,2.28,2.31,2.35,2.38,2.42,2.45,2.49,2.53,2.56,2.6,2.63,2.67,2.7,2.74,2.78,2.81,2.85,2.88,2.92,2.95,2.99,3.03,3.06,3.06,3.07,3.07,3.08,3.08,3.08,3.08,3.08,3.09,3.09,3.09,3.09,3.09,3.09,3.09,3.09,3.08,3.07,3.03,2.89,2.8,2.66,2.62,2.58,2.58,2.58,2.6,2.61,2.62,2.64,2.64,2.65,2.66,2.68,2.69,2.7,2.71,2.72,2.73,2.74,2.75,2.76,2.77,2.78,2.78,2.79,2.8,2.81,2.82,2.83,2.84,2.85,2.86,2.87,2.87,2.88,2.89,2.9,2.9,2.91,2.92,2.93,2.93,2.93,2.93,2.93],"lowerVis":[3.4,3.4,3.36,3.2,3.13,2.69,2.3,2.14,2.1,2.13,2.17,2.22,2.28,2.34,2.39,2.45,2.5,2.55,2.6,2.64,2.69,2.73,2.76,2.8,2.83,2.86,2.89,2.92,2.95,2.97,2.98,2.99,3.01,3.02,3.03,3.04,3.04,3.05,3.06,3.06,3.06,3.06,3.06,3.07,3.07,3.07,3.07,3.07,3.07,3.07,3.07,3.07,3.03,2.94,2.81,2.67,2.59,2.56,2.55,2.55,2.56,2.58,2.59,2.6,2.61,2.62,2.64,2.65,2.66,2.67,2.68,2.69,2.7,2.71,2.72,2.73,2.74,2.75,2.76,2.77,2.77,2.78,2.79,2.8,2.81,2.82,2.83,2.83,2.84,2.85,2.85,2.87,2.87,2.88,2.89,2.91,2.91,2.91,2.91,2.91,2.91],"upperVis":[3.4,3.4,3.4,3.4,3.4,3.39,3.39,3.39,3.39,3.39,3.39,3.38,3.36,3.28,3.11,2.87,2.74,2.67,2.63,2.63,2.65,2.68,2.71,2.74,2.78,2.81,2.84,2.87,2.9,2.93,2.96,2.99,2.95,2.76,2.58,2.45,2.46,2.47,2.47,2.48,2.49,2.49,2.5,2.51,2.51,2.52,2.54,2.57,2.59,2.62,2.64,2.66,2.69,2.71,2.73,2.74,2.76,2.78,2.8,2.82,2.84,2.85,2.86,2.88,2.89,2.91,2.92,2.93,2.95,2.96,2.97,2.98,2.99,3.0,3.01,3.02,3.03,3.04,3.05,3.06,3.06,3.08,3.09,3.09,3.1,3.11,3.1,3.04,2.91,2.79,2.67,2.58,2.57,2.57,2.57,2.57,2.57,2.57,2.57,2.57,2.57],"upperInv":[3.4,3.4,3.4,3.4,3.4,3.4,3.4,3.4,3.4,3.4,3.4,3.4,3.39,3.33,3.2,3.01,2.81,2.7,2.65,2.65,2.67,2.69,2.73,2.76,2.8,2.83,2.86,2.89,2.92,2.95,2.98,3.01,3.0,2.92,2.68,2.47,2.35,2.3,2.32,2.36,2.4,2.43,2.46,2.48,2.52,2.54,2.56,2.59,2.61,2.64,2.66,2.68,2.7,2.73,2.75,2.77,2.78,2.8,2.82,2.84,2.86,2.87,2.88,2.9,2.91,2.93,2.94,2.95,2.96,2.98,2.99,3.0,3.01,3.02,3.03,3.04,3.05,3.06,3.07,3.08,3.09,3.1,3.1,3.12,3.12,3.13,3.14,3.14,3.11,3.03,2.89,2.75,2.64,2.59,2.58,2.59,2.59,2.59,2.59,2.59,2.59],"anaUpper":[3.4,3.44,3.44,3.44,3.45,3.46,3.47,3.48,3.49,3.49,3.5,3.51,3.51,3.51,3.51,3.5,3.49,3.48,3.46,3.37,3.33,3.3,3.25,3.21,3.15,3.09,3.03,2.96,2.89,2.81,2.74,2.66,2.59,2.51,2.43,2.36,2.28,2.2,2.14,2.11,2.11,2.1,2.09,2.07,2.07,2.06,2.05,2.04,2.03,2.02,2.01,2.0,1.99,1.98,1.97,1.96,1.95,1.94,1.93,1.92,1.91,1.9,1.89,1.89,1.88,1.86,1.86,1.85,1.84,1.83,1.82,1.81,1.8,1.79,1.78,1.77,1.76,1.75,1.74,1.73,1.72,1.71,1.7,1.69,1.68,1.67,1.67,1.65,1.64,1.64,1.63,1.63,1.62,1.62,1.62,1.62,1.62,1.62,1.62,1.62,1.62],"anaLower":[3.4,3.41,3.41,3.41,3.42,3.43,3.43,3.44,3.45,3.46,3.46,3.46,3.47,3.47,3.46,3.46,3.45,3.44,3.42,3.4,3.38,3.35,3.32,3.28,3.25,3.21,3.17,3.12,3.08,3.04,2.99,2.94,2.89,2.85,2.8,2.75,2.7,2.65,2.61,2.59,2.57,2.55,2.54,2.52,2.51,2.49,2.47,2.45,2.44,2.42,2.4,2.39,2.37,2.35,2.34,2.32,2.3,2.28,2.27,2.25,2.24,2.22,2.2,2.19,2.17,2.15,2.14,2.12,2.1,2.09,2.07,2.05,2.04,2.02,2.0,1.99,1.97,1.95,1.94,1.92,1.9,1.89,1.87,1.85,1.83,1.82,1.8,1.78,1.77,1.75,1.74,1.72,1.7,1.68,1.67,1.65,1.64,1.64,1.64,1.64,1.64]};
+            const canvas = document.getElementById('mach-canvas');
+            const readouts = document.getElementById('mach-readouts');
+            const X0 = -0.05, X1 = 0.25, N = MACH_DATA.lowerVis.length;
+            const xs = MACH_DATA.lowerVis.map((_, i) => i * 0.0025);
+            const series = [
+                { key: 'lowerVis', label: 'Lower probe · viscous', color: '#22d3ee', width: 2.4 },
+                { key: 'lowerInv', label: 'Lower probe · inviscid', color: '#22d3ee', width: 1.6, dash: [6, 4] },
+                { key: 'upperVis', label: 'Upper probe · viscous', color: '#fb923c', width: 2.4 },
+                { key: 'upperInv', label: 'Upper probe · inviscid', color: '#fb923c', width: 1.6, dash: [6, 4] },
+                { key: 'anaLower', label: 'Analytical · lower', color: '#a3e635', width: 3, alpha: 0.7 },
+                { key: 'anaUpper', label: 'Analytical · upper', color: '#c084fc', width: 3, alpha: 0.7 },
+            ];
+            readouts.innerHTML = series.map(s =>
+                `<div class="readout"><span style="color:${s.color}">${s.label}</span><b id="mach-r-${s.key}">–</b></div>`).join('');
+            const valueAt = (key, x) => {
+                if (x <= 0) return 3.4;
+                const f = Math.min(N - 1, x / 0.0025), i = Math.min(N - 2, Math.floor(f));
+                const a = MACH_DATA[key][i], b = MACH_DATA[key][i + 1];
+                return a + (b - a) * (f - i);
+            };
+            let progress = 0, raf = 0;
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            function draw() {
+                const { ctx, w, h } = fitCanvas(canvas);
+                ctx.clearRect(0, 0, w, h);
+                const pad = { l: 48, r: 18, t: 16, b: 40 };
+                const X = x => pad.l + (x - X0) / (X1 - X0) * (w - pad.l - pad.r);
+                const Y = m => h - pad.b - (m - 1) / 3 * (h - pad.t - pad.b);
+                ctx.font = `10px ${MONO}`; ctx.lineWidth = 1;
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                for (let m = 1; m <= 4; m += 0.5) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                    ctx.beginPath(); ctx.moveTo(pad.l, Y(m)); ctx.lineTo(w - pad.r, Y(m)); ctx.stroke();
+                    ctx.fillStyle = '#5f747d'; ctx.fillText(m.toFixed(1), pad.l - 8, Y(m));
+                }
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                for (let x = X0; x <= X1 + 1e-9; x += 0.05) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                    ctx.beginPath(); ctx.moveTo(X(x), pad.t); ctx.lineTo(X(x), h - pad.b); ctx.stroke();
+                    ctx.fillStyle = '#5f747d'; ctx.fillText(x.toFixed(2), X(x), h - pad.b + 6);
+                }
+                ctx.fillText('Spanwise length [m]', (pad.l + w - pad.r) / 2, h - 16);
+                ctx.save(); ctx.translate(12, (pad.t + h - pad.b) / 2); ctx.rotate(-Math.PI / 2);
+                ctx.fillText('Mach number', 0, 0); ctx.restore();
+
+                const xc = X0 + progress * (X1 - X0);
+                ctx.save();
+                ctx.beginPath(); ctx.rect(pad.l, 0, X(xc) - pad.l, h); ctx.clip();
+                series.forEach(s => {
+                    ctx.beginPath();
+                    ctx.moveTo(X(X0), Y(3.4)); ctx.lineTo(X(0), Y(3.4));
+                    MACH_DATA[s.key].forEach((m, i) => ctx.lineTo(X(xs[i]), Y(m)));
+                    ctx.globalAlpha = s.alpha || 1; ctx.strokeStyle = s.color; ctx.lineWidth = s.width;
+                    ctx.setLineDash(s.dash || []); ctx.lineJoin = 'round'; ctx.stroke();
+                });
+                ctx.restore(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+                ctx.strokeStyle = 'rgba(251,191,36,0.6)'; ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(X(xc), pad.t); ctx.lineTo(X(xc), h - pad.b); ctx.stroke();
+                ctx.setLineDash([]);
+                series.forEach(s => {
+                    const v = valueAt(s.key, xc);
+                    ctx.beginPath(); ctx.arc(X(xc), Y(v), 3.5, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill();
+                    document.getElementById('mach-r-' + s.key).textContent = v.toFixed(2);
+                });
+            }
+            function play() {
+                cancelAnimationFrame(raf);
+                if (reduce) { progress = 1; draw(); return; }
+                const start = performance.now(), dur = 6000;
+                const tick = now => {
+                    progress = Math.min(1, (now - start) / dur);
+                    draw();
+                    if (progress < 1) raf = requestAnimationFrame(tick);
+                };
+                raf = requestAnimationFrame(tick);
+            }
+            document.getElementById('mach-replay').addEventListener('click', play);
+            window.addEventListener('resize', draw);
+            draw();
+            new IntersectionObserver((e, obs) => {
+                if (e[0].isIntersecting) { play(); obs.disconnect(); }
+            }, { threshold: 0.4 }).observe(canvas);
         })();
 
         // ===== Images: drop files into "Syd Website Assets/CFD Page/" with any common extension =====
