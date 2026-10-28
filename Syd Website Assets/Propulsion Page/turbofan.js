@@ -676,11 +676,13 @@ const ISO_CSS = `
 `;
 
 
-const P = {"origin":[157.91973175202935,396.9529705463845],"scale":0.9099377559423606,"azimuth":108,"elevation":22};
+const P = {"origin":[191.53190868969529,387.6410471693201],"scale":0.833870882558425,"azimuth":108,"elevation":22};
 const Z0 = 112;
 const SPREAD_DX = {"fan":-88,"comp":-44,"comb":0,"turb":44,"exh":88};
 const MODS = [{"id":"fan","name":"Fan & inlet","x0":0,"x1":104},{"id":"comp","name":"Compressor","x0":104,"x1":252},{"id":"comb","name":"Combustor","x0":252,"x1":322},{"id":"turb","name":"Turbine","x0":322,"x1":428},{"id":"exh","name":"Exhaust nozzle","x0":428,"x1":528}];
-const STAGES = [{"mod":"fan","layer":"fan","kind":"fan","s":62,"r0":27,"r1":75,"n":20,"speed":1},{"mod":"comp","layer":"comp","kind":"core","s":116,"r0":38,"r1":43,"n":22,"speed":2.6,"phase":0},{"mod":"comp","layer":"comp","kind":"core","s":128.6,"r0":36.85,"r1":41.85,"n":23,"speed":2.6,"phase":0.37},{"mod":"comp","layer":"comp","kind":"core","s":141.2,"r0":35.7,"r1":40.7,"n":24,"speed":2.6,"phase":0.74},{"mod":"comp","layer":"comp","kind":"core","s":153.8,"r0":34.55,"r1":39.55,"n":25,"speed":2.6,"phase":1.1099999999999999},{"mod":"comp","layer":"comp","kind":"core","s":166.4,"r0":33.4,"r1":38.4,"n":26,"speed":2.6,"phase":1.48},{"mod":"comp","layer":"comp","kind":"core","s":179,"r0":32.25,"r1":37.25,"n":27,"speed":2.6,"phase":1.85},{"mod":"comp","layer":"comp","kind":"core","s":191.6,"r0":31.1,"r1":36.1,"n":28,"speed":2.6,"phase":2.2199999999999998},{"mod":"comp","layer":"comp","kind":"core","s":204.2,"r0":29.950000000000003,"r1":34.95,"n":29,"speed":2.6,"phase":2.59},{"mod":"comp","layer":"comp","kind":"core","s":216.8,"r0":28.8,"r1":33.8,"n":30,"speed":2.6,"phase":2.96},{"mod":"comp","layer":"comp","kind":"core","s":229.39999999999998,"r0":27.65,"r1":32.65,"n":31,"speed":2.6,"phase":3.33},{"mod":"turb","layer":"turb","kind":"core","s":337,"r0":35,"r1":46,"n":20,"speed":1.9,"phase":0},{"mod":"turb","layer":"turb","kind":"core","s":359,"r0":39,"r1":51,"n":22,"speed":1.9,"phase":0.5},{"mod":"turb","layer":"turb","kind":"core","s":375,"r0":42,"r1":54,"n":24,"speed":1.9,"phase":1},{"mod":"turb","layer":"turb","kind":"core","s":391,"r0":45,"r1":58,"n":26,"speed":1.9,"phase":1.5},{"mod":"turb","layer":"turb","kind":"core","s":407,"r0":48,"r1":62,"n":28,"speed":1.9,"phase":2}];
+const STAGES = [{"mod":"fan","layer":"fan","kind":"fan","s":62,"r0":27,"r1":75,"n":20,"speed":1},{"mod":"comp","layer":"comp","kind":"core","s":116,"r0":38,"r1":43,"n":22,"speed":2.6,"phase":0},{"mod":"comp","layer":"comp","kind":"core","s":128.6,"r0":36.85,"r1":41.85,"n":23,"speed":2.6,"phase":0.37},{"mod":"comp","layer":"comp","kind":"core","s":141.2,"r0":35.7,"r1":40.7,"n":24,"speed":2.6,"phase":0.74},{"mod":"comp","layer":"comp","kind":"core","s":153.8,"r0":34.55,"r1":39.55,"n":25,"speed":2.6,"phase":1.1099999999999999},{"mod":"comp","layer":"comp","kind":"core","s":166.4,"r0":33.4,"r1":38.4,"n":26,"speed":2.6,"phase":1.48},{"mod":"comp","layer":"comp","kind":"core","s":179,"r0":32.25,"r1":37.25,"n":27,"speed":2.6,"phase":1.85},{"mod":"comp","layer":"comp","kind":"core","s":191.6,"r0":31.1,"r1":36.1,"n":28,"speed":2.6,"phase":2.2199999999999998},{"mod":"comp","layer":"comp","kind":"core","s":204.2,"r0":29.950000000000003,"r1":34.95,"n":29,"speed":2.6,"phase":2.59},{"mod":"comp","layer":"comp","kind":"core","s":216.8,"r0":28.8,"r1":33.8,"n":30,"speed":2.6,"phase":2.96},{"mod":"comp","layer":"comp","kind":"core","s":229.39999999999998,"r0":27.65,"r1":32.65,"n":31,"speed":2.6,"phase":3.33},{"mod":"turb","layer":"hpt","kind":"core","s":337,"r0":35,"r1":46,"n":20,"speed":1.9,"phase":0},{"mod":"turb","layer":"lpt","kind":"core","s":359,"r0":39,"r1":51,"n":22,"speed":1.9,"phase":0.5},{"mod":"turb","layer":"lpt","kind":"core","s":375,"r0":42,"r1":54,"n":24,"speed":1.9,"phase":1},{"mod":"turb","layer":"lpt","kind":"core","s":391,"r0":45,"r1":58,"n":26,"speed":1.9,"phase":1.5},{"mod":"turb","layer":"lpt","kind":"core","s":407,"r0":48,"r1":62,"n":28,"speed":1.9,"phase":2}];
+const MODINFO = {"fan":{"name":"Fan & inlet","st":[1,2],"desc":"Ram compression at the inlet, then the fan lifts the pressure ×4. In the report's model these are stations 1 → 3.","subs":["fan.lip","fan.spinner","fan.blades","fan.case","fan.cone"]},"comp":{"name":"Compressor","st":[2,3],"desc":"The high-pressure compressor adds ×7.1 on top of the fan's ×4, for an overall pressure ratio of 28.4:1 (stations 3 → 4).","subs":["comp.casing","comp.stages","comp.drum"]},"comb":{"name":"Combustor","st":[3,4],"desc":"Fuel burns at constant pressure and heats the air to the turbine inlet temperature: 1130 K at takeoff, 980 K at cruise (stations 4 → 5).","subs":["comb.flangeIn","comb.manifold","comb.liner","comb.casing","comb.flangeOut"]},"turb":{"name":"Turbine","st":[4,6],"desc":"The turbines pull work out of the hot gas: the HPT drives the compressor and the LPT drives the fan (stations 5 → 7).","subs":["turb.hpt","turb.lpt","turb.shaft","turb.casing"]},"exh":{"name":"Exhaust nozzle","st":[6,7],"desc":"The nozzle expands what is left back to ambient pressure. Thrust is F = ṁ(V₈ − V₁) (stations 7 → 8).","subs":["exh.cowl","exh.cone","exh.lip"]}};
+const SUBINFO = {"fan.lip":{"mod":"fan","name":"Inlet lip","off":-38,"x":7,"desc":"The rounded intake that guides air smoothly into the fan. In flight it adds ram pressure (h₂ = h₁ + V₁²/2); on the runway V₁ = 0, so it adds none."},"fan.spinner":{"mod":"fan","name":"Spinner","off":-24,"x":30,"desc":"The nose cone. It splits the incoming air around the hub and feeds it to the fan blades."},"fan.blades":{"mod":"fan","name":"Fan blades & hub","off":0,"x":69,"desc":"Wide blades on a hub disc, spun by the LP turbine through the LP shaft. In the model the fan raises pressure ×4."},"fan.case":{"mod":"fan","name":"Fan case","off":26,"x":71,"desc":"The ring frame around the fan. It holds the fan in the duct and would contain a lost blade."},"fan.cone":{"mod":"fan","name":"LP shaft cone","off":44,"x":90,"desc":"The rear hub cone that joins the fan disc to the low-pressure shaft, which the LP turbine drives (h₇ = h₆ − h₃ + h₂)."},"comp.casing":{"mod":"comp","name":"Compressor casing","off":-30,"x":177,"desc":"Ring frames and flanges around the rotor. They carry the stator vanes that straighten the flow between stages (the vanes aren't drawn)."},"comp.stages":{"mod":"comp","name":"Ten stages","off":0,"x":180,"desc":"Each rotor disc and blade ring squeezes the air a little more. The blades shrink as the air gets denser. The model uses 80 % compressor efficiency."},"comp.drum":{"mod":"comp","name":"Rotor drum","off":32,"x":178,"desc":"The spool that carries every stage disc. The HP turbine drives it (h₆ = h₅ − h₄ + h₃)."},"comb.flangeIn":{"mod":"comb","name":"Inlet flange","off":-38,"x":257,"desc":"The bolted joint where the compressor delivers its high-pressure air into the combustor."},"comb.manifold":{"mod":"comb","name":"Fuel manifold","off":-19,"x":270,"desc":"The ring of fuel injectors. The heat added is Q = ṁ(h₅ − h₄)."},"comb.liner":{"mod":"comb","name":"Flame tube","off":0,"x":288,"desc":"The glowing liner where the fuel burns at constant pressure. Thermal stress here is the price of higher temperatures."},"comb.casing":{"mod":"comb","name":"Combustor casing","off":19,"x":295,"desc":"The pressure shell around the liner that holds the compressed air."},"comb.flangeOut":{"mod":"comb","name":"Outlet flange","off":38,"x":317,"desc":"The bolted joint that hands the hot gas to the turbine."},"turb.hpt":{"mod":"turb","name":"HP turbine","off":-34,"x":337,"desc":"One stage that takes just enough energy from the gas to drive the compressor (h₆ = h₅ − h₄ + h₃)."},"turb.lpt":{"mod":"turb","name":"LP turbine","off":6,"x":385,"desc":"Four stages that drive the fan (h₇ = h₆ − h₃ + h₂). The model uses 85 % turbine efficiency."},"turb.shaft":{"mod":"turb","name":"Turbine shaft","off":-10,"x":375,"desc":"Carries the torque from the turbines forward to the compressor and the fan."},"turb.casing":{"mod":"turb","name":"Turbine casing","off":36,"x":376,"desc":"Rings that widen as the gas expands. The materials here have to resist thermal shock."},"exh.cowl":{"mod":"exh","name":"Core cowl rings","off":-32,"x":440,"desc":"The shell that carries the exhaust gas out of the turbine."},"exh.cone":{"mod":"exh","name":"Tail cone","off":0,"x":480,"desc":"Tapers the core flow so the gas leaves smoothly, without a dead-air wake behind it."},"exh.lip":{"mod":"exh","name":"Nozzle lip","off":34,"x":514,"desc":"The exit where the gas leaves at V₈, about {V8} m/s in this mission."}};
 const TAU = Math.PI * 2;
 const root = document.querySelector(".tf");
 const stage = root.querySelector(".tf-stage");
@@ -688,6 +690,7 @@ const svg = stage.querySelector("svg");
 const readName = root.querySelector("[data-tf-name]");
 const readData = root.querySelector("[data-tf-data]");
 const readNote = root.querySelector("[data-tf-note]");
+const parts = root.querySelector("[data-tf-parts]");
 const toggle = root.querySelector("[data-tf-toggle]");
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 const modEl = Object.fromEntries(MODS.map((m) => [m.id, svg.querySelector('[data-mod="' + m.id + '"]')]));
@@ -740,8 +743,11 @@ STAGES.forEach((st) => {
 });
 
 // state
-const state = { e: 0, eTarget: 0, spin: 0.6, spinTarget: 0.6, glow: 0.8, glowTarget: 0.8, sel: null, mission: "sl", clock: 0 };
+const state = { e: 0, eTarget: 0, spin: 0.6, spinTarget: 0.6, glow: 0.8, glowTarget: 0.8, sel: null, subSel: null, mission: "sl", clock: 0 };
+const openAmount = Object.fromEntries(MODS.map((m) => [m.id, 0]));
 const dxOf = (id) => SPREAD_DX[id] * state.e;
+const subEls = {};
+svg.querySelectorAll("[data-sub]").forEach((g) => (subEls[g.dataset.sub] = subEls[g.dataset.sub] || []).push(g));
 
 function drawBlades(dt) {
   const hubDepth = depthOf([60, 0, Z0], P);
@@ -779,9 +785,14 @@ function drawBlades(dt) {
 
 function drawModules() {
   MODS.forEach((m) => modEl[m.id].setAttribute("transform", translateAlong(P, [dxOf(m.id), 0, 0])));
-  const dt = SPREAD_DX.exh * state.e;
-  toggle.setAttribute("aria-pressed", state.eTarget > 0.5 ? "true" : "false");
-  toggle.textContent = state.eTarget > 0.5 ? "⇄ ASSEMBLE" : "⇄ PULL APART";
+  Object.keys(SUBINFO).forEach((id) => {
+    const s = SUBINFO[id], t = translateAlong(P, [s.off * openAmount[s.mod], 0, 0]);
+    subEls[id].forEach((g) => g.setAttribute("transform", t));
+  });
+  const apart = state.eTarget > 0.5;
+  toggle.setAttribute("aria-pressed", apart ? "true" : "false");
+  const label = apart ? "\u21C4 ASSEMBLE" : "\u21C4 PULL APART";
+  if (toggle.textContent !== label) toggle.textContent = label;
 }
 
 function drawHeat(time) {
@@ -790,49 +801,73 @@ function drawHeat(time) {
   plume.style.opacity = (Math.max(0, state.glow - 0.25) * 1.25 * (0.9 + 0.1 * Math.sin(time * 17))).toFixed(3);
 }
 
-// ---- readout: ties each module to the cycle model on the page ----
-const DESC = {
-  fan: ["Fan & inlet", "Ram effect: h\u2082 = h\u2081 + V\u2081\u00B2/2, then the fan lifts pressure \u00D74.", 1, 2],
-  comp: ["Compressor", "The HPC adds \u00D77.1, for an overall pressure ratio of 28.4:1.", 2, 3],
-  comb: ["Combustor", "Constant-pressure heating up to the turbine inlet temperature.", 3, 4],
-  turb: ["Turbine", "The HPT drives the HPC and the LPT drives the fan.", 4, 6],
-  exh: ["Exhaust nozzle", "Expansion back to ambient: F = \u1E41(V\u2088 \u2212 V\u2081).", 6, 7],
-};
-function say(id) {
+// ---- readout: ties each module and part to the cycle model on the page ----
+const fmtK = (v) => Math.round(v);
+function say() {
   const m = window.PROP_MODELS && window.PROP_MODELS[state.mission];
-  const d = DESC[id];
-  if (!d) {
+  const info = MODINFO[state.sel], part = state.subSel && SUBINFO[state.subSel];
+  parts.innerHTML = "";
+  if (!info) {
     readName.textContent = "CF34-8 turbofan";
     readData.textContent = m ? "Thrust " + Math.round(m.lbf).toLocaleString("en-US") + " lbf \u00B7 " + (state.mission === "sl" ? "takeoff" : "cruise") : "Hover a module";
-    readNote.textContent = "Hover a module, or pull the engine apart.";
+    readNote.textContent = state.eTarget > 0.5 ? "Hover a module to open it up and read what each part does." : "Hover a module, or pull the engine apart to open the parts up.";
     return;
   }
-  readName.textContent = d[0];
-  readNote.textContent = d[1];
+  readName.textContent = part ? info.name + " \u203A " + part.name : info.name;
+  let note = part ? part.desc : info.desc;
+  if (m) note = note.replace("{V8}", Math.round(m.V8));
+  readNote.textContent = note;
   if (m) {
-    const a = d[2], b = d[3];
-    readData.textContent = Math.round(m.T[a]) + " \u2192 " + Math.round(m.T[b]) + " K \u00B7 " + m.P[a].toFixed(0) + " \u2192 " + m.P[b].toFixed(0) + " kPa";
+    const a = info.st[0], b = info.st[1];
+    readData.textContent = fmtK(m.T[a]) + " \u2192 " + fmtK(m.T[b]) + " K \u00B7 " + m.P[a].toFixed(0) + " \u2192 " + m.P[b].toFixed(0) + " kPa";
   } else readData.textContent = "";
+  if (state.eTarget > 0.5) {
+    info.subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x).forEach((id) => {
+      const chip = document.createElement("span");
+      chip.className = "tf-chip" + (id === state.subSel ? " on" : "");
+      chip.textContent = SUBINFO[id].name;
+      parts.appendChild(chip);
+    });
+  }
 }
 
-function select(id) {
-  if (state.sel === id) return;
+function select(id, subId) {
+  const sId = state.eTarget > 0.5 ? subId || null : null;
+  if (state.sel === id && state.subSel === sId) return;
   state.sel = id;
-  MODS.forEach((m) => modEl[m.id].classList.toggle("tf-sel", m.id === id));
-  say(id);
+  state.subSel = sId;
+  MODS.forEach((m) => modEl[m.id].classList.toggle("tf-sel", m.id === id && !sId));
+  Object.keys(subEls).forEach((s) => subEls[s].forEach((g) => g.classList.toggle("tf-subsel", s === sId)));
+  say();
 }
 
 // ---- input ----
-const moduleNear = (event) => {
+const nearestSub = (modId, event) => {
   const box = svg.getBoundingClientRect();
   const x = (event.clientX - box.left) / box.width * 1000, y = (event.clientY - box.top) / box.height * 520;
-  let best = null, bestD = 90;
-  MODS.forEach((m) => {
-    const c = iso([(m.x0 + m.x1) / 2 + dxOf(m.id), 0, Z0], P);
-    const dist = Math.hypot((c[0] - x) * 0.8, c[1] - y);
-    if (dist < bestD) { best = m.id; bestD = dist; }
+  const mx = MODS.find((m) => m.id === modId);
+  let best = null, bestD = Infinity;
+  MODINFO[modId].subs.forEach((id) => {
+    const s = SUBINFO[id], c = iso([s.x + dxOf(modId) + s.off * openAmount[modId], 0, Z0], P);
+    const dist = Math.hypot(c[0] - x, (c[1] - y) * 0.5);
+    if (dist < bestD) { best = id; bestD = dist; }
   });
   return best;
+};
+const hitOf = (event) => {
+  const t = event.target;
+  if (!t || !t.closest) return undefined;
+  if (t.closest("[data-stand]")) return { mod: null };
+  const sg = t.closest("[data-sub]");
+  if (sg) return { mod: SUBINFO[sg.dataset.sub].mod, sub: sg.dataset.sub };
+  const mg = t.closest("[data-mod]");
+  if (mg) return { mod: mg.dataset.mod, sub: state.eTarget > 0.5 ? nearestSub(mg.dataset.mod, event) : null };
+  return undefined;
+};
+const pick = (event) => {
+  const h = hitOf(event);
+  if (h === undefined) return;
+  select(h.mod, h.sub);
 };
 let drag = null;
 stage.addEventListener("pointermove", (event) => {
@@ -841,23 +876,31 @@ stage.addEventListener("pointermove", (event) => {
     state.e = state.eTarget;
     return;
   }
-  select(moduleNear(event));
+  pick(event);
 });
 stage.addEventListener("pointerleave", () => { if (!drag) select(null); });
-stage.addEventListener("pointerdown", (event) => { drag = { x: event.clientX, from: state.eTarget, moved: false }; stage.setPointerCapture(event.pointerId); });
+stage.addEventListener("pointerdown", (event) => { drag = { x: event.clientX, from: state.eTarget }; stage.setPointerCapture(event.pointerId); });
 stage.addEventListener("pointerup", (event) => {
-  if (drag && Math.abs(event.clientX - drag.x) < 4) { state.eTarget = state.eTarget > 0.5 ? 0 : 1; }
+  const click = drag && Math.abs(event.clientX - drag.x) < 4;
+  if (click) state.eTarget = state.eTarget > 0.5 ? 0 : 1;
   else if (drag) state.eTarget = state.eTarget > 0.5 ? 1 : 0;
   drag = null;
-  select(moduleNear(event));
+  stage.releasePointerCapture(event.pointerId);
+  const under = document.elementFromPoint(event.clientX, event.clientY);
+  if (under) pick({ target: under, clientX: event.clientX, clientY: event.clientY });
+  say();
 });
-toggle.addEventListener("click", () => { state.eTarget = state.eTarget > 0.5 ? 0 : 1; });
+toggle.addEventListener("click", () => { state.eTarget = state.eTarget > 0.5 ? 0 : 1; select(state.sel, state.subSel); say(); });
 stage.addEventListener("keydown", (event) => {
-  const i = MODS.findIndex((m) => m.id === state.sel);
-  if (event.key === "ArrowRight") { event.preventDefault(); select(MODS[Math.min(MODS.length - 1, i + 1)].id); }
-  if (event.key === "ArrowLeft") { event.preventDefault(); select(MODS[Math.max(0, i - 1)].id); }
-  if (event.key === "Enter" || event.key === " ") { event.preventDefault(); state.eTarget = state.eTarget > 0.5 ? 0 : 1; }
-  if (event.key === "Escape") select(null);
+  const mi = MODS.findIndex((m) => m.id === state.sel);
+  const moveMod = (n) => select(MODS[Math.max(0, Math.min(MODS.length - 1, n))].id, null);
+  const subs = state.sel ? MODINFO[state.sel].subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x) : [];
+  if (event.key === "ArrowRight") { event.preventDefault(); moveMod(mi + 1); }
+  else if (event.key === "ArrowLeft") { event.preventDefault(); moveMod(mi < 0 ? 0 : mi - 1); }
+  else if (event.key === "ArrowDown" && subs.length && state.eTarget > 0.5) { event.preventDefault(); select(state.sel, subs[Math.min(subs.length - 1, subs.indexOf(state.subSel) + 1)]); }
+  else if (event.key === "ArrowUp" && subs.length && state.eTarget > 0.5) { event.preventDefault(); select(state.sel, subs[Math.max(0, subs.indexOf(state.subSel) - 1)]); }
+  else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); state.eTarget = state.eTarget > 0.5 ? 0 : 1; select(state.sel, state.subSel); say(); }
+  else if (event.key === "Escape") select(null);
 });
 
 window.TF = {
@@ -865,7 +908,7 @@ window.TF = {
     state.mission = id;
     state.spinTarget = id === "sl" ? 1.5 : 1.0;
     state.glowTarget = id === "sl" ? 1 : 0.72;
-    say(state.sel);
+    say();
   },
   spinUp(amount) { state.spinTarget = amount; },
 };
@@ -875,8 +918,13 @@ function tick(now) {
   const dt = last ? Math.min((now - last) / 1000, 1 / 20) : 1 / 60;
   last = now;
   state.clock += dt;
-  const k1 = 1 - Math.exp(-dt / 0.35), k2 = 1 - Math.exp(-dt / 0.6);
+  const k1 = 1 - Math.exp(-dt / 0.35), k2 = 1 - Math.exp(-dt / 0.6), k3 = 1 - Math.exp(-dt / 0.28);
   state.e += (state.eTarget - state.e) * (drag ? 0 : still.matches ? 1 : k1);
+  MODS.forEach((m) => {
+    const want = state.eTarget > 0.5 && state.e > 0.8 && state.sel === m.id ? 1 : 0;
+    openAmount[m.id] += (want - openAmount[m.id]) * (still.matches ? 1 : k3);
+    if (Math.abs(want - openAmount[m.id]) < 0.001) openAmount[m.id] = want;
+  });
   state.spin += (state.spinTarget - state.spin) * k2;
   state.glow += (state.glowTarget - state.glow) * k2;
   drawModules();
@@ -886,7 +934,7 @@ function tick(now) {
 }
 new IntersectionObserver((entries) => { visible = entries[entries.length - 1].isIntersecting; if (visible && !frame) { last = 0; frame = requestAnimationFrame(tick); } }).observe(stage);
 if (still.matches) state.spin = 0.2;
-say(null);
+say();
 frame = requestAnimationFrame(tick);
 
 })();
