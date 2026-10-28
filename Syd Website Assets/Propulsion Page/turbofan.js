@@ -687,11 +687,6 @@ const TAU = Math.PI * 2;
 const root = document.querySelector(".tf");
 const stage = root.querySelector(".tf-stage");
 const svg = stage.querySelector("svg");
-const readName = root.querySelector("[data-tf-name]");
-const readData = root.querySelector("[data-tf-data]");
-const readNote = root.querySelector("[data-tf-note]");
-const parts = root.querySelector("[data-tf-parts]");
-const toggle = root.querySelector("[data-tf-toggle]");
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 const modEl = Object.fromEntries(MODS.map((m) => [m.id, svg.querySelector('[data-mod="' + m.id + '"]')]));
 const layers = {};
@@ -743,7 +738,7 @@ STAGES.forEach((st) => {
 });
 
 // state
-const state = { e: 0, eTarget: 0, spin: 0.6, spinTarget: 0.6, glow: 0.8, glowTarget: 0.8, sel: null, subSel: null, mission: "sl", clock: 0 };
+const state = { e: 0, eTarget: 0, spin: 0.6, spinTarget: 0.6, glow: 0.8, glowTarget: 0.8, sel: null, subSel: null, mission: "sl", clock: 0, step: 0 };
 const openAmount = Object.fromEntries(MODS.map((m) => [m.id, 0]));
 const dxOf = (id) => SPREAD_DX[id] * state.e;
 const subEls = {};
@@ -783,16 +778,49 @@ function drawBlades(dt) {
   });
 }
 
+// ---- disassembly: 0 assembled, 1 rivets out, 2 skin panels off (half section), 3 components split ----
+const STEPS = [
+  { title: "Assembled", hint: "A riveted nacelle wraps the engine. Hover it, then start taking it apart.", next: "REMOVE RIVETS \u25B8" },
+  { title: "Step 1 of 3 \u00B7 Rivets removed", hint: "Every rivet is out, so the skin panels are only resting in place.", next: "REMOVE SKIN PANELS \u25B8" },
+  { title: "Step 2 of 3 \u00B7 Skin off, half section", hint: "The near half of the skin is gone: you are looking at the engine cut in half. Hover a module.", next: "SPLIT COMPONENTS \u25B8" },
+  { title: "Step 3 of 3 \u00B7 Components split", hint: "Hover a module to open it into its parts.", next: "REASSEMBLE \u21BA" },
+];
+const smooth01 = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const panels = [...svg.querySelectorAll("[data-panel]")].map((el) => {
+  const [dx, dy] = el.dataset.dir.split(",").map(Number);
+  const rivets = [...el.querySelectorAll(".tf-rivet")].map((r, i, all) => {
+    const [nx, ny] = r.dataset.n.split(",").map(Number);
+    return { el: r, nx, ny, delay: ((i * 7919) % all.length) / all.length * 0.55, spin: ((i * 37) % 11 - 5) * 8 };
+  });
+  return { el, dx, dy, rivets };
+});
+const shellEl = svg.querySelector("[data-shell]");
+const prog = { rivets: 0, panels: 0 };
+let skinDirty = true;
+
+function drawSkin() {
+  panels.forEach((p) => {
+    p.rivets.forEach((r) => {
+      const t = Math.max(0, Math.min(1, (prog.rivets - r.delay) / 0.45)), e = t * t;
+      if (t <= 0) { if (r.el.getAttribute("transform")) { r.el.removeAttribute("transform"); r.el.style.opacity = ""; } return; }
+      r.el.setAttribute("transform", "translate(" + (r.nx * e * 34).toFixed(1) + " " + (r.ny * e * 34 - e * 12).toFixed(1) + ") rotate(" + (r.spin * t).toFixed(0) + ")");
+      r.el.style.opacity = (1 - smooth01(0.4, 1, t)).toFixed(2);
+    });
+    const e = smooth01(0, 1, prog.panels), dist = 165 * e;
+    p.el.setAttribute("transform", "translate(" + (p.dx * dist).toFixed(1) + " " + (p.dy * dist - 26 * e).toFixed(1) + ")");
+    p.el.style.opacity = (1 - smooth01(0.25, 0.85, prog.panels)).toFixed(2);
+    p.el.style.display = prog.panels > 0.995 ? "none" : "";
+  });
+  shellEl.style.opacity = (1 - smooth01(0.1, 0.9, state.e)).toFixed(2);
+  shellEl.style.display = state.e > 0.995 ? "none" : "";
+}
+
 function drawModules() {
   MODS.forEach((m) => modEl[m.id].setAttribute("transform", translateAlong(P, [dxOf(m.id), 0, 0])));
   Object.keys(SUBINFO).forEach((id) => {
     const s = SUBINFO[id], t = translateAlong(P, [s.off * openAmount[s.mod], 0, 0]);
     subEls[id].forEach((g) => g.setAttribute("transform", t));
   });
-  const apart = state.eTarget > 0.5;
-  toggle.setAttribute("aria-pressed", apart ? "true" : "false");
-  const label = apart ? "\u21C4 ASSEMBLE" : "\u21C4 PULL APART";
-  if (toggle.textContent !== label) toggle.textContent = label;
 }
 
 function drawHeat(time) {
@@ -801,51 +829,72 @@ function drawHeat(time) {
   plume.style.opacity = (Math.max(0, state.glow - 0.25) * 1.25 * (0.9 + 0.1 * Math.sin(time * 17))).toFixed(3);
 }
 
-// ---- readout: ties each module and part to the cycle model on the page ----
-const fmtK = (v) => Math.round(v);
-function say() {
-  const m = window.PROP_MODELS && window.PROP_MODELS[state.mission];
-  const info = MODINFO[state.sel], part = state.subSel && SUBINFO[state.subSel];
-  parts.innerHTML = "";
-  if (!info) {
-    readName.textContent = "CF34-8 turbofan";
-    readData.textContent = m ? "Thrust " + Math.round(m.lbf).toLocaleString("en-US") + " lbf \u00B7 " + (state.mission === "sl" ? "takeoff" : "cruise") : "Hover a module";
-    readNote.textContent = state.eTarget > 0.5 ? "Hover a module to open it up and read what each part does." : "Hover a module, or pull the engine apart to open the parts up.";
-    return;
-  }
-  readName.textContent = part ? info.name + " \u203A " + part.name : info.name;
-  let note = part ? part.desc : info.desc;
-  if (m) note = note.replace("{V8}", Math.round(m.V8));
-  readNote.textContent = note;
-  if (m) {
-    const a = info.st[0], b = info.st[1];
-    readData.textContent = fmtK(m.T[a]) + " \u2192 " + fmtK(m.T[b]) + " K \u00B7 " + m.P[a].toFixed(0) + " \u2192 " + m.P[b].toFixed(0) + " kPa";
-  } else readData.textContent = "";
-  if (state.eTarget > 0.5) {
-    info.subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x).forEach((id) => {
-      const chip = document.createElement("span");
-      chip.className = "tf-chip" + (id === state.subSel ? " on" : "");
-      chip.textContent = SUBINFO[id].name;
-      parts.appendChild(chip);
-    });
-  }
+// ---- steps and controls ----
+const stepName = root.querySelector("[data-tf-step]");
+const stepHint = root.querySelector("[data-tf-hint]");
+const nextBtn = root.querySelector("[data-tf-next]");
+const backBtn = root.querySelector("[data-tf-back]");
+const pips = [...root.querySelectorAll(".tf-pip")];
+const tip = root.querySelector("[data-tf-tip]");
+
+function setStep(n) {
+  state.step = Math.max(0, Math.min(3, n));
+  state.eTarget = state.step >= 3 ? 1 : 0;
+  stepName.textContent = STEPS[state.step].title;
+  stepHint.textContent = STEPS[state.step].hint;
+  nextBtn.textContent = STEPS[state.step].next;
+  backBtn.disabled = state.step === 0;
+  pips.forEach((p, i) => p.classList.toggle("on", i < state.step));
+  select(null);
+  hideTip();
 }
 
+// ---- tooltip that follows the pointer, kept beside the arrow so the engine stays in view ----
+const fmtK = (v) => Math.round(v);
+function infoFor(sel, subId) {
+  const m = window.PROP_MODELS && window.PROP_MODELS[state.mission];
+  if (sel === "skin") return { label: "NACELLE SKIN", title: state.step >= 1 ? "Skin panels" : "Riveted cowling", desc: state.step >= 1 ? "The rivets are out, so each panel is only resting on the frame. Next they come off." : "The streamlined shell that carries the airflow around the engine. Four panels cover the near half, each held on by rows of rivets." };
+  if (sel === "shell") return { label: "NACELLE SKIN", title: "Far half of the skin", desc: "This half stays in place so you can see the engine in section: the inside of the nacelle, with its ribs and stringers." };
+  const info = MODINFO[sel];
+  if (!info) return null;
+  const part = subId && SUBINFO[subId];
+  let desc = part ? part.desc : info.desc;
+  if (m) desc = desc.replace("{V8}", Math.round(m.V8));
+  const data = m ? fmtK(m.T[info.st[0]]) + " \u2192 " + fmtK(m.T[info.st[1]]) + " K \u00B7 " + m.P[info.st[0]].toFixed(0) + " \u2192 " + m.P[info.st[1]].toFixed(0) + " kPa" : "";
+  return { label: part ? info.name.toUpperCase() : "MODULE", title: part ? part.name : info.name, desc, data };
+}
+let tipPos = { x: 0, y: 0 }, tipOn = false;
+function placeTip() {
+  const box = stage.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = tipPos.x - box.left + 22, y = tipPos.y - box.top + 20;
+  if (x + w > box.width - 6) x = tipPos.x - box.left - w - 18;
+  if (y + h > box.height - 6) y = tipPos.y - box.top - h - 16;
+  tip.style.transform = "translate(" + Math.max(6, x).toFixed(0) + "px," + Math.max(6, y).toFixed(0) + "px)";
+}
+function showTip(info) {
+  if (!info) return hideTip();
+  tip.innerHTML = "<i>" + info.label + "</i><b>" + info.title + "</b><p>" + info.desc + "</p>" + (info.data ? "<span>" + info.data + "</span>" : "");
+  tip.classList.add("on");
+  tipOn = true;
+  placeTip();
+}
+function hideTip() { tip.classList.remove("on"); tipOn = false; }
+
 function select(id, subId) {
-  const sId = state.eTarget > 0.5 ? subId || null : null;
-  if (state.sel === id && state.subSel === sId) return;
+  const sId = state.step >= 3 ? subId || null : null;
+  if (state.sel === id && state.subSel === sId) { if (tipOn && id) showTip(infoFor(id, sId)); return; }
   state.sel = id;
   state.subSel = sId;
-  MODS.forEach((m) => modEl[m.id].classList.toggle("tf-sel", m.id === id && !sId));
+  const moduleSel = id && id !== "skin" && id !== "shell";
+  MODS.forEach((m) => modEl[m.id].classList.toggle("tf-sel", moduleSel && m.id === id && !sId));
   Object.keys(subEls).forEach((s) => subEls[s].forEach((g) => g.classList.toggle("tf-subsel", s === sId)));
-  say();
+  showTip(id ? infoFor(id, sId) : null);
 }
 
 // ---- input ----
 const nearestSub = (modId, event) => {
   const box = svg.getBoundingClientRect();
   const x = (event.clientX - box.left) / box.width * 1000, y = (event.clientY - box.top) / box.height * 520;
-  const mx = MODS.find((m) => m.id === modId);
   let best = null, bestD = Infinity;
   MODINFO[modId].subs.forEach((id) => {
     const s = SUBINFO[id], c = iso([s.x + dxOf(modId) + s.off * openAmount[modId], 0, Z0], P);
@@ -858,48 +907,42 @@ const hitOf = (event) => {
   const t = event.target;
   if (!t || !t.closest) return undefined;
   if (t.closest("[data-stand]")) return { mod: null };
+  if (t.closest("[data-panel]")) return { mod: "skin" };
   const sg = t.closest("[data-sub]");
   if (sg) return { mod: SUBINFO[sg.dataset.sub].mod, sub: sg.dataset.sub };
   const mg = t.closest("[data-mod]");
-  if (mg) return { mod: mg.dataset.mod, sub: state.eTarget > 0.5 ? nearestSub(mg.dataset.mod, event) : null };
+  if (mg) return { mod: mg.dataset.mod, sub: state.step >= 3 ? nearestSub(mg.dataset.mod, event) : null };
+  if (t.closest("[data-shell]")) return { mod: "shell" };
   return undefined;
 };
 const pick = (event) => {
+  tipPos = { x: event.clientX, y: event.clientY };
   const h = hitOf(event);
-  if (h === undefined) return;
+  if (h === undefined) { if (tipOn) placeTip(); return; }
   select(h.mod, h.sub);
+  if (tipOn) placeTip();
 };
-let drag = null;
-stage.addEventListener("pointermove", (event) => {
-  if (drag) {
-    state.eTarget = Math.max(0, Math.min(1, drag.from + (event.clientX - drag.x) / 380));
-    state.e = state.eTarget;
-    return;
-  }
-  pick(event);
-});
-stage.addEventListener("pointerleave", () => { if (!drag) select(null); });
-stage.addEventListener("pointerdown", (event) => { drag = { x: event.clientX, from: state.eTarget }; stage.setPointerCapture(event.pointerId); });
-stage.addEventListener("pointerup", (event) => {
-  const click = drag && Math.abs(event.clientX - drag.x) < 4;
-  if (click) state.eTarget = state.eTarget > 0.5 ? 0 : 1;
-  else if (drag) state.eTarget = state.eTarget > 0.5 ? 1 : 0;
-  drag = null;
-  stage.releasePointerCapture(event.pointerId);
-  const under = document.elementFromPoint(event.clientX, event.clientY);
-  if (under) pick({ target: under, clientX: event.clientX, clientY: event.clientY });
-  say();
-});
-toggle.addEventListener("click", () => { state.eTarget = state.eTarget > 0.5 ? 0 : 1; select(state.sel, state.subSel); say(); });
+stage.addEventListener("pointermove", pick);
+stage.addEventListener("pointerdown", pick);
+stage.addEventListener("pointerleave", () => select(null));
+nextBtn.addEventListener("click", () => setStep(state.step >= 3 ? 0 : state.step + 1));
+backBtn.addEventListener("click", () => setStep(state.step - 1));
 stage.addEventListener("keydown", (event) => {
   const mi = MODS.findIndex((m) => m.id === state.sel);
-  const moveMod = (n) => select(MODS[Math.max(0, Math.min(MODS.length - 1, n))].id, null);
-  const subs = state.sel ? MODINFO[state.sel].subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x) : [];
-  if (event.key === "ArrowRight") { event.preventDefault(); moveMod(mi + 1); }
-  else if (event.key === "ArrowLeft") { event.preventDefault(); moveMod(mi < 0 ? 0 : mi - 1); }
-  else if (event.key === "ArrowDown" && subs.length && state.eTarget > 0.5) { event.preventDefault(); select(state.sel, subs[Math.min(subs.length - 1, subs.indexOf(state.subSel) + 1)]); }
-  else if (event.key === "ArrowUp" && subs.length && state.eTarget > 0.5) { event.preventDefault(); select(state.sel, subs[Math.max(0, subs.indexOf(state.subSel) - 1)]); }
-  else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); state.eTarget = state.eTarget > 0.5 ? 0 : 1; select(state.sel, state.subSel); say(); }
+  const subs = state.sel && MODINFO[state.sel] ? MODINFO[state.sel].subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x) : [];
+  const anchor = () => {
+    const el = state.subSel ? subEls[state.subSel][0] : modEl[state.sel];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    tipPos = { x: r.left + r.width / 2, y: r.top + r.height * 0.7 };
+    if (tipOn) placeTip();
+  };
+  if (event.key === "ArrowRight" && state.step >= 2) { event.preventDefault(); select(MODS[Math.min(MODS.length - 1, mi + 1)].id, null); anchor(); }
+  else if (event.key === "ArrowLeft" && state.step >= 2) { event.preventDefault(); select(MODS[Math.max(0, mi < 0 ? 0 : mi - 1)].id, null); anchor(); }
+  else if (event.key === "ArrowDown" && subs.length && state.step >= 3) { event.preventDefault(); select(state.sel, subs[Math.min(subs.length - 1, subs.indexOf(state.subSel) + 1)]); anchor(); }
+  else if (event.key === "ArrowUp" && subs.length && state.step >= 3) { event.preventDefault(); select(state.sel, subs[Math.max(0, subs.indexOf(state.subSel) - 1)]); anchor(); }
+  else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setStep(state.step >= 3 ? 0 : state.step + 1); }
+  else if (event.key === "Backspace") { event.preventDefault(); setStep(state.step - 1); }
   else if (event.key === "Escape") select(null);
 });
 
@@ -908,7 +951,7 @@ window.TF = {
     state.mission = id;
     state.spinTarget = id === "sl" ? 1.5 : 1.0;
     state.glowTarget = id === "sl" ? 1 : 0.72;
-    say();
+    if (tipOn && state.sel) showTip(infoFor(state.sel, state.subSel));
   },
   spinUp(amount) { state.spinTarget = amount; },
 };
@@ -918,23 +961,31 @@ function tick(now) {
   const dt = last ? Math.min((now - last) / 1000, 1 / 20) : 1 / 60;
   last = now;
   state.clock += dt;
-  const k1 = 1 - Math.exp(-dt / 0.35), k2 = 1 - Math.exp(-dt / 0.6), k3 = 1 - Math.exp(-dt / 0.28);
-  state.e += (state.eTarget - state.e) * (drag ? 0 : still.matches ? 1 : k1);
+  const k1 = 1 - Math.exp(-dt / 0.45), k2 = 1 - Math.exp(-dt / 0.6), k3 = 1 - Math.exp(-dt / 0.28), kr = 1 - Math.exp(-dt / 0.55);
+  const calm = still.matches;
+  const wantRivets = state.step >= 1 ? 1 : 0, wantPanels = state.step >= 2 ? 1 : 0;
+  prog.rivets += (wantRivets - prog.rivets) * (calm ? 1 : kr);
+  prog.panels += (wantPanels - prog.panels) * (calm ? 1 : k1);
+  if (Math.abs(prog.rivets - wantRivets) < 0.002) prog.rivets = wantRivets;
+  if (Math.abs(prog.panels - wantPanels) < 0.002) prog.panels = wantPanels;
+  state.e += (state.eTarget - state.e) * (calm ? 1 : k1);
+  if (Math.abs(state.eTarget - state.e) < 0.002) state.e = state.eTarget;
   MODS.forEach((m) => {
-    const want = state.eTarget > 0.5 && state.e > 0.8 && state.sel === m.id ? 1 : 0;
-    openAmount[m.id] += (want - openAmount[m.id]) * (still.matches ? 1 : k3);
+    const want = state.step >= 3 && state.e > 0.8 && state.sel === m.id ? 1 : 0;
+    openAmount[m.id] += (want - openAmount[m.id]) * (calm ? 1 : k3);
     if (Math.abs(want - openAmount[m.id]) < 0.001) openAmount[m.id] = want;
   });
   state.spin += (state.spinTarget - state.spin) * k2;
   state.glow += (state.glowTarget - state.glow) * k2;
+  drawSkin();
   drawModules();
-  drawBlades(still.matches ? 0 : dt);
+  drawBlades(calm ? 0 : dt);
   drawHeat(state.clock);
   frame = visible ? requestAnimationFrame(tick) : 0;
 }
 new IntersectionObserver((entries) => { visible = entries[entries.length - 1].isIntersecting; if (visible && !frame) { last = 0; frame = requestAnimationFrame(tick); } }).observe(stage);
 if (still.matches) state.spin = 0.2;
-say();
+setStep(0);
 frame = requestAnimationFrame(tick);
 
 })();

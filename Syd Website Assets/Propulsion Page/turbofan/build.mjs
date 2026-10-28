@@ -100,7 +100,7 @@ function stand() {
 // pylons carry the engine by its ring frames (rim-on-flat contact at the bottom of each ring)
 function pylon(x) {
   const out = [];
-  const top = Z0 - R_COWL;
+  const top = Z0 - 88.6;
   const base = { x: x - 22, y: -44, w: 44, d: 88, r: 4 };
   out.push(S(k.slabOf(base, 0, 9, P, 4, 0.6), { tone: "mid" }));
   out.push(D(k.corners(base, 5).map(([cx, cy]) => at([cx, cy, 9])), { size: 0.5 }));
@@ -281,12 +281,109 @@ const SUBINFO = {
 // Paint modules back to front. With the camera in front of the fan, a module further aft is further away.
 const order = MODULES.map((m, i) => ({ i, d: k.depthOf([(m.x0 + m.x1) / 2, 0, Z0], P) })).sort((a, b) => a.d - b.d).map((o) => groups[o.i]);
 
+// ---- nacelle skin: a rounded solid cowling in four riveted panels over the visible half ----
+const SKIN_END = 470;
+const SKIN_KEYS = [[16, 87.4], [260, 87.4], [380, 81], [470, 70]];
+function skinR(s) {
+  if (s <= 16) { const phi = Math.acos(Math.max(-1, Math.min(1, 1 - s / 16))); return 74 + 13.4 * Math.sin(phi); }
+  for (let i = 1; i < SKIN_KEYS.length; i++) {
+    const [s0, r0] = SKIN_KEYS[i - 1], [s1, r1] = SKIN_KEYS[i];
+    if (s <= s1) { const t = (s - s0) / (s1 - s0), e = (1 - Math.cos(t * Math.PI)) / 2; return r0 + (r1 - r0) * e; }
+  }
+  return SKIN_KEYS[SKIN_KEYS.length - 1][1];
+}
+const skinSlope = (s) => (skinR(Math.min(SKIN_END, s + 0.5)) - skinR(Math.max(0, s - 0.5))) / (Math.min(SKIN_END, s + 0.5) - Math.max(0, s - 0.5));
+const DEG = Math.PI / 180;
+// The visible half of the cowl spans -67..113 degrees from the camera; four 45-degree panels cover it.
+const PANEL_EDGES = [-67, -22, 23, 68, 113];
+const skinKnots = [];
+for (let i = 0; i <= 10; i++) { const phi = (i / 10) * (Math.PI / 2); skinKnots.push([16 * (1 - Math.cos(phi)), 74 + 13.4 * Math.sin(phi), 1]); }
+for (let s = 24; s <= SKIN_END; s += 10) skinKnots.push([s, skinR(s), 1]);
+skinKnots.push([SKIN_END, skinR(SKIN_END), 1]);
+
+function skinPaint() {
+  const body = S(G.lathe(skinKnots, F, P, { smooth: true, hole: [0, 73.5], rims: "none", rows: 16, steps: 96 }), { tone: "hi" });
+  const seams = [];
+  // panel joints along the axis
+  for (const a of PANEL_EDGES) {
+    const pts = [];
+    for (let s = 14; s <= SKIN_END - 2; s += 6) { const A = a * DEG; if (G.facingOf(F, A, P, skinSlope(s)) > 0.03) pts.push(at(pt(s, skinR(s) + 0.2, A))); }
+    if (pts.length > 1) seams.push(L(pathOf(pts), { tone: "mid" }));
+  }
+  // ring joints
+  for (const s of [100, 252, 330]) seams.push(L(G.arcOf(F, s, skinR(s) + 0.2, P, { slope: skinSlope(s), least: 0.03 }), { tone: "mid" }));
+  // livery rings
+  const stripes = [60, 64].map((s) => `<g class="tf-stripe">${L(G.arcOf(F, s, skinR(s) + 0.3, P, { slope: skinSlope(s), least: 0.03 }), { tone: "lit" })}</g>`).join("");
+  return body + seams.join("") + stripes;
+}
+
+// rivets: rows around the cowl plus columns beside every panel joint
+const RIVET_ROWS = [9, 40, 80, 100, 150, 205, 252, 300, 330, 385, 440];
+const rivets = [];
+for (const [ri, s] of RIVET_ROWS.entries()) {
+  for (let a = PANEL_EDGES[0] + 4 + (ri % 2) * 7; a < PANEL_EDGES[4] - 4; a += 15) rivets.push({ s, a });
+}
+for (const edge of PANEL_EDGES) {
+  for (const off of [-2.4, 2.4]) for (let s = 26; s < SKIN_END - 10; s += 24) {
+    const a = edge + off;
+    if (a > PANEL_EDGES[0] - 4 && a < PANEL_EDGES[4] + 4) rivets.push({ s, a });
+  }
+}
+const panelOf = (a) => Math.max(0, Math.min(3, Math.floor((a - PANEL_EDGES[0]) / 45)));
+const rivetHtml = [[], [], [], []];
+for (const r of rivets) {
+  const A = r.a * DEG, R = skinR(r.s);
+  if (G.facingOf(F, A, P, skinSlope(r.s)) < 0.05) continue;
+  const c = at(pt(r.s, R + 0.15, A)), o = at(pt(r.s, R + 4, A));
+  const nx = o[0] - c[0], ny = o[1] - c[1], len = Math.hypot(nx, ny) || 1;
+  rivetHtml[panelOf(r.a)].push(`<g class="tf-rivet" data-n="${(nx / len).toFixed(2)},${(ny / len).toFixed(2)}"><circle class="tf-hole" cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="1.1"/><circle class="tf-head" cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="0.9"/></g>`);
+}
+
+const sector = (a0, a1, rOff = 0.6, steps = 26) => {
+  const pts = [];
+  const edge = (a, from, to) => { for (let i = 0; i <= steps; i++) { const s = from + ((to - from) * i) / steps; pts.push(at(pt(s, skinR(s) + rOff, a * DEG))); } };
+  const ring = (s, from, to) => { for (let i = 1; i < 10; i++) pts.push(at(pt(s, skinR(s) + rOff, (from + ((to - from) * i) / 10) * DEG))); };
+  edge(a0, 0, SKIN_END); ring(SKIN_END, a0, a1); edge(a1, SKIN_END, 0); ring(0, a1, a0);
+  return pathOf(pts) + "Z";
+};
+
+const panelDir = (k2) => { const a = ((PANEL_EDGES[k2] + PANEL_EDGES[k2 + 1]) / 2) * DEG, c = at(pt(240, 0, 0)), o = at(pt(240, 40, a)); const dx = o[0] - c[0], dy = o[1] - c[1], l = Math.hypot(dx, dy); return [(dx / l).toFixed(3), (dy / l).toFixed(3)]; };
+
+const skinDefs = `<defs><linearGradient id="tf-shell-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#65513f"/><stop offset="0.5" stop-color="#31261e"/><stop offset="1" stop-color="#1a1411"/></linearGradient><g id="tf-skin-paint">${skinPaint()}</g>${[0, 1, 2, 3].map((i) => `<clipPath id="tf-clip-${i}"><path d="${sector(PANEL_EDGES[i], PANEL_EDGES[i + 1])}"/></clipPath>`).join("")}</defs>`;
+const panels = [0, 1, 2, 3].map((i) => `<g class="tf-panel tf-skin" data-panel="${i}" data-dir="${panelDir(i).join(",")}"><g clip-path="url(#tf-clip-${i})"><use href="#tf-skin-paint"/></g>${rivetHtml[i].join("")}</g>`).join("");
+
+// the far half of the skin that stays behind as the cut-away shell (seen from inside once the panels are off)
+const shellPath = (() => {
+  const pts = [];
+  const a0 = 113, a1 = 293, rOff = -1.5;
+  for (let i = 0; i <= 30; i++) { const s = (SKIN_END * i) / 30; pts.push(at(pt(s, skinR(s) + rOff, a0 * DEG))); }
+  for (let i = 1; i < 36; i++) pts.push(at(pt(SKIN_END, skinR(SKIN_END) + rOff, (a0 + ((a1 - a0) * i) / 36) * DEG)));
+  for (let i = 30; i >= 0; i--) { const s = (SKIN_END * i) / 30; pts.push(at(pt(s, skinR(s) + rOff, a1 * DEG))); }
+  for (let i = 1; i < 36; i++) pts.push(at(pt(0, skinR(0) + rOff, (a1 - ((a1 - a0) * i) / 36) * DEG)));
+  return pathOf(pts) + "Z";
+})();
+const shellLines = (() => {
+  const out = [];
+  for (const a of [140, 170, 200, 230, 260]) { const pts = []; for (let s = 6; s <= SKIN_END - 4; s += 8) pts.push(at(pt(s, skinR(s) - 1.5, a * DEG))); out.push(pathOf(pts)); }
+  const ribs = [];
+  for (const s of [30, 100, 180, 252, 330, 400]) { const pts = []; for (let a = 113; a <= 293; a += 6) pts.push(at(pt(s, skinR(s) - 1.5, a * DEG))); ribs.push(pathOf(pts)); }
+  return L(out.join(""), { tone: "faint" }) + L(ribs.join(""), { tone: "lo" });
+})();
+const shellEdges = (() => {
+  const cut = [], rimF = [], rimB = [];
+  for (let i = 0; i <= 30; i++) { const s = (SKIN_END * i) / 30; cut.push(at(pt(s, skinR(s) - 1.5, 113 * DEG))); }
+  for (let a = 113; a <= 293; a += 5) { rimF.push(at(pt(0, skinR(0) - 1.5, a * DEG))); rimB.push(at(pt(SKIN_END, skinR(SKIN_END) - 1.5, a * DEG))); }
+  const lastEdge = []; for (let i = 0; i <= 30; i++) { const s = (SKIN_END * i) / 30; lastEdge.push(at(pt(s, skinR(s) - 1.5, 293 * DEG))); }
+  return L([pathOf(cut), pathOf(lastEdge), pathOf(rimF), pathOf(rimB)].join(""), { tone: "hi" });
+})();
+const shell = `<g class="tf-shell" data-shell><path class="tf-shell-fill" d="${shellPath}"/>${shellLines}${shellEdges}</g>`;
+
 const svg = k.figureSvg({
   width: WIDTH,
   height: HEIGHT,
   className: "tf-svg",
   label: "An isometric turbofan engine on a test stand with its fan, ten-stage compressor, combustor, turbine and exhaust nozzle. Hover a module to read its thermodynamic state; pull the engine apart to see the rotors.",
-  body: [defs, `<g data-stand>${stand()}${pylon(104)}${pylon(428)}</g>`, ...order],
+  body: [defs, skinDefs, `<g data-stand>${stand()}${pylon(104)}${pylon(428)}</g>`, shell, ...order, panels],
 });
 
 // ---- the live script ----
@@ -308,11 +405,6 @@ const TAU = Math.PI * 2;
 const root = document.querySelector(".tf");
 const stage = root.querySelector(".tf-stage");
 const svg = stage.querySelector("svg");
-const readName = root.querySelector("[data-tf-name]");
-const readData = root.querySelector("[data-tf-data]");
-const readNote = root.querySelector("[data-tf-note]");
-const parts = root.querySelector("[data-tf-parts]");
-const toggle = root.querySelector("[data-tf-toggle]");
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 const modEl = Object.fromEntries(MODS.map((m) => [m.id, svg.querySelector('[data-mod="' + m.id + '"]')]));
 const layers = {};
@@ -364,7 +456,7 @@ STAGES.forEach((st) => {
 });
 
 // state
-const state = { e: 0, eTarget: 0, spin: 0.6, spinTarget: 0.6, glow: 0.8, glowTarget: 0.8, sel: null, subSel: null, mission: "sl", clock: 0 };
+const state = { e: 0, eTarget: 0, spin: 0.6, spinTarget: 0.6, glow: 0.8, glowTarget: 0.8, sel: null, subSel: null, mission: "sl", clock: 0, step: 0 };
 const openAmount = Object.fromEntries(MODS.map((m) => [m.id, 0]));
 const dxOf = (id) => SPREAD_DX[id] * state.e;
 const subEls = {};
@@ -404,16 +496,49 @@ function drawBlades(dt) {
   });
 }
 
+// ---- disassembly: 0 assembled, 1 rivets out, 2 skin panels off (half section), 3 components split ----
+const STEPS = [
+  { title: "Assembled", hint: "A riveted nacelle wraps the engine. Hover it, then start taking it apart.", next: "REMOVE RIVETS \\u25B8" },
+  { title: "Step 1 of 3 \\u00B7 Rivets removed", hint: "Every rivet is out, so the skin panels are only resting in place.", next: "REMOVE SKIN PANELS \\u25B8" },
+  { title: "Step 2 of 3 \\u00B7 Skin off, half section", hint: "The near half of the skin is gone: you are looking at the engine cut in half. Hover a module.", next: "SPLIT COMPONENTS \\u25B8" },
+  { title: "Step 3 of 3 \\u00B7 Components split", hint: "Hover a module to open it into its parts.", next: "REASSEMBLE \\u21BA" },
+];
+const smooth01 = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const panels = [...svg.querySelectorAll("[data-panel]")].map((el) => {
+  const [dx, dy] = el.dataset.dir.split(",").map(Number);
+  const rivets = [...el.querySelectorAll(".tf-rivet")].map((r, i, all) => {
+    const [nx, ny] = r.dataset.n.split(",").map(Number);
+    return { el: r, nx, ny, delay: ((i * 7919) % all.length) / all.length * 0.55, spin: ((i * 37) % 11 - 5) * 8 };
+  });
+  return { el, dx, dy, rivets };
+});
+const shellEl = svg.querySelector("[data-shell]");
+const prog = { rivets: 0, panels: 0 };
+let skinDirty = true;
+
+function drawSkin() {
+  panels.forEach((p) => {
+    p.rivets.forEach((r) => {
+      const t = Math.max(0, Math.min(1, (prog.rivets - r.delay) / 0.45)), e = t * t;
+      if (t <= 0) { if (r.el.getAttribute("transform")) { r.el.removeAttribute("transform"); r.el.style.opacity = ""; } return; }
+      r.el.setAttribute("transform", "translate(" + (r.nx * e * 34).toFixed(1) + " " + (r.ny * e * 34 - e * 12).toFixed(1) + ") rotate(" + (r.spin * t).toFixed(0) + ")");
+      r.el.style.opacity = (1 - smooth01(0.4, 1, t)).toFixed(2);
+    });
+    const e = smooth01(0, 1, prog.panels), dist = 165 * e;
+    p.el.setAttribute("transform", "translate(" + (p.dx * dist).toFixed(1) + " " + (p.dy * dist - 26 * e).toFixed(1) + ")");
+    p.el.style.opacity = (1 - smooth01(0.25, 0.85, prog.panels)).toFixed(2);
+    p.el.style.display = prog.panels > 0.995 ? "none" : "";
+  });
+  shellEl.style.opacity = (1 - smooth01(0.1, 0.9, state.e)).toFixed(2);
+  shellEl.style.display = state.e > 0.995 ? "none" : "";
+}
+
 function drawModules() {
   MODS.forEach((m) => modEl[m.id].setAttribute("transform", translateAlong(P, [dxOf(m.id), 0, 0])));
   Object.keys(SUBINFO).forEach((id) => {
     const s = SUBINFO[id], t = translateAlong(P, [s.off * openAmount[s.mod], 0, 0]);
     subEls[id].forEach((g) => g.setAttribute("transform", t));
   });
-  const apart = state.eTarget > 0.5;
-  toggle.setAttribute("aria-pressed", apart ? "true" : "false");
-  const label = apart ? "\\u21C4 ASSEMBLE" : "\\u21C4 PULL APART";
-  if (toggle.textContent !== label) toggle.textContent = label;
 }
 
 function drawHeat(time) {
@@ -422,51 +547,72 @@ function drawHeat(time) {
   plume.style.opacity = (Math.max(0, state.glow - 0.25) * 1.25 * (0.9 + 0.1 * Math.sin(time * 17))).toFixed(3);
 }
 
-// ---- readout: ties each module and part to the cycle model on the page ----
-const fmtK = (v) => Math.round(v);
-function say() {
-  const m = window.PROP_MODELS && window.PROP_MODELS[state.mission];
-  const info = MODINFO[state.sel], part = state.subSel && SUBINFO[state.subSel];
-  parts.innerHTML = "";
-  if (!info) {
-    readName.textContent = "CF34-8 turbofan";
-    readData.textContent = m ? "Thrust " + Math.round(m.lbf).toLocaleString("en-US") + " lbf \\u00B7 " + (state.mission === "sl" ? "takeoff" : "cruise") : "Hover a module";
-    readNote.textContent = state.eTarget > 0.5 ? "Hover a module to open it up and read what each part does." : "Hover a module, or pull the engine apart to open the parts up.";
-    return;
-  }
-  readName.textContent = part ? info.name + " \\u203A " + part.name : info.name;
-  let note = part ? part.desc : info.desc;
-  if (m) note = note.replace("{V8}", Math.round(m.V8));
-  readNote.textContent = note;
-  if (m) {
-    const a = info.st[0], b = info.st[1];
-    readData.textContent = fmtK(m.T[a]) + " \\u2192 " + fmtK(m.T[b]) + " K \\u00B7 " + m.P[a].toFixed(0) + " \\u2192 " + m.P[b].toFixed(0) + " kPa";
-  } else readData.textContent = "";
-  if (state.eTarget > 0.5) {
-    info.subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x).forEach((id) => {
-      const chip = document.createElement("span");
-      chip.className = "tf-chip" + (id === state.subSel ? " on" : "");
-      chip.textContent = SUBINFO[id].name;
-      parts.appendChild(chip);
-    });
-  }
+// ---- steps and controls ----
+const stepName = root.querySelector("[data-tf-step]");
+const stepHint = root.querySelector("[data-tf-hint]");
+const nextBtn = root.querySelector("[data-tf-next]");
+const backBtn = root.querySelector("[data-tf-back]");
+const pips = [...root.querySelectorAll(".tf-pip")];
+const tip = root.querySelector("[data-tf-tip]");
+
+function setStep(n) {
+  state.step = Math.max(0, Math.min(3, n));
+  state.eTarget = state.step >= 3 ? 1 : 0;
+  stepName.textContent = STEPS[state.step].title;
+  stepHint.textContent = STEPS[state.step].hint;
+  nextBtn.textContent = STEPS[state.step].next;
+  backBtn.disabled = state.step === 0;
+  pips.forEach((p, i) => p.classList.toggle("on", i < state.step));
+  select(null);
+  hideTip();
 }
 
+// ---- tooltip that follows the pointer, kept beside the arrow so the engine stays in view ----
+const fmtK = (v) => Math.round(v);
+function infoFor(sel, subId) {
+  const m = window.PROP_MODELS && window.PROP_MODELS[state.mission];
+  if (sel === "skin") return { label: "NACELLE SKIN", title: state.step >= 1 ? "Skin panels" : "Riveted cowling", desc: state.step >= 1 ? "The rivets are out, so each panel is only resting on the frame. Next they come off." : "The streamlined shell that carries the airflow around the engine. Four panels cover the near half, each held on by rows of rivets." };
+  if (sel === "shell") return { label: "NACELLE SKIN", title: "Far half of the skin", desc: "This half stays in place so you can see the engine in section: the inside of the nacelle, with its ribs and stringers." };
+  const info = MODINFO[sel];
+  if (!info) return null;
+  const part = subId && SUBINFO[subId];
+  let desc = part ? part.desc : info.desc;
+  if (m) desc = desc.replace("{V8}", Math.round(m.V8));
+  const data = m ? fmtK(m.T[info.st[0]]) + " \\u2192 " + fmtK(m.T[info.st[1]]) + " K \\u00B7 " + m.P[info.st[0]].toFixed(0) + " \\u2192 " + m.P[info.st[1]].toFixed(0) + " kPa" : "";
+  return { label: part ? info.name.toUpperCase() : "MODULE", title: part ? part.name : info.name, desc, data };
+}
+let tipPos = { x: 0, y: 0 }, tipOn = false;
+function placeTip() {
+  const box = stage.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = tipPos.x - box.left + 22, y = tipPos.y - box.top + 20;
+  if (x + w > box.width - 6) x = tipPos.x - box.left - w - 18;
+  if (y + h > box.height - 6) y = tipPos.y - box.top - h - 16;
+  tip.style.transform = "translate(" + Math.max(6, x).toFixed(0) + "px," + Math.max(6, y).toFixed(0) + "px)";
+}
+function showTip(info) {
+  if (!info) return hideTip();
+  tip.innerHTML = "<i>" + info.label + "</i><b>" + info.title + "</b><p>" + info.desc + "</p>" + (info.data ? "<span>" + info.data + "</span>" : "");
+  tip.classList.add("on");
+  tipOn = true;
+  placeTip();
+}
+function hideTip() { tip.classList.remove("on"); tipOn = false; }
+
 function select(id, subId) {
-  const sId = state.eTarget > 0.5 ? subId || null : null;
-  if (state.sel === id && state.subSel === sId) return;
+  const sId = state.step >= 3 ? subId || null : null;
+  if (state.sel === id && state.subSel === sId) { if (tipOn && id) showTip(infoFor(id, sId)); return; }
   state.sel = id;
   state.subSel = sId;
-  MODS.forEach((m) => modEl[m.id].classList.toggle("tf-sel", m.id === id && !sId));
+  const moduleSel = id && id !== "skin" && id !== "shell";
+  MODS.forEach((m) => modEl[m.id].classList.toggle("tf-sel", moduleSel && m.id === id && !sId));
   Object.keys(subEls).forEach((s) => subEls[s].forEach((g) => g.classList.toggle("tf-subsel", s === sId)));
-  say();
+  showTip(id ? infoFor(id, sId) : null);
 }
 
 // ---- input ----
 const nearestSub = (modId, event) => {
   const box = svg.getBoundingClientRect();
   const x = (event.clientX - box.left) / box.width * ${WIDTH}, y = (event.clientY - box.top) / box.height * ${HEIGHT};
-  const mx = MODS.find((m) => m.id === modId);
   let best = null, bestD = Infinity;
   MODINFO[modId].subs.forEach((id) => {
     const s = SUBINFO[id], c = iso([s.x + dxOf(modId) + s.off * openAmount[modId], 0, Z0], P);
@@ -479,48 +625,42 @@ const hitOf = (event) => {
   const t = event.target;
   if (!t || !t.closest) return undefined;
   if (t.closest("[data-stand]")) return { mod: null };
+  if (t.closest("[data-panel]")) return { mod: "skin" };
   const sg = t.closest("[data-sub]");
   if (sg) return { mod: SUBINFO[sg.dataset.sub].mod, sub: sg.dataset.sub };
   const mg = t.closest("[data-mod]");
-  if (mg) return { mod: mg.dataset.mod, sub: state.eTarget > 0.5 ? nearestSub(mg.dataset.mod, event) : null };
+  if (mg) return { mod: mg.dataset.mod, sub: state.step >= 3 ? nearestSub(mg.dataset.mod, event) : null };
+  if (t.closest("[data-shell]")) return { mod: "shell" };
   return undefined;
 };
 const pick = (event) => {
+  tipPos = { x: event.clientX, y: event.clientY };
   const h = hitOf(event);
-  if (h === undefined) return;
+  if (h === undefined) { if (tipOn) placeTip(); return; }
   select(h.mod, h.sub);
+  if (tipOn) placeTip();
 };
-let drag = null;
-stage.addEventListener("pointermove", (event) => {
-  if (drag) {
-    state.eTarget = Math.max(0, Math.min(1, drag.from + (event.clientX - drag.x) / 380));
-    state.e = state.eTarget;
-    return;
-  }
-  pick(event);
-});
-stage.addEventListener("pointerleave", () => { if (!drag) select(null); });
-stage.addEventListener("pointerdown", (event) => { drag = { x: event.clientX, from: state.eTarget }; stage.setPointerCapture(event.pointerId); });
-stage.addEventListener("pointerup", (event) => {
-  const click = drag && Math.abs(event.clientX - drag.x) < 4;
-  if (click) state.eTarget = state.eTarget > 0.5 ? 0 : 1;
-  else if (drag) state.eTarget = state.eTarget > 0.5 ? 1 : 0;
-  drag = null;
-  stage.releasePointerCapture(event.pointerId);
-  const under = document.elementFromPoint(event.clientX, event.clientY);
-  if (under) pick({ target: under, clientX: event.clientX, clientY: event.clientY });
-  say();
-});
-toggle.addEventListener("click", () => { state.eTarget = state.eTarget > 0.5 ? 0 : 1; select(state.sel, state.subSel); say(); });
+stage.addEventListener("pointermove", pick);
+stage.addEventListener("pointerdown", pick);
+stage.addEventListener("pointerleave", () => select(null));
+nextBtn.addEventListener("click", () => setStep(state.step >= 3 ? 0 : state.step + 1));
+backBtn.addEventListener("click", () => setStep(state.step - 1));
 stage.addEventListener("keydown", (event) => {
   const mi = MODS.findIndex((m) => m.id === state.sel);
-  const moveMod = (n) => select(MODS[Math.max(0, Math.min(MODS.length - 1, n))].id, null);
-  const subs = state.sel ? MODINFO[state.sel].subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x) : [];
-  if (event.key === "ArrowRight") { event.preventDefault(); moveMod(mi + 1); }
-  else if (event.key === "ArrowLeft") { event.preventDefault(); moveMod(mi < 0 ? 0 : mi - 1); }
-  else if (event.key === "ArrowDown" && subs.length && state.eTarget > 0.5) { event.preventDefault(); select(state.sel, subs[Math.min(subs.length - 1, subs.indexOf(state.subSel) + 1)]); }
-  else if (event.key === "ArrowUp" && subs.length && state.eTarget > 0.5) { event.preventDefault(); select(state.sel, subs[Math.max(0, subs.indexOf(state.subSel) - 1)]); }
-  else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); state.eTarget = state.eTarget > 0.5 ? 0 : 1; select(state.sel, state.subSel); say(); }
+  const subs = state.sel && MODINFO[state.sel] ? MODINFO[state.sel].subs.slice().sort((p, q) => SUBINFO[p].x - SUBINFO[q].x) : [];
+  const anchor = () => {
+    const el = state.subSel ? subEls[state.subSel][0] : modEl[state.sel];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    tipPos = { x: r.left + r.width / 2, y: r.top + r.height * 0.7 };
+    if (tipOn) placeTip();
+  };
+  if (event.key === "ArrowRight" && state.step >= 2) { event.preventDefault(); select(MODS[Math.min(MODS.length - 1, mi + 1)].id, null); anchor(); }
+  else if (event.key === "ArrowLeft" && state.step >= 2) { event.preventDefault(); select(MODS[Math.max(0, mi < 0 ? 0 : mi - 1)].id, null); anchor(); }
+  else if (event.key === "ArrowDown" && subs.length && state.step >= 3) { event.preventDefault(); select(state.sel, subs[Math.min(subs.length - 1, subs.indexOf(state.subSel) + 1)]); anchor(); }
+  else if (event.key === "ArrowUp" && subs.length && state.step >= 3) { event.preventDefault(); select(state.sel, subs[Math.max(0, subs.indexOf(state.subSel) - 1)]); anchor(); }
+  else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setStep(state.step >= 3 ? 0 : state.step + 1); }
+  else if (event.key === "Backspace") { event.preventDefault(); setStep(state.step - 1); }
   else if (event.key === "Escape") select(null);
 });
 
@@ -529,7 +669,7 @@ window.TF = {
     state.mission = id;
     state.spinTarget = id === "sl" ? 1.5 : 1.0;
     state.glowTarget = id === "sl" ? 1 : 0.72;
-    say();
+    if (tipOn && state.sel) showTip(infoFor(state.sel, state.subSel));
   },
   spinUp(amount) { state.spinTarget = amount; },
 };
@@ -539,23 +679,31 @@ function tick(now) {
   const dt = last ? Math.min((now - last) / 1000, 1 / 20) : 1 / 60;
   last = now;
   state.clock += dt;
-  const k1 = 1 - Math.exp(-dt / 0.35), k2 = 1 - Math.exp(-dt / 0.6), k3 = 1 - Math.exp(-dt / 0.28);
-  state.e += (state.eTarget - state.e) * (drag ? 0 : still.matches ? 1 : k1);
+  const k1 = 1 - Math.exp(-dt / 0.45), k2 = 1 - Math.exp(-dt / 0.6), k3 = 1 - Math.exp(-dt / 0.28), kr = 1 - Math.exp(-dt / 0.55);
+  const calm = still.matches;
+  const wantRivets = state.step >= 1 ? 1 : 0, wantPanels = state.step >= 2 ? 1 : 0;
+  prog.rivets += (wantRivets - prog.rivets) * (calm ? 1 : kr);
+  prog.panels += (wantPanels - prog.panels) * (calm ? 1 : k1);
+  if (Math.abs(prog.rivets - wantRivets) < 0.002) prog.rivets = wantRivets;
+  if (Math.abs(prog.panels - wantPanels) < 0.002) prog.panels = wantPanels;
+  state.e += (state.eTarget - state.e) * (calm ? 1 : k1);
+  if (Math.abs(state.eTarget - state.e) < 0.002) state.e = state.eTarget;
   MODS.forEach((m) => {
-    const want = state.eTarget > 0.5 && state.e > 0.8 && state.sel === m.id ? 1 : 0;
-    openAmount[m.id] += (want - openAmount[m.id]) * (still.matches ? 1 : k3);
+    const want = state.step >= 3 && state.e > 0.8 && state.sel === m.id ? 1 : 0;
+    openAmount[m.id] += (want - openAmount[m.id]) * (calm ? 1 : k3);
     if (Math.abs(want - openAmount[m.id]) < 0.001) openAmount[m.id] = want;
   });
   state.spin += (state.spinTarget - state.spin) * k2;
   state.glow += (state.glowTarget - state.glow) * k2;
+  drawSkin();
   drawModules();
-  drawBlades(still.matches ? 0 : dt);
+  drawBlades(calm ? 0 : dt);
   drawHeat(state.clock);
   frame = visible ? requestAnimationFrame(tick) : 0;
 }
 new IntersectionObserver((entries) => { visible = entries[entries.length - 1].isIntersecting; if (visible && !frame) { last = 0; frame = requestAnimationFrame(tick); } }).observe(stage);
 if (still.matches) state.spin = 0.2;
-say();
+setStep(0);
 frame = requestAnimationFrame(tick);
 `;
 
@@ -565,8 +713,7 @@ const CSS = `
   --anatomy-lit-top:#4a3a2e; --anatomy-lit-shade:#33281f;
   --anatomy-hi:#f1dcc6; --anatomy-mid:#9b8068; --anatomy-lo:#5a4838; --anatomy-faint:#35291f; --anatomy-lit:#fff2de; --anatomy-dot:#f6e7d5;
   --anatomy-halo:#000; --anatomy-halo-opacity:.8; }
-.tf-stage { position: relative; outline: none; touch-action: pan-y; cursor: grab; }
-.tf-stage:active { cursor: grabbing; }
+.tf-stage { position: relative; outline: none; touch-action: pan-y; }
 .tf-stage:focus-visible { outline: 2px solid #ffb454; outline-offset: 4px; border-radius: 8px; }
 .tf-svg { overflow: visible; }
 .tf-mod { transition: filter 250ms ease; }
@@ -576,6 +723,11 @@ const CSS = `
 .tf-parts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .tf-chip { font-size: .66rem; letter-spacing: .06em; padding: 3px 9px; border: 1px solid rgba(255,180,84,.22); border-radius: 999px; color: #9b8068; transition: all 200ms; }
 .tf-chip.on { color: #ffb454; border-color: #ffb454; background: rgba(255,106,43,.12); }
+.tf-skin { --anatomy-paper:#3b2f27; --anatomy-face:#4a3b30; --anatomy-top:#8a735f; --anatomy-shade-0:#33281f; --anatomy-shade-1:#4a3b2f; --anatomy-shade-2:#6a5545; --anatomy-shade-3:#8c7360; --anatomy-hi:#e6d2bb; --anatomy-mid:#8a7360; --anatomy-lo:#5e4b3c; }
+.tf-stripe .iso-line { stroke: #ff6a2b; stroke-width: 1.4; }
+.tf-shell-fill { fill: url(#tf-shell-grad); stroke: none; }
+.tf-head { fill: #d9c3a8; stroke: #2a1f18; stroke-width: .35; }
+.tf-hole { fill: #120d0a; }
 .tf-hot { --anatomy-paper:#3a1608; --anatomy-face:#52200b; --anatomy-top:#ff8a3d; --anatomy-shade-0:#4a1b09; --anatomy-shade-1:#6a2a0d; --anatomy-shade-2:#8e3a10; --anatomy-shade-3:#b4521a; --anatomy-lit-top:#ffa55a; --anatomy-lit-shade:#c25c1c; --anatomy-lit:#ffe0b0; }
 .tf-blade { stroke: var(--anatomy-lo); stroke-width: .3; stroke-linejoin: round; fill: var(--anatomy-shade-2); }
 .tf-blade[data-shade="0"] { fill: var(--anatomy-shade-0); }
@@ -585,18 +737,31 @@ const CSS = `
 .tf-bar { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
 .tf-read b { display: block; font-size: .72rem; letter-spacing: .18em; color: #ffb454; text-transform: uppercase; font-weight: 600; }
 .tf-read span { display: block; font-size: .8rem; color: #f4ece4; }
-.tf-read small { display: block; font-size: .76rem; color: #b8a28d; max-width: 62ch; min-height: 2.6em; font-family: 'Inter', sans-serif; margin-top: 2px; }
+.tf-read small { display: block; font-size: .76rem; color: #b8a28d; max-width: 62ch; min-height: 1.3em; font-family: 'Inter', sans-serif; margin-top: 2px; }
 .tf-btn { font: inherit; font-size: .7rem; letter-spacing: .14em; color: #ffb454; background: rgba(255,106,43,.08); border: 1px solid rgba(255,106,43,.45); border-radius: 999px; padding: 8px 16px; cursor: pointer; transition: all 200ms; }
 .tf-btn:hover { background: rgba(255,106,43,.2); }
+.tf-tip { position: absolute; left: 0; top: 0; z-index: 6; width: max-content; max-width: 250px; padding: 10px 13px 11px; background: rgba(14,10,8,.95); border: 1px solid rgba(255,180,84,.45); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.55); pointer-events: none; opacity: 0; transition: opacity 140ms ease; font: 400 .76rem/1.5 'Inter', sans-serif; color: #d7c6b4; }
+.tf-tip.on { opacity: 1; }
+.tf-tip i { display: block; font: normal 600 .58rem 'JetBrains Mono', monospace; letter-spacing: .18em; color: #ff6a2b; }
+.tf-tip b { display: block; font: 600 .92rem 'Inter', sans-serif; color: #f4ece4; margin: 2px 0 4px; }
+.tf-tip p { margin: 0; }
+.tf-tip span { display: block; margin-top: 7px; font: .66rem 'JetBrains Mono', monospace; color: #ffb454; }
+.tf-ctl { display: flex; align-items: center; gap: 10px; }
+.tf-back { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,106,43,.45); background: rgba(255,106,43,.06); color: #ffb454; cursor: pointer; font: inherit; }
+.tf-back:disabled { opacity: .3; cursor: default; }
+.tf-back:not(:disabled):hover { background: rgba(255,106,43,.2); }
+.tf-pips { display: flex; gap: 6px; }
+.tf-pip { width: 18px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.14); transition: background 250ms; }
+.tf-pip.on { background: #ff6a2b; box-shadow: 0 0 8px rgba(255,106,43,.6); }
 @media (prefers-reduced-motion: reduce) { .tf-mod, .tf-sub { transition: none; } }
 `;
 
 const figure = `<div class="tf iso" data-theme="dark">
   <style>${k.ISO_CSS}${CSS}</style>
-  <div class="tf-stage" tabindex="0" role="application" aria-label="Interactive turbofan engine. Hover or use the arrow keys to read each module; press Enter to pull the engine apart, then hover a module to open up its parts.">${svg}</div>
+  <div class="tf-stage" tabindex="0" role="application" aria-label="Interactive turbofan engine in three disassembly steps: remove the rivets, remove the skin panels for a half-section view, then split the components. Hover a part to read what it is; Enter goes to the next step and Backspace goes back.">${svg}<div class="tf-tip" data-tf-tip role="status"></div></div>
   <div class="tf-bar">
-    <div class="tf-read" aria-live="polite"><b data-tf-name>CF34-8 turbofan</b><span data-tf-data></span><small data-tf-note></small><div class="tf-parts" data-tf-parts></div></div>
-    <button class="tf-btn" data-tf-toggle type="button" aria-pressed="false">⇄ PULL APART</button>
+    <div class="tf-read" aria-live="polite"><b data-tf-step>Assembled</b><small data-tf-hint></small></div>
+    <div class="tf-ctl"><button class="tf-back" data-tf-back type="button" aria-label="Previous step">◂</button><span class="tf-pips" aria-hidden="true"><i class="tf-pip"></i><i class="tf-pip"></i><i class="tf-pip"></i></span><button class="tf-btn" data-tf-next type="button">REMOVE RIVETS ▸</button></div>
   </div>
 </div>
 <script defer src="./Syd%20Website%20Assets/Propulsion%20Page/turbofan.js"></script>`;
