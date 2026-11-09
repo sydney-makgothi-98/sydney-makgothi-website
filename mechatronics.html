@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Control Systems &amp; Mechatronics | Gopolang Makgothi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script defer src="./Syd%20Website%20Assets/Mechatronics/patrick/patrick.js"></script>
+    <style>
+        :root {
+            --bg: #070a1a; --bg-raised: #0d1230; --surface: rgba(255,255,255,0.025);
+            --border: rgba(255,255,255,0.08); --border-accent: rgba(167,139,250,0.38);
+            --text: #e6e8f5; --text-muted: #9aa0c3; --text-faint: #5f668f;
+            --accent: #a78bfa; --accent-soft: rgba(167,139,250,0.12); --accent-2: #60a5fa;
+            --amber: #fbbf24; --green: #34d399; --pink: #e879f9; --red: #f87171;
+            --radius: 10px;
+            --display: 'Chakra Petch','Inter',system-ui,sans-serif;
+            --mono: 'JetBrains Mono','Courier New',monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.7; -webkit-font-smoothing: antialiased; scrollbar-width: thin; scrollbar-color: rgba(167,139,250,0.45) rgba(0,0,0,0.2);
+        }
+        body::-webkit-scrollbar { width: 8px; } body::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); } body::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.45); border-radius: 4px; }
+        a { color: var(--accent); }
+        button { font: inherit; }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        .progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 60; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+        .topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.9rem clamp(1rem, 4vw, 2.5rem); background: rgba(7,10,26,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border);
+        }
+        .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 200ms ease, transform 200ms ease; }
+        .back-link:hover { color: #fff; transform: translateX(-3px); }
+        .nav-status { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent); display: flex; gap: 1.25rem; }
+        .nav-status span { color: var(--text-faint); }
+
+        /* ===== hero ===== */
+        .hero {
+            padding: 8rem clamp(1rem, 5vw, 4rem) 2rem;
+            background: radial-gradient(60% 90% at 85% 0%, rgba(124,58,237,0.32) 0%, transparent 70%), radial-gradient(50% 80% at 15% 10%, rgba(37,99,235,0.22) 0%, transparent 70%);
+        }
+        .hero-inner { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 2rem 3rem; align-items: end; }
+        .eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 1rem; display: block; }
+        .hero h1 { font-family: var(--display); text-transform: uppercase; font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1; font-weight: 700; letter-spacing: -0.01em; }
+        .hero h1 span { color: var(--accent); }
+        .hero .lead { margin-top: 1.25rem; font-size: clamp(1rem, 1.6vw, 1.12rem); color: #c9cde6; max-width: 620px; }
+        .directive {
+            position: relative; border: 1px solid var(--border-accent); border-radius: 14px; padding: 1.2rem 1.4rem 1.3rem;
+            background: linear-gradient(180deg, #131a3f, var(--bg-raised));
+        }
+        .directive::before, .directive::after { content: ''; position: absolute; width: 12px; height: 12px; border-color: var(--accent); border-style: solid; }
+        .directive::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; border-radius: 14px 0 0 0; }
+        .directive::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-radius: 0 0 14px 0; }
+        .directive .k { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.22em; color: var(--accent); }
+        .directive p { font-family: var(--display); font-size: clamp(1.15rem, 2.1vw, 1.5rem); line-height: 1.35; color: #fff; margin-top: 0.45rem; font-weight: 500; }
+        .directive p em { font-style: normal; color: var(--amber); }
+        .steps { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 1rem; }
+        .steps span { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; padding: 0.22rem 0.55rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text-faint); transition: all 150ms ease; }
+        .steps span.on { color: #0b0820; background: var(--accent); border-color: var(--accent); }
+        .steps span.done { color: var(--text-muted); border-color: var(--border-accent); }
+
+        /* ===== lab ===== */
+        .lab { max-width: 1500px; margin: 0 auto; padding: 1.5rem clamp(1rem, 5vw, 4rem) 5rem; display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 1.5rem; align-items: start; }
+        .left { position: sticky; top: 4.4rem; display: grid; gap: 1rem; }
+        .panel { border: 1px solid var(--border-accent); border-radius: 14px; background: linear-gradient(180deg, #131a3f, var(--bg-raised)); overflow: hidden; }
+        .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em; }
+        .panel-head .t { color: var(--accent); } .panel-head .n { color: var(--text-faint); letter-spacing: 0.05em; margin-left: auto; }
+
+        .stage { position: relative; height: clamp(380px, calc(100vh - 17rem), 640px); background: #0a0f26; touch-action: none; }
+        .stage canvas#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+        .stage canvas#gl.drag { cursor: grabbing; } .stage canvas#gl.pick { cursor: pointer; }
+        .views { position: absolute; left: 10px; top: 10px; display: flex; gap: 4px; flex-wrap: wrap; max-width: calc(100% - 20px); }
+        .chip {
+            appearance: none; cursor: pointer; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--text-muted);
+            background: rgba(7,10,26,0.72); border: 1px solid var(--border); border-radius: 6px; padding: 0.28rem 0.6rem; backdrop-filter: blur(8px); transition: all 150ms ease;
+        }
+        .chip:hover { color: #fff; border-color: var(--border-accent); }
+        .chip.on, .chip[aria-pressed="true"] { color: #0b0820; background: var(--accent); border-color: var(--accent); }
+        .hud { position: absolute; left: 10px; top: 46px; display: grid; gap: 4px; pointer-events: none; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; }
+        .hud div { background: rgba(7,10,26,0.7); border: 1px solid var(--border); border-radius: 6px; padding: 0.2rem 0.55rem; color: var(--text-muted); width: max-content; backdrop-filter: blur(8px); }
+        .hud b { color: #fff; font-weight: 600; } .hud .ph b { color: var(--accent); }
+        .tourchip { position: absolute; right: 10px; top: 10px; display: flex; align-items: center; gap: 7px; cursor: pointer; }
+        @media (max-width: 720px) { .tourchip { top: auto; bottom: 92px; right: 10px; } .hud { top: 76px; } }
+        .tourchip i { width: 6px; height: 6px; border-radius: 50%; background: var(--pink); display: block; }
+        .tourchip.on i { animation: blink 1.2s steps(2) infinite; } @keyframes blink { 50% { opacity: 0.15; } }
+        .tip { position: absolute; pointer-events: none; transform: translate(12px, -28px); background: rgba(7,10,26,0.92); color: #fff; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.06em; padding: 0.25rem 0.55rem; border-radius: 6px; border: 1px solid var(--border-accent); white-space: nowrap; opacity: 0; transition: opacity 120ms ease; }
+        .tip.on { opacity: 1; }
+        .sel-label { position: absolute; pointer-events: none; font-family: var(--mono); font-size: 0.66rem; color: #0b0820; background: var(--accent); padding: 0.18rem 0.5rem; border-radius: 5px; letter-spacing: 0.06em; transform: translate(-50%, -150%); white-space: nowrap; opacity: 0; transition: opacity 150ms ease; }
+        .sel-label.on { opacity: 1; }
+        .sel-label::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 14px; background: var(--accent); }
+        .toolbar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 0.5rem 0.9rem; flex-wrap: wrap; padding: 0.55rem 0.8rem; background: linear-gradient(0deg, rgba(7,10,26,0.9), rgba(7,10,26,0.55)); border-top: 1px solid var(--border); }
+        .toolbar label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; color: var(--text-muted); display: flex; align-items: center; gap: 0.6rem; }
+        .toolbar label output { color: #fff; min-width: 3.4ch; display: inline-block; }
+        .toolbar .grow { flex: 1; min-width: 150px; }
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.14); outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 3px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 10px rgba(167,139,250,0.7); cursor: pointer; }
+        input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 3px; border: 0; background: var(--accent); cursor: pointer; }
+        input[type=range]:focus-visible { box-shadow: 0 0 0 3px rgba(167,139,250,0.35); }
+        .noscript { padding: 2rem; color: var(--text-muted); }
+        .turn { display: none; }
+
+        /* ===== part card ===== */
+        .pcard { padding: 0.9rem 1.1rem 1.1rem; min-height: 11.5rem; }
+        .pcard .tagrow { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+        .pcard .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid; }
+        .pcard h3 { font-family: var(--display); font-size: 1.3rem; font-weight: 600; color: #fff; line-height: 1.2; }
+        .pcard .role { color: #d8dbef; margin: 0.35rem 0 0.5rem; font-size: 0.95rem; }
+        .pcard .desc { color: #b4b9d6; font-size: 0.86rem; line-height: 1.65; }
+        .pcard .specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.35rem 1rem; margin-top: 0.8rem; font-size: 0.78rem; }
+        .pcard .specs div { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+        .pcard .specs span { color: var(--text-faint); } .pcard .specs b { color: #fff; font-family: var(--mono); font-weight: 400; text-align: right; font-size: 0.74rem; }
+        .pcard .acts { margin-left: auto; display: flex; gap: 0.4rem; }
+        .pcard .empty { color: var(--text-muted); font-size: 0.92rem; padding: 1rem 0; }
+        .pcard .empty b { color: #fff; }
+        .partlist { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.7rem 1rem 0.8rem; border-top: 1px solid var(--border); }
+        .partlist .chip { font-size: 0.6rem; }
+        .partlist .chip::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.45rem; background: var(--c, var(--accent)); vertical-align: 1px; }
+
+        /* ===== side ===== */
+        .tabs { display: flex; border: 1px solid var(--border-accent); border-radius: 10px; overflow: hidden; margin-bottom: 1rem; position: sticky; top: 3.7rem; z-index: 5; background: var(--bg); }
+        .tabs button { flex: 1; appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; padding: 0.7rem 0.5rem; transition: all 150ms ease; }
+        .tabs button + button { border-left: 1px solid var(--border-accent); }
+        .tabs button:hover { color: #fff; }
+        .tabs button.on { background: var(--accent); color: #0b0820; }
+        .tabpane { display: none; gap: 1rem; } .tabpane.on { display: grid; }
+        .card { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+        .card h4 { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; color: var(--accent); font-weight: 400; padding: 0.6rem 0.9rem 0; text-transform: uppercase; }
+        .card .sub { font-size: 0.78rem; color: var(--text-muted); padding: 0.1rem 0.9rem 0; line-height: 1.5; }
+        .card canvas { display: block; width: 100%; height: 210px; }
+        .card canvas.tall { height: 270px; } .card canvas.sq { height: 300px; }
+        .card .cap { font-size: 0.78rem; color: var(--text-muted); padding: 0 0.9rem 0.8rem; line-height: 1.55; } .card .cap b { color: #fff; font-weight: 600; }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; padding: 0.3rem 0.9rem 0; font-family: var(--mono); font-size: 0.62rem; color: var(--text-muted); }
+        .legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 0.4rem; vertical-align: middle; }
+        .legend i.d { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px); height: 2px; }
+        .ctrls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem 1.2rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+        .ctrl label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem; } .ctrl output { font-family: var(--mono); color: #fff; }
+        select { width: 100%; background: var(--bg-raised); color: #fff; border: 1px solid var(--border-accent); border-radius: 6px; padding: 0.35rem 0.5rem; font-family: var(--mono); font-size: 0.72rem; }
+        .seg { display: inline-flex; border: 1px solid var(--border-accent); border-radius: 8px; overflow: hidden; }
+        .seg button { appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.1em; padding: 0.35rem 0.7rem; }
+        .seg button + button { border-left: 1px solid var(--border-accent); } .seg button.on { background: var(--accent); color: #0b0820; }
+        .readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+        .readout { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); } .readout:last-child { border-right: 0; }
+        .readout span { display: block; font-size: 0.66rem; color: var(--text-faint); line-height: 1.3; margin-bottom: 0.15rem; } .readout b { display: block; font-family: var(--mono); font-size: 0.98rem; color: #fff; font-weight: 600; }
+        .readout.hl b { color: var(--accent); } .readout.mg b { color: var(--accent-2); } .readout.bad b { color: var(--red); } .readout.ok b { color: var(--green); }
+        .mbar { height: 3px; background: rgba(255,255,255,0.08); } .mbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+
+        /* ===== next robot arrow ===== */
+        .next {
+            position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+            padding: 1.1rem 0.55rem 1.1rem 0.7rem; text-decoration: none; color: var(--text-muted); background: rgba(7,10,26,0.8); backdrop-filter: blur(12px);
+            border: 1px solid var(--border-accent); border-right: 0; border-radius: 14px 0 0 14px; transition: color 200ms ease, padding 200ms ease, background 200ms ease;
+        }
+        .next:hover { color: #fff; padding-right: 0.9rem; background: var(--accent-soft); }
+        .next svg { width: 22px; height: 22px; transition: transform 200ms ease; } .next:hover svg { transform: translateX(3px); }
+        .next span { writing-mode: vertical-rl; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.22em; }
+        .next small { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.14em; color: var(--accent); }
+
+        footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.85rem; }
+
+        @media (max-width: 1100px) {
+            .hero-inner, .lab { grid-template-columns: 1fr; }
+            .left { position: static; }
+            .stage { height: clamp(360px, 70vh, 560px); }
+            .tabs { top: 3.5rem; }
+        }
+        @media (max-width: 720px) {
+            .nav-status { display: none; }
+            .panel-head .n { display: none; }
+            .next { padding: 0.8rem 0.4rem 0.8rem 0.5rem; } .next span { display: none; }
+            .readout { border-bottom: 1px solid var(--border); }
+        }
+        @media (prefers-reduced-motion: reduce) { .tourchip.on i { animation: none; } html { scroll-behavior: auto; } }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+    <nav class="topnav">
+        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 02 &mdash; CONTROL SYSTEMS &amp; MECHATRONICS</div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-inner">
+            <div>
+                <span class="eyebrow">CONTROL SYSTEMS &middot; MECHATRONICS &middot; REFERENCE 1</span>
+                <h1>Meet<br><span>Patrick.</span></h1>
+                <p class="lead">A two-wheeled robot with an ultrasonic eye, a servo-lifted arm and a 3D-printed claw. Take it apart, click any part to learn what it does, and watch the graphs on the right react to the same model that moves the robot.</p>
+            </div>
+            <div class="directive" aria-label="Prime directive">
+                <div class="k">PRIME DIRECTIVE</div>
+                <p>Pick up the food ingredients and lay them out for me for <em>breakfast</em>.</p>
+                <div class="steps" id="steps" aria-label="Mission progress"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="lab">
+        <section class="left" aria-label="Patrick 3D teardown">
+            <div class="panel">
+                <div class="panel-head"><span class="t">PATRICK &middot; 3D TEARDOWN</span><span class="n">Drag to orbit &middot; scroll to zoom &middot; click a part</span></div>
+                <div class="stage" id="stage">
+                    <canvas id="gl" role="img" aria-label="Interactive 3D model of the Patrick robot that can be taken apart; click a part for its description"></canvas>
+                    <div class="views" id="views">
+                        <button class="chip on" data-view="hero">3/4</button>
+                        <button class="chip" data-view="side">SIDE</button>
+                        <button class="chip" data-view="top">TOP</button>
+                        <button class="chip" data-view="front">FRONT</button>
+                        <button class="chip" data-view="arm">ARM</button>
+                        <button class="chip" data-view="wheel">WHEEL</button>
+                    </div>
+                    <div class="tourchip chip" id="tourchip" role="button" tabindex="0"><i></i><span id="tourtxt">AUTO TOUR</span></div>
+                    <div class="hud" id="hud">
+                        <div class="ph">STATE <b id="h-phase">IDLE</b></div>
+                        <div>SONAR <b id="h-sonar">-</b></div>
+                        <div>SPEED <b id="h-speed">-</b></div>
+                    </div>
+                    <div class="tip" id="tip"></div>
+                    <div class="sel-label" id="sellabel"></div>
+                    <div class="toolbar">
+                        <label class="grow">DISASSEMBLE <input type="range" id="u" min="0" max="1" step="0.001" value="0" aria-label="Disassemble" style="margin:0 .2rem"><output id="u-out">0%</output></label>
+                        <button class="chip" id="t-bands" aria-pressed="true">RUBBER BANDS ON</button>
+                        <button class="chip" id="t-play" aria-pressed="true">PAUSE RUN</button>
+                        <button class="chip" id="t-replay">&#8635; RESTART RUN</button>
+                        <button class="chip" id="t-sonar" aria-pressed="true">SONAR BEAM</button>
+                    </div>
+                    <noscript><div class="noscript">This page needs JavaScript for the 3D teardown.</div></noscript>
+                </div>
+                <div class="mbar" aria-hidden="true"><i id="m-bar"></i></div>
+                <div class="pcard" id="pcard" aria-live="polite"></div>
+                <div class="partlist" id="partlist" aria-label="All parts"></div>
+            </div>
+        </section>
+
+        <section class="right" aria-label="Live graphs">
+            <div class="tabs" id="tabs" role="tablist">
+                <button class="on" data-tab="dyn" role="tab">DYNAMICS</button>
+                <button data-tab="pow" role="tab">POWER</button>
+                <button data-tab="snd" role="tab">SOUND</button>
+            </div>
+
+            <div class="tabpane on" id="tab-dyn">
+                <div class="ctrls">
+                    <div class="ctrl"><label for="d-surf">Surface</label>
+                        <select id="d-surf"><option value="desk">Varnished desk</option><option value="card">Paper on desk</option><option value="dusty">Dusty desk</option></select></div>
+                    <div class="ctrl"><label for="duty">Throttle (PWM) <output id="duty-out">70 %</output></label>
+                        <input type="range" id="duty" min="0.3" max="1" step="0.05" value="0.7"></div>
+                    <div class="ctrl"><label>Rubber bands</label>
+                        <div class="seg" id="d-bands"><button data-b="1" class="on">ON</button><button data-b="0">OFF</button></div></div>
+                </div>
+                <div class="card">
+                    <h4>Speed after a full-throttle start</h4>
+                    <div class="sub">Same motors, same battery, same robot: the only change is the rubber bands.</div>
+                    <div class="legend"><span style="color:#34d399"><i style="background:#34d399"></i>with bands</span><span style="color:#f87171"><i style="background:#f87171"></i>bare wheels</span><span style="color:#9aa0c3"><i class="d"></i>wheel surface speed</span></div>
+                    <canvas id="c-speed" role="img" aria-label="Speed against time for a full-throttle start with and without rubber bands"></canvas>
+                    <div class="cap" id="cap-speed"></div>
+                </div>
+                <div class="card">
+                    <h4>Wheel slip</h4>
+                    <div class="sub">Slip ratio = (wheel surface speed &minus; robot speed) &divide; wheel surface speed. Zero is pure rolling.</div>
+                    <canvas id="c-slip" role="img" aria-label="Slip ratio against time with and without rubber bands"></canvas>
+                </div>
+                <div class="card">
+                    <h4>What the motors ask for vs what the tyres can give</h4>
+                    <div class="sub">When the motor force is above the grip limit the wheel spins instead of pushing.</div>
+                    <canvas id="c-trac" role="img" aria-label="Tractive effort of the motors against speed, and the grip limit with and without bands"></canvas>
+                    <div class="cap" id="cap-trac"></div>
+                </div>
+                <div class="readouts">
+                    <div class="readout hl"><span>Grip limit now</span><b id="r-lim">-</b></div>
+                    <div class="readout"><span>Weight on drive wheels</span><b id="r-drive">-</b></div>
+                    <div class="readout mg"><span>Slip, live</span><b id="r-slip">-</b></div>
+                    <div class="readout"><span>Run duration</span><b id="r-dur">-</b></div>
+                </div>
+            </div>
+
+            <div class="tabpane" id="tab-pow">
+                <div class="card">
+                    <h4>Power vs wheel speed</h4>
+                    <div class="sub">One motor at three throttle settings. The dot is the motor right now in the run.</div>
+                    <div class="legend"><span style="color:#fbbf24"><i style="background:#fbbf24"></i>mechanical out</span><span style="color:#9aa0c3"><i class="d"></i>electrical in</span></div>
+                    <canvas id="c-pow" class="tall" role="img" aria-label="Mechanical and electrical power of a drive motor against wheel speed for three throttle levels"></canvas>
+                    <div class="cap" id="cap-pow"></div>
+                </div>
+                <div class="card">
+                    <h4>Torque, current and efficiency</h4>
+                    <div class="sub">At the selected throttle: the torque falls straight as speed rises, so power peaks at half the free speed.</div>
+                    <div class="legend"><span style="color:#60a5fa"><i style="background:#60a5fa"></i>torque (N&middot;cm)</span><span style="color:#e879f9"><i style="background:#e879f9"></i>efficiency (%)</span><span style="color:#9aa0c3"><i class="d"></i>current (A &times;10)</span></div>
+                    <canvas id="c-eff" role="img" aria-label="Torque, current and efficiency against wheel speed"></canvas>
+                </div>
+                <div class="card">
+                    <h4>Electrical power over the breakfast run</h4>
+                    <div class="sub">Both motors plus the electronics. Brake and reach phases draw almost nothing.</div>
+                    <canvas id="c-ptime" role="img" aria-label="Electrical power against time over the whole breakfast run"></canvas>
+                </div>
+                <div class="readouts">
+                    <div class="readout"><span>Wheel speed</span><b id="r-rpm">-</b></div>
+                    <div class="readout hl"><span>Mech. power / motor</span><b id="r-pm">-</b></div>
+                    <div class="readout"><span>Electrical in (both)</span><b id="r-pe">-</b></div>
+                    <div class="readout mg"><span>Energy used so far</span><b id="r-en">-</b></div>
+                </div>
+            </div>
+
+            <div class="tabpane" id="tab-snd">
+                <div class="ctrls">
+                    <div class="ctrl"><label>Distance source</label>
+                        <div class="seg" id="s-src"><button data-f="1" class="on">FOLLOW ROBOT</button><button data-f="0">MANUAL</button></div></div>
+                    <div class="ctrl"><label for="s-d">Distance to wall <output id="s-d-out">-</output></label><input type="range" id="s-d" min="0.05" max="4" step="0.01" value="1"></div>
+                    <div class="ctrl"><label for="s-psi">Wall tilt <output id="s-psi-out">0&deg;</output></label><input type="range" id="s-psi" min="0" max="30" step="1" value="0"></div>
+                    <div class="ctrl"><label for="s-wall">Surface</label>
+                        <select id="s-wall"><option value="hard">Painted wall</option><option value="wood">Wooden board</option><option value="card" selected>Cardboard box</option><option value="cloth">Soft fabric</option></select></div>
+                </div>
+                <div class="card">
+                    <h4>The burst, the wall and the echo (top view)</h4>
+                    <div class="sub">Dots are the sound travelling, bright when strong. Watch them thin out with distance and dim at the wall.</div>
+                    <canvas id="c-rays" class="sq" role="img" aria-label="Top view of ultrasonic rays leaving the robot, bouncing off a wall and returning, dimming with distance"></canvas>
+                </div>
+                <div class="card">
+                    <h4>What the receiver hears</h4>
+                    <div class="sub">Signal in dB above the detection threshold. The first echo is the wall; the second has bounced off Patrick and the wall again.</div>
+                    <canvas id="c-env" role="img" aria-label="Received signal strength against time showing the burst, first echo and second echo"></canvas>
+                    <div class="cap" id="cap-env"></div>
+                </div>
+                <div class="card">
+                    <h4>Where the energy went</h4>
+                    <div class="sub">Loss budget of the first echo, in dB. Every 3 dB is half the energy.</div>
+                    <canvas id="c-budget" style="height:150px" role="img" aria-label="Stacked bar of the energy losses of the first echo"></canvas>
+                </div>
+                <div class="card">
+                    <h4>How far each surface can be seen</h4>
+                    <canvas id="c-range" style="height:150px" role="img" aria-label="Maximum detection range for four surfaces"></canvas>
+                </div>
+                <div class="readouts">
+                    <div class="readout hl"><span>Reading</span><b id="r-dist">-</b></div>
+                    <div class="readout"><span>Echo time</span><b id="r-echo">-</b></div>
+                    <div class="readout mg"><span>Echo vs threshold</span><b id="r-amp">-</b></div>
+                    <div class="readout"><span>Returned energy</span><b id="r-ret">-</b></div>
+                    <div class="readout"><span>Detected</span><b id="r-det">-</b></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <a class="next" href="mechatronics-2.html" aria-label="Next robot">
+        <small>02</small>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        <span>NEXT ROBOT</span>
+    </a>
+
+    <footer>&copy; 2026 Gopolang Makgothi &middot; Aerospace Engineer</footer>
+
+    <script>
+        const pb = document.getElementById('progress');
+        addEventListener('scroll', () => { const m = document.documentElement.scrollHeight - innerHeight; pb.style.width = (m > 0 ? scrollY / m * 100 : 0) + '%'; }, {passive: true});
+    </script>
+</body>
+</html>
