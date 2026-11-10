@@ -1,4 +1,4 @@
-@part Part III. Five Guided Projects
+@part Part III. Six Guided Projects
 @partsub From a first page to a 3D model you can take apart
 
 # Project 1: A Landing Page (HTML and CSS)

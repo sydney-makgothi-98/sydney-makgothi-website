@@ -20,7 +20,7 @@ The website is a folder of plain files. There is no server code, no database, no
 | `mechatronics.html` | 31 329 | The Patrick robot, with a 3D teardown. |
 | `mechatronics-2.html` | 3 176 | An empty placeholder for the next robot. |
 | `downloads.html` | 13 367 | Downloads. |
-| `PortfolioHero.jsx` | 17 895 | A React component that no page loads yet (Chapter 37). |
+| `PortfolioHero.jsx` | 17 895 | A React component that no page loads yet (Chapter 40). |
 | `Syd Website Assets/` | | Scripts, images and build tools for each page. |
 | `Guide/` | | This book. |
 
