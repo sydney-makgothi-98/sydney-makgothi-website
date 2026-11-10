@@ -17,8 +17,8 @@ The website is a folder of plain files. There is no server code, no database, no
 | `flight-dynamics.html` | 86 284 | The spiral climb and the full stability analysis. |
 | `aerostructures.html` | 61 892 | Structures, with its own chart script `fuselage-charts.js`. |
 | `propulsion.html` | 716 201 | Propulsion: an interactive isometric turbofan, a flight journey and a cycle console. |
-| `mechatronics.html` | 31 329 | The Patrick robot, with a 3D teardown. |
-| `mechatronics-2.html` | 3 176 | An empty placeholder for the next robot. |
+| `mechatronics.html` | | The first robot page: the self-stabilising drone, with a 3D teardown, its PID controller and its graphs. |
+| `mechatronics-2.html` | | The second robot page: Patrick, in his kitchen, with a 3D teardown. |
 | `downloads.html` | 13 367 | Downloads. |
 | `PortfolioHero.jsx` | 17 895 | A React component that no page loads yet (Chapter 40). |
 | `Syd Website Assets/` | | Scripts, images and build tools for each page. |

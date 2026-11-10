@@ -4,197 +4,527 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:,">
-    <title>Control Systems &amp; Mechatronics: Self-Stabilising Drone | Gopolang Makgothi</title>
-    <meta name="description" content="A self-stabilising agricultural drone you can take apart, with its PID controller, Simulink model, root locus and Bode plots.">
+    <title>Control Systems &amp; Mechatronics | Gopolang Makgothi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <script defer src="./Syd%20Website%20Assets/Mechatronics/drone/drone.js"></script>
+    <script defer src="./Syd%20Website%20Assets/Mechatronics/patrick/patrick.js"></script>
     <style>
         :root {
-            --bg: #060818; --bg-raised: #0d1230; --surface: rgba(255,255,255,0.025);
-            --border: rgba(255,255,255,0.08); --border-accent: rgba(56,189,248,0.34);
-            --text: #e6e8f5; --text-muted: #9aa0c3; --text-faint: #7f86ad;
-            --accent: #38bdf8; --accent-soft: rgba(56,189,248,0.12); --amber: #fbbf24; --green: #34d399; --pink: #e879f9; --red: #f87171;
-            --display: 'Chakra Petch','Inter',system-ui,sans-serif; --mono: 'JetBrains Mono','Courier New',monospace;
+            --bg: #070a1a; --bg-raised: #0d1230; --surface: rgba(255,255,255,0.025);
+            --border: rgba(255,255,255,0.08); --border-accent: rgba(167,139,250,0.38);
+            --text: #e6e8f5; --text-muted: #9aa0c3; --text-faint: #5f668f;
+            --accent: #a78bfa; --accent-soft: rgba(167,139,250,0.12); --accent-2: #60a5fa;
+            --amber: #fbbf24; --green: #34d399; --pink: #e879f9; --red: #f87171;
+            --radius: 10px;
+            --display: 'Chakra Petch','Inter',system-ui,sans-serif;
+            --mono: 'JetBrains Mono','Courier New',monospace;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.7; -webkit-font-smoothing: antialiased; }
-        a { color: var(--accent); } button { font: inherit; }
+        body {
+            background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.7; -webkit-font-smoothing: antialiased; scrollbar-width: thin; scrollbar-color: rgba(167,139,250,0.45) rgba(0,0,0,0.2);
+        }
+        body::-webkit-scrollbar { width: 8px; } body::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); } body::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.45); border-radius: 4px; }
+        a { color: var(--accent); }
+        button { font: inherit; }
         :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem clamp(1rem, 4vw, 2.5rem); background: rgba(6,8,24,0.7); backdrop-filter: blur(16px); }
+
+        .progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 60; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+        .topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.9rem clamp(1rem, 4vw, 2.5rem); background: rgba(7,10,26,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border);
+        }
         .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 200ms ease, transform 200ms ease; }
         .back-link:hover { color: #fff; transform: translateX(-3px); }
-        .nav-status { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent); } .nav-status span { color: var(--text-faint); }
-        .prev { position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 1.1rem 0.6rem 1.1rem 0.45rem; text-decoration: none; color: var(--text-muted); background: rgba(6,8,24,0.8); border: 1px solid var(--border-accent); border-left: 0; border-radius: 0 14px 14px 0; transition: color 200ms ease, background 200ms ease; }
-        .prev:hover { color: #fff; background: var(--accent-soft); } .prev svg { width: 22px; height: 22px; }
-        .prev span { writing-mode: vertical-rl; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.22em; }
+        .nav-status { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent); display: flex; gap: 1.25rem; }
+        .nav-status span { color: var(--text-faint); }
 
-        /* ===== the stage: one plain gradient, the drone, graphs with no boxes ===== */
-        .dstage { position: relative; height: 100vh; height: 100svh; min-height: 660px; overflow: hidden; isolation: isolate; background: radial-gradient(55% 60% at 50% 46%, #1a2a58 0%, #0c1333 52%, #060818 100%); }
-        .d-viewport { position: absolute; inset: 0; }
-        #d-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; } #d-gl.drag { cursor: grabbing; } #d-gl.pick { cursor: pointer; }
-        .d-leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
-        .d-title { position: absolute; top: 66px; left: 50%; transform: translateX(-50%); z-index: 8; text-align: center; width: min(560px, 40vw); pointer-events: none; }
-        .d-title .eyebrow { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.2em; color: var(--accent); }
-        .d-title h1 { font-family: var(--display); text-transform: uppercase; font-size: clamp(1.2rem, 2.3vw, 1.9rem); line-height: 1.05; font-weight: 700; margin-top: 0.15rem; text-shadow: 0 2px 20px rgba(0,0,0,0.6); } .d-title h1 span { color: var(--accent); }
-        .d-credit { font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.3rem; } .d-credit b { color: #fff; font-weight: 600; }
-        .d-hud { position: absolute; top: 176px; left: 50%; transform: translateX(-50%); z-index: 8; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.1em; color: var(--text-muted); white-space: nowrap; pointer-events: none; } .d-hud b { color: #fff; font-weight: 600; } .d-hud b.bad { color: var(--red); }
-
-        .d-col { position: absolute; top: 70px; bottom: 218px; width: min(29vw, 430px); display: flex; flex-direction: column; gap: 0.5rem; z-index: 6; }
-        .d-col.left { left: 60px; } .d-col.right { right: clamp(12px, 2vw, 28px); }
-        .g { flex: var(--fl, 1) 1 0; min-height: 0; display: flex; flex-direction: column; cursor: pointer; opacity: 0.88; transition: opacity 200ms ease, filter 200ms ease; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%); }
-        .g:hover, .g:focus-visible { opacity: 1; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--c) 35%, transparent)); outline: none; }
-        .g figcaption { display: flex; align-items: center; gap: 0.5rem; padding: 0 0.4rem 0 0.9rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em; color: var(--text-muted); white-space: nowrap; }
-        .g figcaption i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); flex: none; } .g figcaption b { font-weight: 600; color: #fff; }
-        .g figcaption em { margin-left: auto; font-style: normal; opacity: 0; transition: opacity 200ms; color: var(--c); } .g:hover figcaption em { opacity: 1; }
-        .g canvas { flex: 1; min-height: 0; width: 100%; display: block; }
-
-        .d-bottom { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 9; width: min(740px, calc(100% - 24px)); display: grid; gap: 0.45rem; justify-items: center; }
-        .chip { appearance: none; cursor: pointer; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--text-muted); background: rgba(8,12,34,0.55); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.62rem; transition: all 150ms ease; }
-        .chip:hover { color: #fff; border-color: var(--border-accent); } .chip.on, .chip[aria-pressed="true"] { color: #04101c; background: var(--accent); border-color: var(--accent); } .chip:disabled { opacity: 0.35; }
-        .row { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; align-items: center; }
-        .seg { display: inline-flex; border: 1px solid var(--border-accent); border-radius: 7px; overflow: hidden; background: rgba(8,12,34,0.55); }
-        .seg button { appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em; padding: 0.3rem 0.6rem; } .seg button + button { border-left: 1px solid var(--border-accent); } .seg button.on { background: var(--accent); color: #04101c; }
-        .seg.dis { opacity: 0.4; pointer-events: none; }
-        .lbl { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.16em; color: var(--text-faint); margin-right: 0.15rem; }
-        .blurb { font-size: 0.74rem; color: var(--text-muted); text-align: center; min-height: 1.4em; }
-        .pid { width: 100%; display: grid; gap: 0.15rem; justify-items: center; }
-        .pid .head { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
-        #d-pidlabel { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.2em; color: #fff; text-shadow: 0 0 18px var(--accent); }
-        #d-bars { width: min(420px, 100%); height: 70px; display: block; }
-
-        .d-lab { display: none; width: 100%; padding: 0.4rem 0.2rem; } .d-lab.on { display: block; }
-        .d-lab .r { display: flex; align-items: center; gap: 0.7rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; color: var(--text-muted); } .d-lab .r input { flex: 1; } .d-lab .r output { color: #fff; min-width: 3.4ch; }
-        .plist { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.4rem; justify-content: center; max-height: 4.6rem; overflow-y: auto; }
-        .plist .chip { font-size: 0.55rem; padding: 0.22rem 0.5rem; } .plist .chip::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.4rem; background: var(--c, var(--accent)); vertical-align: 1px; }
-        input[type=range] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.16); outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 3px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 10px rgba(56,189,248,0.7); cursor: pointer; } input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 3px; background: var(--accent); cursor: pointer; }
-        .d-part { position: absolute; right: clamp(12px, 2vw, 28px); top: 74px; z-index: 14; width: min(370px, calc(100% - 24px)); max-height: calc(100% - 300px); overflow-y: auto; padding: 0.8rem 1rem 0.9rem; border-radius: 14px; background: rgba(8,12,34,0.93); border: 1px solid var(--border-accent); display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.55); } .d-part.on { display: block; }
-        .d-part .tagrow { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; } .d-part .tag { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.18em; padding: 0.12rem 0.5rem; border-radius: 999px; border: 1px solid; }
-        .d-part h3 { font-family: var(--display); font-size: 1.05rem; color: #fff; line-height: 1.2; } .d-part .acts { margin-left: auto; display: flex; gap: 0.35rem; }
-        .d-part .role { color: #d8dbef; margin: 0.4rem 0 0.35rem; font-size: 0.86rem; line-height: 1.5; } .d-part .desc { color: #b4b9d6; font-size: 0.76rem; line-height: 1.6; }
-        .d-part .specs { margin-top: 0.6rem; font-size: 0.7rem; } .d-part .specs div { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border); } .d-part .specs span { color: var(--text-faint); } .d-part .specs b { color: #fff; font-family: var(--mono); font-weight: 400; text-align: right; font-size: 0.66rem; }
-        .d-seltag { position: absolute; z-index: 9; pointer-events: none; transform: translate(-50%, -140%); font-family: var(--mono); font-size: 0.62rem; color: #04101c; background: var(--accent); padding: 0.16rem 0.5rem; border-radius: 5px; white-space: nowrap; opacity: 0; transition: opacity 150ms ease; } .d-seltag.on { opacity: 1; }
-        .d-tip { position: absolute; z-index: 9; pointer-events: none; transform: translate(12px, -28px); background: rgba(6,8,24,0.92); color: #fff; font-family: var(--mono); font-size: 0.62rem; padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-accent); white-space: nowrap; opacity: 0; transition: opacity 120ms ease; } .d-tip.on { opacity: 1; }
-
-        .d-modal { position: fixed; inset: 0; z-index: 100; display: none; flex-direction: column; background: #04061a; } .d-modal.on { display: flex; animation: mopen 240ms cubic-bezier(0.16,1,0.3,1); } @keyframes mopen { from { opacity: 0; transform: scale(0.98); } }
-        .mhead { display: flex; align-items: center; gap: 0.8rem; padding: 1rem clamp(1rem, 3vw, 2rem) 0.75rem; border-bottom: 1px solid var(--border); }
-        .mhead h2 { font-family: var(--display); font-size: 1.1rem; letter-spacing: 0.14em; text-transform: uppercase; display: flex; align-items: center; gap: 0.6rem; } .mhead h2 i { width: 10px; height: 10px; border-radius: 50%; } .mhead .chip { margin-left: auto; font-size: 0.66rem; padding: 0.4rem 0.8rem; }
-        .mbody { flex: 1; overflow: auto; padding: 1rem clamp(1rem, 3vw, 2rem) 2rem; }
-        .mbody .reads { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin-bottom: 1rem; } .mbody .rd { padding: 0.5rem 1.4rem 0.7rem 0; } .mbody .rd span { display: block; font-size: 0.66rem; color: var(--text-faint); } .mbody .rd b { font-family: var(--mono); font-size: 0.95rem; color: #fff; font-weight: 600; }
-        .mbody .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 1.6rem; } .mbody .card h4 { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; color: var(--accent); font-weight: 400; text-transform: uppercase; margin-bottom: 0.2rem; }
-        .mbody .card canvas { display: block; width: 100%; height: clamp(240px, 46vh, 520px); } .mbody .n1 .card canvas { height: clamp(320px, 64vh, 700px); } .mbody .cap { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; margin-top: 0.3rem; min-height: 1.5em; }
-
-        /* ===== below the stage ===== */
-        .about { max-width: 920px; margin: 0 auto; padding: 4rem clamp(1rem, 5vw, 2rem) 3rem; }
-        .about h2 { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.08em; font-size: 1.4rem; margin-bottom: 0.4rem; } .about h2 span { color: var(--accent); }
-        .about h3 { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.18em; color: var(--accent); font-weight: 400; text-transform: uppercase; margin: 1.6rem 0 0.4rem; }
-        .about p, .about li { color: #c4c8e4; font-size: 0.92rem; } .about ul { padding-left: 1.2rem; display: grid; gap: 0.4rem; } .about b { color: #fff; }
-        .authors { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.4rem 1.5rem; margin-top: 0.6rem; } .authors div { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-weight: 600; color: #fff; } .authors small { display: block; font-weight: 400; color: var(--text-faint); font-size: 0.72rem; }
-        footer { text-align: center; padding: 2.5rem 1rem; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.85rem; }
-        .modal-open .prev { display: none; }
-        .dstage.lab-open .pid, .dstage.lab-open .blurb, .dstage.lab-open #d-scn { display: none; }   /* the parts list needs the room; the PID card appears when you pick the controller */
-
-        @media (max-width: 1100px) { .d-title { width: min(520px, 46vw); } .d-col { width: min(30vw, 340px); } }
-        @media (max-width: 899px) {
-            .dstage { height: auto; min-height: 0; display: flex; flex-direction: column; }
-            .d-viewport { position: relative; height: 92svh; min-height: 560px; }
-            .d-col { position: static; width: 100%; height: 200px; flex-direction: row; overflow-x: auto; padding: 0 12px; scrollbar-width: none; } .g { flex: 0 0 82vw; -webkit-mask-image: none; mask-image: none; }
-            .d-title { width: calc(100% - 24px); top: 60px; } .d-hud { top: 176px; }
-            .d-bottom { bottom: 8px; } .nav-status { display: none; } .prev span { display: none; }
+        /* ===== hero ===== */
+        .hero {
+            padding: 4rem clamp(1rem, 5vw, 4rem) 2rem;
+            background: radial-gradient(60% 90% at 85% 0%, rgba(124,58,237,0.32) 0%, transparent 70%), radial-gradient(50% 80% at 15% 10%, rgba(37,99,235,0.22) 0%, transparent 70%);
         }
-        @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+        .hero-inner { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 2rem 3rem; align-items: end; }
+        .eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 1rem; display: block; }
+        .hero h1 { font-family: var(--display); text-transform: uppercase; font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1; font-weight: 700; letter-spacing: -0.01em; }
+        .hero h1 span { color: var(--accent); }
+        .hero .lead { margin-top: 1.25rem; font-size: clamp(1rem, 1.6vw, 1.12rem); color: #c9cde6; max-width: 620px; }
+        .directive {
+            position: relative; border: 1px solid var(--border-accent); border-radius: 14px; padding: 1.2rem 1.4rem 1.3rem;
+            background: linear-gradient(180deg, #131a3f, var(--bg-raised));
+        }
+        .directive::before, .directive::after { content: ''; position: absolute; width: 12px; height: 12px; border-color: var(--accent); border-style: solid; }
+        .directive::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; border-radius: 14px 0 0 0; }
+        .directive::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-radius: 0 0 14px 0; }
+        .directive .k { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.22em; color: var(--accent); }
+        .directive p { font-family: var(--display); font-size: clamp(1.15rem, 2.1vw, 1.5rem); line-height: 1.35; color: #fff; margin-top: 0.45rem; font-weight: 500; }
+        .directive p em { font-style: normal; color: var(--amber); }
+        .steps { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 1rem; }
+        .steps span { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; padding: 0.22rem 0.55rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text-faint); transition: all 150ms ease; }
+        .steps span.on { color: #0b0820; background: var(--accent); border-color: var(--accent); }
+        .steps span.done { color: var(--text-muted); border-color: var(--border-accent); }
+
+        /* ===== lab ===== */
+        .lab { max-width: 1500px; margin: 0 auto; padding: 1.5rem clamp(1rem, 5vw, 4rem) 5rem; display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 1.5rem; align-items: start; }
+        .left { position: sticky; top: 4.4rem; display: grid; gap: 1rem; }
+        .panel { border: 1px solid var(--border-accent); border-radius: 14px; background: linear-gradient(180deg, #131a3f, var(--bg-raised)); overflow: hidden; }
+        .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em; }
+        .panel-head .t { color: var(--accent); } .panel-head .n { color: var(--text-faint); letter-spacing: 0.05em; margin-left: auto; }
+
+        .stage { position: relative; height: clamp(380px, calc(100vh - 17rem), 640px); background: #0a0f26; touch-action: none; }
+        .stage canvas#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+        .stage canvas#gl.drag { cursor: grabbing; } .stage canvas#gl.pick { cursor: pointer; }
+        .views { position: absolute; left: 10px; top: 10px; display: flex; gap: 4px; flex-wrap: wrap; max-width: calc(100% - 20px); }
+        .chip {
+            appearance: none; cursor: pointer; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--text-muted);
+            background: rgba(7,10,26,0.72); border: 1px solid var(--border); border-radius: 6px; padding: 0.28rem 0.6rem; backdrop-filter: blur(8px); transition: all 150ms ease;
+        }
+        .chip:hover { color: #fff; border-color: var(--border-accent); }
+        .chip.on, .chip[aria-pressed="true"] { color: #0b0820; background: var(--accent); border-color: var(--accent); }
+        .hud { position: absolute; left: 10px; top: 46px; display: grid; gap: 4px; pointer-events: none; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; }
+        .hud div { background: rgba(7,10,26,0.7); border: 1px solid var(--border); border-radius: 6px; padding: 0.2rem 0.55rem; color: var(--text-muted); width: max-content; backdrop-filter: blur(8px); }
+        .hud b { color: #fff; font-weight: 600; } .hud .ph b { color: var(--accent); }
+        .tourchip { position: absolute; right: 10px; top: 10px; display: flex; align-items: center; gap: 7px; cursor: pointer; }
+        @media (max-width: 720px) { .tourchip { top: auto; bottom: 92px; right: 10px; } .hud { top: 76px; } }
+        .tourchip i { width: 6px; height: 6px; border-radius: 50%; background: var(--pink); display: block; }
+        .tourchip.on i { animation: blink 1.2s steps(2) infinite; } @keyframes blink { 50% { opacity: 0.15; } }
+        .tip { position: absolute; pointer-events: none; transform: translate(12px, -28px); background: rgba(7,10,26,0.92); color: #fff; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.06em; padding: 0.25rem 0.55rem; border-radius: 6px; border: 1px solid var(--border-accent); white-space: nowrap; opacity: 0; transition: opacity 120ms ease; }
+        .tip.on { opacity: 1; }
+        .sel-label { position: absolute; pointer-events: none; font-family: var(--mono); font-size: 0.66rem; color: #0b0820; background: var(--accent); padding: 0.18rem 0.5rem; border-radius: 5px; letter-spacing: 0.06em; transform: translate(-50%, -150%); white-space: nowrap; opacity: 0; transition: opacity 150ms ease; }
+        .sel-label.on { opacity: 1; }
+        .sel-label::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 14px; background: var(--accent); }
+        .toolbar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 0.5rem 0.9rem; flex-wrap: wrap; padding: 0.55rem 0.8rem; background: linear-gradient(0deg, rgba(7,10,26,0.9), rgba(7,10,26,0.55)); border-top: 1px solid var(--border); }
+        .toolbar label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; color: var(--text-muted); display: flex; align-items: center; gap: 0.6rem; }
+        .toolbar label output { color: #fff; min-width: 3.4ch; display: inline-block; }
+        .toolbar .grow { flex: 1; min-width: 150px; }
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.14); outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 3px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 10px rgba(167,139,250,0.7); cursor: pointer; }
+        input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 3px; border: 0; background: var(--accent); cursor: pointer; }
+        input[type=range]:focus-visible { box-shadow: 0 0 0 3px rgba(167,139,250,0.35); }
+        .noscript { padding: 2rem; color: var(--text-muted); }
+        .turn { display: none; }
+
+        /* ===== part card ===== */
+        .pcard { padding: 0.9rem 1.1rem 1.1rem; min-height: 11.5rem; }
+        .pcard .tagrow { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+        .pcard .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid; }
+        .pcard h3 { font-family: var(--display); font-size: 1.3rem; font-weight: 600; color: #fff; line-height: 1.2; }
+        .pcard .role { color: #d8dbef; margin: 0.35rem 0 0.5rem; font-size: 0.95rem; }
+        .pcard .desc { color: #b4b9d6; font-size: 0.86rem; line-height: 1.65; }
+        .pcard .specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.35rem 1rem; margin-top: 0.8rem; font-size: 0.78rem; }
+        .pcard .specs div { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+        .pcard .specs span { color: var(--text-faint); } .pcard .specs b { color: #fff; font-family: var(--mono); font-weight: 400; text-align: right; font-size: 0.74rem; }
+        .pcard .acts { margin-left: auto; display: flex; gap: 0.4rem; }
+        .pcard .empty { color: var(--text-muted); font-size: 0.92rem; padding: 1rem 0; }
+        .pcard .empty b { color: #fff; }
+        .partlist { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.7rem 1rem 0.8rem; border-top: 1px solid var(--border); }
+        .partlist .chip { font-size: 0.6rem; }
+        .partlist .chip::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.45rem; background: var(--c, var(--accent)); vertical-align: 1px; }
+
+        /* ===== side ===== */
+        .tabs { display: flex; border: 1px solid var(--border-accent); border-radius: 10px; overflow: hidden; margin-bottom: 1rem; position: sticky; top: 3.7rem; z-index: 5; background: var(--bg); }
+        .tabs button { flex: 1; appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; padding: 0.7rem 0.5rem; transition: all 150ms ease; }
+        .tabs button + button { border-left: 1px solid var(--border-accent); }
+        .tabs button:hover { color: #fff; }
+        .tabs button.on { background: var(--accent); color: #0b0820; }
+        .tabpane { display: none; gap: 1rem; } .tabpane.on { display: grid; }
+        .card { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+        .card h4 { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; color: var(--accent); font-weight: 400; padding: 0.6rem 0.9rem 0; text-transform: uppercase; }
+        .card .sub { font-size: 0.78rem; color: var(--text-muted); padding: 0.1rem 0.9rem 0; line-height: 1.5; }
+        .card canvas { display: block; width: 100%; height: 210px; }
+        .card canvas.tall { height: 270px; } .card canvas.sq { height: 300px; }
+        .card .cap { font-size: 0.78rem; color: var(--text-muted); padding: 0 0.9rem 0.8rem; line-height: 1.55; } .card .cap b { color: #fff; font-weight: 600; }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; padding: 0.3rem 0.9rem 0; font-family: var(--mono); font-size: 0.62rem; color: var(--text-muted); }
+        .legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 0.4rem; vertical-align: middle; }
+        .legend i.d { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px); height: 2px; }
+        .ctrls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem 1.2rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+        .ctrl label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem; } .ctrl output { font-family: var(--mono); color: #fff; }
+        select { width: 100%; background: var(--bg-raised); color: #fff; border: 1px solid var(--border-accent); border-radius: 6px; padding: 0.35rem 0.5rem; font-family: var(--mono); font-size: 0.72rem; }
+        .seg { display: inline-flex; border: 1px solid var(--border-accent); border-radius: 8px; overflow: hidden; }
+        .seg button { appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.1em; padding: 0.35rem 0.7rem; }
+        .seg button + button { border-left: 1px solid var(--border-accent); } .seg button.on { background: var(--accent); color: #0b0820; }
+        .readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+        .readout { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); } .readout:last-child { border-right: 0; }
+        .readout span { display: block; font-size: 0.66rem; color: var(--text-faint); line-height: 1.3; margin-bottom: 0.15rem; } .readout b { display: block; font-family: var(--mono); font-size: 0.98rem; color: #fff; font-weight: 600; }
+        .readout.hl b { color: var(--accent); } .readout.mg b { color: var(--accent-2); } .readout.bad b { color: var(--red); } .readout.ok b { color: var(--green); }
+        .mbar { height: 3px; background: rgba(255,255,255,0.08); } .mbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+
+        /* ===== previous robot arrow (the drone is the first page) ===== */
+        .prev {
+            position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+            padding: 1.1rem 0.7rem 1.1rem 0.55rem; text-decoration: none; color: var(--text-muted); background: rgba(7,10,26,0.8); backdrop-filter: blur(12px);
+            border: 1px solid var(--border-accent); border-left: 0; border-radius: 0 14px 14px 0; transition: color 200ms ease, padding 200ms ease, background 200ms ease;
+        }
+        .prev:hover { color: #fff; padding-left: 0.9rem; background: var(--accent-soft); }
+        .prev svg { width: 22px; height: 22px; transition: transform 200ms ease; } .prev:hover svg { transform: translateX(-3px); }
+        .prev span { writing-mode: vertical-rl; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.22em; }
+        .prev small { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.14em; color: var(--accent); }
+
+        footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.85rem; }
+
+        @media (max-width: 1100px) {
+            .hero-inner, .lab { grid-template-columns: 1fr; }
+            .left { position: static; }
+            .stage { height: clamp(360px, 70vh, 560px); }
+            .tabs { top: 3.5rem; }
+        }
+        @media (max-width: 720px) {
+            .nav-status { display: none; }
+            .panel-head .n { display: none; }
+            .prev { padding: 0.8rem 0.5rem 0.8rem 0.4rem; } .prev span { display: none; }
+            .readout { border-bottom: 1px solid var(--border); }
+        }
+        @media (prefers-reduced-motion: reduce) { .tourchip.on i { animation: none; } html { scroll-behavior: auto; } }
+
+        /* ===== kitchen stage: full screen, with floating graph bubbles ===== */
+        .kstage { position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; background: #0a0f26; isolation: isolate; }
+        .kstage:fullscreen { height: 100vh; }
+        .kstage canvas#k-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+        .kstage canvas#k-gl.drag { cursor: grabbing; }
+        .k-leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        .k-bubbles { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+        .k-intro { position: absolute; left: clamp(12px, 2.2vw, 32px); top: 74px; z-index: 8; max-width: min(400px, 42vw); pointer-events: none; }
+        .k-intro .eyebrow { margin-bottom: 0.4rem; font-size: 0.68rem; }
+        .k-intro h1 { font-family: var(--display); text-transform: uppercase; font-size: clamp(1.7rem, 3.4vw, 2.7rem); line-height: 1; font-weight: 700; text-shadow: 0 2px 24px rgba(0,0,0,0.6); }
+        .k-intro h1 span { color: var(--accent); }
+        .k-intro .directive { margin-top: 0.8rem; padding: 0.8rem 1rem 0.9rem; background: rgba(9,13,36,0.74); backdrop-filter: blur(12px); }
+        .k-intro .directive p { font-size: clamp(0.95rem, 1.3vw, 1.1rem); }
+        .k-intro .steps { margin-top: 0.7rem; }
+        .k-right { position: absolute; right: clamp(12px, 2.2vw, 32px); top: 74px; z-index: 8; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+        .k-row { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+        .k-status { display: flex; align-items: center; gap: 0.7rem; padding: 0.45rem 0.8rem; border-radius: 10px; background: rgba(9,13,36,0.78); border: 1px solid var(--border-accent); backdrop-filter: blur(12px); font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--text-muted); }
+        .k-status b { color: #fff; font-weight: 600; } .k-status #k-state { color: var(--accent); }
+        .k-status #k-state[data-s="RUNNING"] { color: var(--green); } .k-status #k-state[data-s="PAUSING"], .k-status #k-state[data-s="PAUSED"] { color: var(--amber); } .k-status #k-state[data-s="STOPPING"], .k-status #k-state[data-s="STOPPED"] { color: var(--red); } .k-status #k-state[data-s="DONE"] { color: var(--pink); }
+        .k-list { position: absolute; left: clamp(12px, 2.2vw, 32px); bottom: 18px; z-index: 8; width: 190px; padding: 0.65rem 0.8rem 0.7rem; border-radius: 12px; background: rgba(9,13,36,0.78); border: 1px solid var(--border-accent); backdrop-filter: blur(12px); }
+        .k-list .k { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.2em; color: var(--accent); }
+        .k-list ul { list-style: none; margin: 0.4rem 0 0.5rem; display: grid; gap: 0.15rem; }
+        .k-list li { display: flex; align-items: center; gap: 0.55rem; font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+        .k-list li i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--text-faint); flex: none; transition: all 200ms ease; }
+        .k-list li.now { color: #fff; } .k-list li.now i { border-color: var(--accent); background: rgba(167,139,250,0.4); box-shadow: 0 0 10px var(--accent); }
+        .k-list li[data-s="1"] i { border-color: var(--pink); background: rgba(232,121,249,0.5); }
+        .k-list li[data-s="2"] { color: #cfd3ec; } .k-list li[data-s="2"] i { border-color: var(--green); background: var(--green); }
+        .k-list .pbar { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.1); overflow: hidden; } .k-list .pbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-2), var(--green)); transition: width 400ms ease; }
+        .k-bar { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 12; display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.6rem; border-radius: 16px; background: rgba(9,13,36,0.82); border: 1px solid var(--border-accent); backdrop-filter: blur(16px); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .tbtn { appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.62rem 1.1rem; border-radius: 11px; font-family: var(--display); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.14em; color: #fff; background: rgba(255,255,255,0.05); border: 1px solid var(--border); transition: all 150ms ease; }
+        .tbtn svg { width: 15px; height: 15px; flex: none; }
+        .tbtn:hover:not(:disabled) { transform: translateY(-1px); }
+        .tbtn:disabled { opacity: 0.32; cursor: default; }
+        .tbtn.go { background: rgba(52,211,153,0.16); border-color: rgba(52,211,153,0.55); color: #a7f3d0; } .tbtn.go:hover:not(:disabled) { background: rgba(52,211,153,0.3); }
+        .tbtn.hold { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.5); color: #fde68a; } .tbtn.hold:hover:not(:disabled) { background: rgba(251,191,36,0.28); }
+        .tbtn.halt { background: rgba(248,113,113,0.14); border-color: rgba(248,113,113,0.5); color: #fecaca; } .tbtn.halt:hover:not(:disabled) { background: rgba(248,113,113,0.28); }
+        .k-sep { width: 1px; height: 26px; background: var(--border); }
+        .k-hint { position: absolute; left: 50%; bottom: 92px; transform: translateX(-50%); z-index: 11; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.22em; color: var(--accent); padding: 0.4rem 0.9rem; border-radius: 999px; background: rgba(9,13,36,0.7); border: 1px solid var(--border-accent); opacity: 0; pointer-events: none; transition: opacity 300ms ease; white-space: nowrap; }
+        .k-hint.on { opacity: 1; animation: pulse 2s ease-in-out infinite; } @keyframes pulse { 50% { opacity: 0.55; } }
+
+        .bub { position: absolute; left: 0; top: 0; width: 200px; height: 150px; display: flex; flex-direction: column; pointer-events: auto; cursor: pointer; overflow: hidden; border-radius: 20px;
+            border: 1px solid color-mix(in srgb, var(--c) 50%, transparent);
+            background: radial-gradient(120% 90% at 20% 0%, color-mix(in srgb, var(--c) 16%, transparent), transparent 60%), rgba(9,13,36,0.8); backdrop-filter: blur(14px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.04), 0 0 30px color-mix(in srgb, var(--c) 16%, transparent); will-change: transform;
+            transition: width 320ms cubic-bezier(0.16,1,0.3,1), height 320ms cubic-bezier(0.16,1,0.3,1), box-shadow 200ms ease, border-color 200ms ease; }
+        .bub:hover, .bub:focus-visible { width: 380px; height: 272px; z-index: 9; border-color: var(--c); box-shadow: 0 18px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 46px color-mix(in srgb, var(--c) 30%, transparent); outline: none; }
+        .bub-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.8rem 0.15rem; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.16em; white-space: nowrap; }
+        .bub-head i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); flex: none; }
+        .bub-head b { color: #fff; font-weight: 600; } .bub-head span { color: var(--text-faint); letter-spacing: 0.04em; display: none; overflow: hidden; text-overflow: ellipsis; }
+        .bub-head em { margin-left: auto; font-style: normal; color: var(--text-faint); font-size: 0.8rem; opacity: 0; transition: opacity 200ms ease; }
+        .bub:hover .bub-head span, .bub:focus-visible .bub-head span { display: inline; } .bub:hover .bub-head em, .bub:focus-visible .bub-head em { opacity: 1; color: var(--c); }
+        .bub-cv { flex: 1; min-height: 0; width: 100%; display: block; }
+        .bub-foot { padding: 0.15rem 0.8rem 0.5rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.04em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bub-code { flex: 1; min-height: 0; margin: 0; padding: 0.2rem 0 0; overflow: hidden; font: 10px/1.4 var(--mono); color: #cfd3ec; }
+        .bub-code div { white-space: pre; padding-right: 0.5rem; } .bub-code div.act { background: rgba(167,139,250,0.2); box-shadow: inset 2px 0 var(--accent); }
+        .bub-code u, .cview u { display: inline-block; width: 2.6em; text-align: right; margin-right: 0.9em; color: #4d5580; text-decoration: none; user-select: none; }
+        .bub-code i.k, .cview i.k { color: #c4a8ff; } .bub-code i.s, .cview i.s { color: #fbbf24; } .bub-code i.n, .cview i.n { color: #7dd3fc; } .bub-code i.c, .cview i.c { color: #6b7399; font-style: italic; } .bub-code i.p, .cview i.p { color: #f472b6; } .bub-code i.c2, .cview i.c2 { color: #86efac; }
+        .k-bubbles.dock { position: absolute; left: 0; right: 0; bottom: 84px; top: auto; display: flex; gap: 8px; overflow-x: auto; padding: 0 12px 8px; pointer-events: auto; scrollbar-width: none; }
+        .k-bubbles.dock .bub { position: relative; transform: none !important; flex: none; width: 168px; height: 124px; } .k-bubbles.dock .bub:hover { width: 168px; height: 124px; }
+
+        .k-modal { position: absolute; inset: 0; z-index: 30; display: none; flex-direction: column; background: rgba(5,8,22,0.93); backdrop-filter: blur(20px); }
+        .k-modal.on { display: flex; animation: mopen 260ms cubic-bezier(0.16,1,0.3,1); } @keyframes mopen { from { opacity: 0; transform: scale(0.97); } }
+        .mhead { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; padding: 4.2rem clamp(1rem, 3vw, 2rem) 0.75rem; border-bottom: 1px solid var(--border); }
+        .mhead h2 { font-family: var(--display); font-size: 1.15rem; letter-spacing: 0.14em; text-transform: uppercase; display: flex; align-items: center; gap: 0.6rem; }
+        .mhead h2 i { width: 10px; height: 10px; border-radius: 50%; } .mhead h2 span { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; color: var(--text-faint); text-transform: none; }
+        .mhead .sp { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+        .mhead .chip { font-size: 0.66rem; padding: 0.4rem 0.8rem; } .mhead .chip:disabled { opacity: 0.35; cursor: default; }
+        .mbody { flex: 1; overflow: auto; padding: 1rem clamp(1rem, 3vw, 2rem) 2rem; }
+        .mbody .reads { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; margin-bottom: 1rem; }
+        .mbody .rd { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); } .mbody .rd span { display: block; font-size: 0.66rem; color: var(--text-faint); } .mbody .rd b { font-family: var(--mono); font-size: 1rem; color: #fff; font-weight: 600; }
+        .mbody .rd.hl b { color: var(--accent); } .mbody .rd.mg b { color: var(--accent-2); } .mbody .rd.ok b { color: var(--green); } .mbody .rd.bad b { color: var(--red); }
+        .mbody .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 540px), 1fr)); gap: 1rem; }
+        .mbody .card canvas { height: clamp(200px, 34vh, 380px); } .mbody.n1 .card canvas { height: clamp(300px, 64vh, 680px); }
+        .mbody .card .cap { min-height: 1.5em; }
+        .mbody.code { display: flex; flex-direction: column; overflow: hidden; }
+        .ctools { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.8rem; } .ctools .chip { font-size: 0.68rem; padding: 0.45rem 0.9rem; }
+        .ctools .cinfo { font-size: 0.78rem; color: var(--text-muted); } .ctools code { font-family: var(--mono); color: var(--amber); font-size: 0.74rem; }
+        .cview { flex: 1; min-height: 0; overflow: auto; background: #060a1c; border: 1px solid var(--border); border-radius: 12px; }
+        .cview pre { margin: 0; padding: 0.7rem 0; font: 12px/1.6 var(--mono); color: #cfd3ec; }
+        .cview div { white-space: pre; padding-right: 1.2rem; } .cview div.act { background: rgba(167,139,250,0.16); box-shadow: inset 3px 0 var(--accent); }
+
+        /* ===== disassembly inside the kitchen stage ===== */
+        .k-lab { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 13; width: min(920px, calc(100% - 24px)); padding: 0.7rem 0.9rem 0.8rem; border-radius: 16px; background: rgba(9,13,36,0.88); border: 1px solid var(--border-accent); backdrop-filter: blur(16px); display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .k-lab.on { display: block; }
+        .k-lab .row { display: flex; align-items: center; gap: 0.8rem; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.12em; color: var(--text-muted); }
+        .k-lab .row input { flex: 1; margin: 0 0.2rem; } .k-lab .row output { color: #fff; min-width: 3.4ch; }
+        .k-lab .note { font-size: 0.72rem; color: var(--text-faint); margin: 0.35rem 0 0.2rem; }
+        .k-lab .plist { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; max-height: 5.6rem; overflow-y: auto; }
+        .k-lab .plist .chip { font-size: 0.58rem; } .k-lab .plist .chip::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.4rem; background: var(--c, var(--accent)); vertical-align: 1px; }
+        .k-part { position: absolute; right: clamp(12px, 2.2vw, 32px); top: 170px; z-index: 14; width: min(360px, calc(100% - 24px)); max-height: calc(100% - 330px); overflow-y: auto; padding: 0.8rem 1rem 0.9rem; border-radius: 14px; background: rgba(9,13,36,0.92); border: 1px solid var(--border-accent); backdrop-filter: blur(16px); display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.55); }
+        .k-part.on { display: block; }
+        .k-part .tagrow { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        .k-part .tag { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.18em; padding: 0.12rem 0.5rem; border-radius: 999px; border: 1px solid; }
+        .k-part h3 { font-family: var(--display); font-size: 1.1rem; color: #fff; line-height: 1.2; }
+        .k-part .acts { margin-left: auto; display: flex; gap: 0.35rem; }
+        .k-part .role { color: #d8dbef; margin: 0.4rem 0 0.35rem; font-size: 0.86rem; line-height: 1.5; } .k-part .desc { color: #b4b9d6; font-size: 0.78rem; line-height: 1.6; }
+        .k-part .specs { margin-top: 0.6rem; font-size: 0.72rem; } .k-part .specs div { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border); }
+        .k-part .specs span { color: var(--text-faint); } .k-part .specs b { color: #fff; font-family: var(--mono); font-weight: 400; text-align: right; font-size: 0.68rem; }
+        .k-seltag { position: absolute; z-index: 9; pointer-events: none; transform: translate(-50%, -140%); font-family: var(--mono); font-size: 0.64rem; color: #0b0820; background: var(--accent); padding: 0.16rem 0.5rem; border-radius: 5px; letter-spacing: 0.06em; white-space: nowrap; opacity: 0; transition: opacity 150ms ease; } .k-seltag.on { opacity: 1; }
+        .k-tip { position: absolute; z-index: 9; pointer-events: none; transform: translate(12px, -28px); background: rgba(7,10,26,0.92); color: #fff; font-family: var(--mono); font-size: 0.64rem; padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-accent); white-space: nowrap; opacity: 0; transition: opacity 120ms ease; } .k-tip.on { opacity: 1; }
+        .kstage canvas#k-gl.pick { cursor: pointer; }
+        @media (max-width: 900px) { .k-part { top: auto; bottom: 150px; right: 12px; max-height: 38%; } .k-lab { bottom: 78px; } }
+        /* weaker devices: no blur behind panels (it re-blurs the moving 3D view every frame), slightly more solid panels */
+        .kstage.lite .bub, .kstage.lite .k-intro .directive, .kstage.lite .k-status, .kstage.lite .k-list, .kstage.lite .k-bar, .kstage.lite .k-lab, .kstage.lite .k-part, .kstage.lite .k-modal, .kstage.lite .chip { backdrop-filter: none; -webkit-backdrop-filter: none; }
+        .kstage.lite .bub { background: rgba(10,14,38,0.93); box-shadow: 0 8px 24px rgba(0,0,0,0.45); will-change: auto; transition: width 220ms ease, height 220ms ease; }
+        .kstage.lite .k-status, .kstage.lite .k-list, .kstage.lite .k-bar, .kstage.lite .k-lab, .kstage.lite .k-part { background: rgba(9,13,36,0.95); box-shadow: none; }
+        .kstage.lite .k-intro .directive { background: rgba(9,13,36,0.88); } .kstage.lite .k-modal { background: rgba(5,8,22,0.97); }
+        .modal-open .prev { display: none; }
+        @media (max-width: 900px) { .k-intro .directive, .k-intro .steps { display: none; } .k-intro { max-width: 60vw; } .k-list { width: 150px; bottom: 90px; } .k-status span.t { display: none; } }
+        @media (max-width: 720px) { .k-intro .eyebrow { display: none; } .k-right { top: 128px; left: 12px; right: 12px; align-items: flex-start; } .k-row { justify-content: flex-start; } .k-right .chip { font-size: 0.58rem; padding: 0.25rem 0.5rem; } .k-bar { gap: 0.35rem; padding: 0.4rem; } .tbtn { padding: 0.55rem 0.7rem; letter-spacing: 0.08em; } .k-sep, #k-speed { display: none; } .k-list { display: none; } .mhead { padding-top: 4rem; } }
     </style>
 </head>
 <body>
+    <div class="progress" id="progress"></div>
     <nav class="topnav">
         <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
         <div class="nav-status"><span>SECTION</span> 02 &mdash; CONTROL SYSTEMS &amp; MECHATRONICS</div>
     </nav>
 
-    <section class="dstage" id="d-stage" aria-label="Self-stabilising drone teardown">
-        <div class="d-viewport">
-            <canvas id="d-gl" role="img" aria-label="Interactive 3D drone hovering in place with a minor sway. Use the Disassemble button to take it apart and click any part for a description."></canvas>
-            <svg class="d-leaders" id="d-leaders" aria-hidden="true"></svg>
+    <section class="kstage" id="k-stage" aria-label="Patrick's kitchen: the breakfast run">
+        <canvas id="k-gl" role="img" aria-label="Full-screen 3D kitchen: Patrick the robot picks up eggs, salt, spice, sauce and a glass from the pantry and sets them out in the breakfast area"></canvas>
+        <svg class="k-leaders" id="k-leaders" aria-hidden="true"></svg>
+        <div class="k-bubbles" id="k-bubbles" aria-label="Live graphs and code"></div>
 
-            <header class="d-title">
-                <div class="eyebrow">REFERENCE 2 &middot; MECN4029 &middot; WITS</div>
-                <h1>Self-<span>stabilising</span> drone</h1>
-                <div class="d-credit">Aggressive Manoeuvre Stabilisation of an Agricultural Drone, a group report by <b>Gopolang Makgothi</b>, <b>Emma van der Merwe</b>, <b>Tamzyn Alexander</b> and <b>Dean Graca</b></div>
-            </header>
-            <div class="d-hud" id="d-hud"></div>
+        <div class="k-intro">
+            <span class="eyebrow">CONTROL SYSTEMS &middot; MECHATRONICS &middot; REFERENCE 2</span>
+            <h1>Patrick&rsquo;s <span>Kitchen.</span></h1>
+            <div class="directive" aria-label="Prime directive">
+                <div class="k">PRIME DIRECTIVE</div>
+                <p>Pick up the food ingredients and lay them out for me for <em>breakfast</em>.</p>
+                <div class="steps" id="k-steps" aria-label="Controller step"></div>
+            </div>
+        </div>
 
-            <div class="d-bottom">
-                <div class="d-lab" id="d-lab" role="group" aria-label="Disassemble the drone">
-                    <div class="r"><label for="d-u">DISASSEMBLE</label><input type="range" id="d-u" min="0" max="1" step="0.001" value="0" aria-label="Disassemble"><output id="d-uo">0%</output><button class="chip" id="d-reasm">REASSEMBLE</button></div>
-                    <div class="plist" id="d-plist" aria-label="All parts"></div>
-                </div>
-                <div class="pid">
-                    <div class="head"><span id="d-pidlabel">PID CONTROLLER</span>
-                        <div class="seg" id="d-loop" role="group" aria-label="Control loop"><button data-v="z" class="on">ALTITUDE</button><button data-v="roll">ROLL</button><button data-v="pitch">PITCH</button><button data-v="yaw">YAW</button></div></div>
-                    <canvas id="d-bars" role="img" aria-label="Live proportional, integral and derivative terms of the selected loop"></canvas>
-                </div>
-                <div class="row" id="d-scn" role="group" aria-label="Scenario"></div>
-                <div class="blurb" id="d-blurb"></div>
-                <div class="row">
-                    <span class="lbl">CONTROLLER</span><div class="seg" id="d-ctrl"><button data-v="PID" class="on">PID</button><button data-v="PD">PD</button></div>
-                    <span class="lbl">GAINS</span><div class="seg" id="d-gains"><button data-v="report" class="on">REPORT</button><button data-v="derived">RE-DERIVED</button></div>
-                    <span class="lbl">MODEL</span><div class="seg" id="d-mode"><button data-v="nonlinear" class="on">NONLINEAR</button><button data-v="linear">LINEAR</button></div>
-                    <span class="lbl">SPEED</span><div class="seg" id="d-speed"><button data-v="0.25">¼×</button><button data-v="1" class="on">1×</button></div>
-                    <button class="chip" id="d-pause">PAUSE</button><button class="chip" id="d-replay">&#8635; REPLAY</button><button class="chip" id="d-lab-btn" aria-pressed="false" aria-controls="d-lab">&#9881; DISASSEMBLE</button>
+        <div class="k-right">
+            <div class="k-status"><span class="t">STATE</span> <b id="k-state" data-s="READY">READY</b> <span class="t">STEP</span> <b id="k-phase">READY</b> <span class="t">TIME</span> <b id="k-time">0 s</b></div>
+            <div class="k-row" id="k-cams"><button class="chip on" data-cam="cinema">CINEMA</button><button class="chip" data-cam="follow">FREE</button><button class="chip" data-cam="wide">WIDE</button><button class="chip" data-cam="top">TOP</button><button class="chip" id="k-full" aria-pressed="false">&#x26F6; FULL SCREEN</button></div>
+        </div>
+
+        <div class="k-list"><div class="k">BREAKFAST LIST</div><ul id="k-items"></ul><div class="pbar"><i id="k-prog"></i></div></div>
+
+        <div class="k-hint" id="k-hint">PRESS START &middot; HOVER A BUBBLE &middot; CLICK TO EXPAND</div>
+        <div class="k-bar" role="group" aria-label="Run controls">
+            <button class="tbtn go" id="k-start"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg><span>START</span></button>
+            <button class="tbtn hold" id="k-pause" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg><span>PAUSE</span></button>
+            <button class="tbtn halt" id="k-stop" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5h14v14H5z"/></svg><span>STOP</span></button>
+            <button class="chip" id="k-lab-btn" aria-pressed="false" aria-controls="k-lab">&#9881; DISASSEMBLE</button>
+            <span class="k-sep"></span>
+            <div class="k-row" id="k-speed" role="group" aria-label="Simulation speed"><button class="chip on" data-x="1">1&times;</button><button class="chip" data-x="2">2&times;</button><button class="chip" data-x="4">4&times;</button></div>
+        </div>
+
+        <div class="k-lab" id="k-lab" role="group" aria-label="Disassemble Patrick">
+            <div class="row"><label for="k-u">DISASSEMBLE</label><input type="range" id="k-u" min="0" max="1" step="0.001" value="0" aria-label="Disassemble"><output id="k-uo">0%</output><button class="chip" id="k-reasm">REASSEMBLE</button></div>
+            <div class="note">Patrick eases to a halt first. Drag the slider, then click any part in the picture or in the list below. Starting or resuming the run puts him back together.</div>
+            <div class="plist" id="k-plist"></div>
+        </div>
+        <div class="k-part" id="k-part" aria-live="polite"></div>
+        <div class="k-seltag" id="k-seltag"></div><div class="k-tip" id="k-tip"></div>
+
+        <div class="k-modal" id="k-modal" role="dialog" aria-modal="true" aria-labelledby="k-mtitle">
+            <div class="mhead">
+                <h2 id="k-mtitle"></h2>
+                <div class="sp">
+                    <button class="chip" data-act="start">START</button><button class="chip" data-act="pause">PAUSE</button><button class="chip" data-act="stop">STOP</button>
+                    <button class="chip on" id="k-mclose" aria-label="Close full-screen view">&#10005; CLOSE &middot; ESC</button>
                 </div>
             </div>
-
-            <div class="d-part" id="d-part" aria-live="polite"></div>
-            <div class="d-seltag" id="d-seltag"></div><div class="d-tip" id="d-tip"></div>
-        </div>
-
-        <div class="d-col left" aria-label="Control graphs">
-            <figure class="g" data-g="simulink" tabindex="0" style="--fl:1.5" role="button" aria-label="Simulink model. Open full screen"><figcaption><i></i><b>SIMULINK MODEL</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
-            <figure class="g" data-g="locus" tabindex="0" role="button" aria-label="Root locus. Open full screen"><figcaption><i></i><b>ROOT LOCUS</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
-            <figure class="g" data-g="bode" tabindex="0" role="button" aria-label="Bode and Nyquist. Open full screen"><figcaption><i></i><b>BODE &middot; NYQUIST</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
-        </div>
-        <div class="d-col right" aria-label="Response graphs">
-            <figure class="g" data-g="states" tabindex="0" role="button" aria-label="Live states. Open full screen"><figcaption><i></i><b>LIVE STATES</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
-            <figure class="g" data-g="shoot" tabindex="0" role="button" aria-label="P, I, PI, PD and PID compared. Open full screen"><figcaption><i></i><b>P &middot; I &middot; PI &middot; PD &middot; PID</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
-            <figure class="g" data-g="effort" tabindex="0" role="button" aria-label="Control effort. Open full screen"><figcaption><i></i><b>CONTROL EFFORT</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
-        </div>
-
-        <div class="d-modal" id="d-modal" role="dialog" aria-modal="true" aria-labelledby="d-mtitle">
-            <div class="mhead"><h2 id="d-mtitle"></h2><button class="chip on" id="d-mclose" aria-label="Close full-screen view">&#10005; CLOSE &middot; ESC</button></div>
-            <div class="mbody" id="d-mbody"></div>
+            <div class="mbody" id="k-mbody"></div>
         </div>
     </section>
 
-    <a class="prev" href="mechatronics.html" aria-label="Previous robot: Patrick">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
-        <span>PATRICK</span>
-    </a>
-
-    <main class="about">
-        <h2>The <span>project</span></h2>
-        <p>A DJI Mavic 3M scouts a two-hectare sugar cane plantation in KwaZulu-Natal. Thrown from the hand, dropped, knocked upside down, hit by a gust or a bird, it has to stabilise and hold a hover at 10 m. A quadrotor has four inputs and six degrees of freedom, and the uncontrolled drone is unstable: its model is four double integrators, which sit on the edge of instability. The report designs a controller for them, tests it on the linear and nonlinear models, and finds that a PD controller meets the target (8 % overshoot, 1.2 s settling) and that the full PID is slower, because the extra integral term adds a third pole.</p>
-        <p>This page is built from that report: the nonlinear 12-state model, the four PID loops, the scenarios and the numbers are the authors&rsquo;. You can run the report&rsquo;s PID, the PD it chose, or the PID with gains re-derived by the report&rsquo;s own method, on either the linear or the nonlinear model.</p>
-
-        <h3>What was checked before it was built</h3>
-        <ul>
-            <li><b>PD gains:</b> the report&rsquo;s Table 2 gains place the closed-loop poles exactly at the design point, &minus;3.33 &plusmn; 4.15i. They check out.</li>
-            <li><b>PID gains:</b> the Table 4 gains do not reach that design point. Their poles are at about &minus;1.2 &plusmn; 3.0i and &minus;0.1, so the loop is slower and overshoots more, which matches what the report observed (undershoot and a longer settling time). Their ratios give zeros at &minus;4.2 and &minus;0.1, as designed, but the overall gain is about 2.7 times too small: the report&rsquo;s own method gives Kp &asymp; 30.4, Kd &asymp; 7.1, Ki &asymp; 3.0 for altitude, whose poles do land on the design point. Both are offered above; the root locus shows the two gains on the same curve.</li>
-            <li><b>Phase margin:</b> 40&deg; with the printed PID gains and 61&deg; with the re-derived ones, computed from the open loop.</li>
-            <li><b>Equation 2.1:</b> the printed altitude term reads cos&phi; + cos&theta;, which would give twice the needed thrust at hover. The page uses the product cos&phi; cos&theta;, the standard form.</li>
-            <li><b>Free fall:</b> on the nonlinear model the drone reaches the ground before it recovers (the page flags ground contact); the report&rsquo;s linear simulation, which has no ground and no loss of lift when tilted, settles first.</li>
-            <li><b>Simulink:</b> the original model file is not available, so the Simulink graph is redrawn from Figures 25 and 26 of the report.</li>
-        </ul>
-
-        <h3>Authors</h3>
-        <div class="authors">
-            <div>Gopolang Makgothi</div><div>Emma van der Merwe</div><div>Tamzyn Alexander</div><div>Dean Graca</div>
+    <header class="hero">
+        <div class="hero-inner">
+            <div>
+                <span class="eyebrow">THE TEARDOWN &middot; TAKE PATRICK APART</span>
+                <h1>Meet<br><span>Patrick.</span></h1>
+                <p class="lead">A two-wheeled robot with an ultrasonic eye, a servo-lifted arm and a 3D-printed claw. Take it apart, click any part to learn what it does, and watch the graphs on the right react to the same model that moves the robot.</p>
+            </div>
+            <div class="directive" aria-label="Prime directive">
+                <div class="k">PRIME DIRECTIVE</div>
+                <p>Pick up the food ingredients and lay them out for me for <em>breakfast</em>.</p>
+                <div class="steps" id="steps" aria-label="Mission progress"></div>
+            </div>
         </div>
-        <p style="margin-top:0.8rem;font-size:0.8rem;color:var(--text-faint)">MECN4029, Group 17, University of the Witwatersrand. Lecturer: Dr A Panday. Report dated 22 May 2025.</p>
+    </header>
+
+    <main class="lab">
+        <section class="left" aria-label="Patrick 3D teardown">
+            <div class="panel">
+                <div class="panel-head"><span class="t">PATRICK &middot; 3D TEARDOWN</span><span class="n">Drag to orbit &middot; scroll to zoom &middot; click a part</span></div>
+                <div class="stage" id="stage">
+                    <canvas id="gl" role="img" aria-label="Interactive 3D model of the Patrick robot that can be taken apart; click a part for its description"></canvas>
+                    <div class="views" id="views">
+                        <button class="chip on" data-view="hero">3/4</button>
+                        <button class="chip" data-view="side">SIDE</button>
+                        <button class="chip" data-view="top">TOP</button>
+                        <button class="chip" data-view="front">FRONT</button>
+                        <button class="chip" data-view="arm">ARM</button>
+                        <button class="chip" data-view="wheel">WHEEL</button>
+                    </div>
+                    <div class="tourchip chip" id="tourchip" role="button" tabindex="0"><i></i><span id="tourtxt">AUTO TOUR</span></div>
+                    <div class="hud" id="hud">
+                        <div class="ph">STATE <b id="h-phase">IDLE</b></div>
+                        <div>SONAR <b id="h-sonar">-</b></div>
+                        <div>SPEED <b id="h-speed">-</b></div>
+                    </div>
+                    <div class="tip" id="tip"></div>
+                    <div class="sel-label" id="sellabel"></div>
+                    <div class="toolbar">
+                        <label class="grow">DISASSEMBLE <input type="range" id="u" min="0" max="1" step="0.001" value="0" aria-label="Disassemble" style="margin:0 .2rem"><output id="u-out">0%</output></label>
+                        <button class="chip" id="t-bands" aria-pressed="true">RUBBER BANDS ON</button>
+                        <button class="chip" id="t-play" aria-pressed="true">PAUSE RUN</button>
+                        <button class="chip" id="t-replay">&#8635; RESTART RUN</button>
+                        <button class="chip" id="t-sonar" aria-pressed="true">SONAR BEAM</button>
+                    </div>
+                    <noscript><div class="noscript">This page needs JavaScript for the 3D teardown.</div></noscript>
+                </div>
+                <div class="mbar" aria-hidden="true"><i id="m-bar"></i></div>
+                <div class="pcard" id="pcard" aria-live="polite"></div>
+                <div class="partlist" id="partlist" aria-label="All parts"></div>
+            </div>
+        </section>
+
+        <section class="right" aria-label="Live graphs">
+            <div class="tabs" id="tabs" role="tablist">
+                <button class="on" data-tab="dyn" role="tab">DYNAMICS</button>
+                <button data-tab="pow" role="tab">POWER</button>
+                <button data-tab="snd" role="tab">SOUND</button>
+            </div>
+
+            <div class="tabpane on" id="tab-dyn">
+                <div class="ctrls">
+                    <div class="ctrl"><label for="d-surf">Surface</label>
+                        <select id="d-surf"><option value="desk">Varnished desk</option><option value="card">Paper on desk</option><option value="dusty">Dusty desk</option></select></div>
+                    <div class="ctrl"><label for="duty">Throttle (PWM) <output id="duty-out">70 %</output></label>
+                        <input type="range" id="duty" min="0.3" max="1" step="0.05" value="0.7"></div>
+                    <div class="ctrl"><label>Rubber bands</label>
+                        <div class="seg" id="d-bands"><button data-b="1" class="on">ON</button><button data-b="0">OFF</button></div></div>
+                </div>
+                <div class="card">
+                    <h4>Speed after a full-throttle start</h4>
+                    <div class="sub">Same motors, same battery, same robot: the only change is the rubber bands.</div>
+                    <div class="legend"><span style="color:#34d399"><i style="background:#34d399"></i>with bands</span><span style="color:#f87171"><i style="background:#f87171"></i>bare wheels</span><span style="color:#9aa0c3"><i class="d"></i>wheel surface speed</span></div>
+                    <canvas id="c-speed" role="img" aria-label="Speed against time for a full-throttle start with and without rubber bands"></canvas>
+                    <div class="cap" id="cap-speed"></div>
+                </div>
+                <div class="card">
+                    <h4>Wheel slip</h4>
+                    <div class="sub">Slip ratio = (wheel surface speed &minus; robot speed) &divide; wheel surface speed. Zero is pure rolling.</div>
+                    <canvas id="c-slip" role="img" aria-label="Slip ratio against time with and without rubber bands"></canvas>
+                </div>
+                <div class="card">
+                    <h4>What the motors ask for vs what the tyres can give</h4>
+                    <div class="sub">When the motor force is above the grip limit the wheel spins instead of pushing.</div>
+                    <canvas id="c-trac" role="img" aria-label="Tractive effort of the motors against speed, and the grip limit with and without bands"></canvas>
+                    <div class="cap" id="cap-trac"></div>
+                </div>
+                <div class="readouts">
+                    <div class="readout hl"><span>Grip limit now</span><b id="r-lim">-</b></div>
+                    <div class="readout"><span>Weight on drive wheels</span><b id="r-drive">-</b></div>
+                    <div class="readout mg"><span>Slip, live</span><b id="r-slip">-</b></div>
+                    <div class="readout"><span>Run duration</span><b id="r-dur">-</b></div>
+                </div>
+            </div>
+
+            <div class="tabpane" id="tab-pow">
+                <div class="card">
+                    <h4>Power vs wheel speed</h4>
+                    <div class="sub">One motor at three throttle settings. The dot is the motor right now in the run.</div>
+                    <div class="legend"><span style="color:#fbbf24"><i style="background:#fbbf24"></i>mechanical out</span><span style="color:#9aa0c3"><i class="d"></i>electrical in</span></div>
+                    <canvas id="c-pow" class="tall" role="img" aria-label="Mechanical and electrical power of a drive motor against wheel speed for three throttle levels"></canvas>
+                    <div class="cap" id="cap-pow"></div>
+                </div>
+                <div class="card">
+                    <h4>Torque, current and efficiency</h4>
+                    <div class="sub">At the selected throttle: the torque falls straight as speed rises, so power peaks at half the free speed.</div>
+                    <div class="legend"><span style="color:#60a5fa"><i style="background:#60a5fa"></i>torque (N&middot;cm)</span><span style="color:#e879f9"><i style="background:#e879f9"></i>efficiency (%)</span><span style="color:#9aa0c3"><i class="d"></i>current (A &times;10)</span></div>
+                    <canvas id="c-eff" role="img" aria-label="Torque, current and efficiency against wheel speed"></canvas>
+                </div>
+                <div class="card">
+                    <h4>Electrical power over the breakfast run</h4>
+                    <div class="sub">Both motors plus the electronics. Brake and reach phases draw almost nothing.</div>
+                    <canvas id="c-ptime" role="img" aria-label="Electrical power against time over the whole breakfast run"></canvas>
+                </div>
+                <div class="readouts">
+                    <div class="readout"><span>Wheel speed</span><b id="r-rpm">-</b></div>
+                    <div class="readout hl"><span>Mech. power / motor</span><b id="r-pm">-</b></div>
+                    <div class="readout"><span>Electrical in (both)</span><b id="r-pe">-</b></div>
+                    <div class="readout mg"><span>Energy used so far</span><b id="r-en">-</b></div>
+                </div>
+            </div>
+
+            <div class="tabpane" id="tab-snd">
+                <div class="ctrls">
+                    <div class="ctrl"><label>Distance source</label>
+                        <div class="seg" id="s-src"><button data-f="1" class="on">FOLLOW ROBOT</button><button data-f="0">MANUAL</button></div></div>
+                    <div class="ctrl"><label for="s-d">Distance to wall <output id="s-d-out">-</output></label><input type="range" id="s-d" min="0.05" max="4" step="0.01" value="1"></div>
+                    <div class="ctrl"><label for="s-psi">Wall tilt <output id="s-psi-out">0&deg;</output></label><input type="range" id="s-psi" min="0" max="30" step="1" value="0"></div>
+                    <div class="ctrl"><label for="s-wall">Surface</label>
+                        <select id="s-wall"><option value="hard">Painted wall</option><option value="wood">Wooden board</option><option value="card" selected>Cardboard box</option><option value="cloth">Soft fabric</option></select></div>
+                </div>
+                <div class="card">
+                    <h4>The burst, the wall and the echo (top view)</h4>
+                    <div class="sub">Dots are the sound travelling, bright when strong. Watch them thin out with distance and dim at the wall.</div>
+                    <canvas id="c-rays" class="sq" role="img" aria-label="Top view of ultrasonic rays leaving the robot, bouncing off a wall and returning, dimming with distance"></canvas>
+                </div>
+                <div class="card">
+                    <h4>What the receiver hears</h4>
+                    <div class="sub">Signal in dB above the detection threshold. The first echo is the wall; the second has bounced off Patrick and the wall again.</div>
+                    <canvas id="c-env" role="img" aria-label="Received signal strength against time showing the burst, first echo and second echo"></canvas>
+                    <div class="cap" id="cap-env"></div>
+                </div>
+                <div class="card">
+                    <h4>Where the energy went</h4>
+                    <div class="sub">Loss budget of the first echo, in dB. Every 3 dB is half the energy.</div>
+                    <canvas id="c-budget" style="height:150px" role="img" aria-label="Stacked bar of the energy losses of the first echo"></canvas>
+                </div>
+                <div class="card">
+                    <h4>How far each surface can be seen</h4>
+                    <canvas id="c-range" style="height:150px" role="img" aria-label="Maximum detection range for four surfaces"></canvas>
+                </div>
+                <div class="readouts">
+                    <div class="readout hl"><span>Reading</span><b id="r-dist">-</b></div>
+                    <div class="readout"><span>Echo time</span><b id="r-echo">-</b></div>
+                    <div class="readout mg"><span>Echo vs threshold</span><b id="r-amp">-</b></div>
+                    <div class="readout"><span>Returned energy</span><b id="r-ret">-</b></div>
+                    <div class="readout"><span>Detected</span><b id="r-det">-</b></div>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <a class="prev" href="mechatronics.html" aria-label="Previous robot: the drone">
+        <small>01</small>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        <span>THE DRONE</span>
+    </a>
+
     <footer>&copy; 2026 Gopolang Makgothi &middot; Aerospace Engineer</footer>
+
+    <script>
+        const pb = document.getElementById('progress');
+        addEventListener('scroll', () => { const m = document.documentElement.scrollHeight - innerHeight; pb.style.width = (m > 0 ? scrollY / m * 100 : 0) + '%'; }, {passive: true});
+    </script>
+    <script>
+        // Left arrow key goes back to the drone (unless you are typing, or a full-screen panel is open).
+        addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' && !e.target.closest('input, select, textarea') && !document.body.classList.contains('modal-open')) location.href = 'mechatronics.html'; });
+    </script>
 </body>
 </html>
