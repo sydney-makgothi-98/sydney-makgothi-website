@@ -3,26 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Systems &amp; Mechatronics: Robot 2 | Gopolang Makgothi</title>
     <link rel="icon" href="data:,">
+    <title>Control Systems &amp; Mechatronics: Self-Stabilising Drone | Gopolang Makgothi</title>
+    <meta name="description" content="A self-stabilising agricultural drone you can take apart, with its PID controller, Simulink model, root locus and Bode plots.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script defer src="./Syd%20Website%20Assets/Mechatronics/drone/drone.js"></script>
     <style>
-        :root { --bg: #070a1a; --border: rgba(255,255,255,0.08); --border-accent: rgba(167,139,250,0.38); --text: #e6e8f5; --text-muted: #9aa0c3; --text-faint: #5f668f; --accent: #a78bfa; --accent-soft: rgba(167,139,250,0.12); --mono: 'JetBrains Mono', monospace; }
+        :root {
+            --bg: #060818; --bg-raised: #0d1230; --surface: rgba(255,255,255,0.025);
+            --border: rgba(255,255,255,0.08); --border-accent: rgba(56,189,248,0.34);
+            --text: #e6e8f5; --text-muted: #9aa0c3; --text-faint: #7f86ad;
+            --accent: #38bdf8; --accent-soft: rgba(56,189,248,0.12); --amber: #fbbf24; --green: #34d399; --pink: #e879f9; --red: #f87171;
+            --display: 'Chakra Petch','Inter',system-ui,sans-serif; --mono: 'JetBrains Mono','Courier New',monospace;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
-        a { color: var(--accent); }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+        a { color: var(--accent); } button { font: inherit; }
         :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem clamp(1rem, 4vw, 2.5rem); background: rgba(7,10,26,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+        .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem clamp(1rem, 4vw, 2.5rem); background: rgba(6,8,24,0.7); backdrop-filter: blur(16px); }
         .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 200ms ease, transform 200ms ease; }
         .back-link:hover { color: #fff; transform: translateX(-3px); }
-        .nav-status { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent); }
-        .nav-status span { color: var(--text-faint); }
-        main { min-height: 100vh; }
-        .prev { position: fixed; left: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 1.1rem 0.7rem 1.1rem 0.55rem; text-decoration: none; color: var(--text-muted); background: rgba(7,10,26,0.8); border: 1px solid var(--border-accent); border-left: 0; border-radius: 0 14px 14px 0; transition: color 200ms ease, background 200ms ease; }
-        .prev:hover { color: #fff; background: var(--accent-soft); }
-        .prev svg { width: 22px; height: 22px; }
+        .nav-status { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--accent); } .nav-status span { color: var(--text-faint); }
+        .prev { position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 1.1rem 0.6rem 1.1rem 0.45rem; text-decoration: none; color: var(--text-muted); background: rgba(6,8,24,0.8); border: 1px solid var(--border-accent); border-left: 0; border-radius: 0 14px 14px 0; transition: color 200ms ease, background 200ms ease; }
+        .prev:hover { color: #fff; background: var(--accent-soft); } .prev svg { width: 22px; height: 22px; }
         .prev span { writing-mode: vertical-rl; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.22em; }
-        @media (max-width: 720px) { .nav-status { display: none; } .prev span { display: none; } }
+
+        /* ===== the stage: one plain gradient, the drone, graphs with no boxes ===== */
+        .dstage { position: relative; height: 100vh; height: 100svh; min-height: 660px; overflow: hidden; isolation: isolate; background: radial-gradient(55% 60% at 50% 46%, #1a2a58 0%, #0c1333 52%, #060818 100%); }
+        .d-viewport { position: absolute; inset: 0; }
+        #d-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; } #d-gl.drag { cursor: grabbing; } #d-gl.pick { cursor: pointer; }
+        .d-leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+        .d-title { position: absolute; top: 66px; left: 50%; transform: translateX(-50%); z-index: 8; text-align: center; width: min(560px, 40vw); pointer-events: none; }
+        .d-title .eyebrow { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.2em; color: var(--accent); }
+        .d-title h1 { font-family: var(--display); text-transform: uppercase; font-size: clamp(1.2rem, 2.3vw, 1.9rem); line-height: 1.05; font-weight: 700; margin-top: 0.15rem; text-shadow: 0 2px 20px rgba(0,0,0,0.6); } .d-title h1 span { color: var(--accent); }
+        .d-credit { font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.3rem; } .d-credit b { color: #fff; font-weight: 600; }
+        .d-hud { position: absolute; top: 176px; left: 50%; transform: translateX(-50%); z-index: 8; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.1em; color: var(--text-muted); white-space: nowrap; pointer-events: none; } .d-hud b { color: #fff; font-weight: 600; } .d-hud b.bad { color: var(--red); }
+
+        .d-col { position: absolute; top: 70px; bottom: 218px; width: min(29vw, 430px); display: flex; flex-direction: column; gap: 0.5rem; z-index: 6; }
+        .d-col.left { left: 60px; } .d-col.right { right: clamp(12px, 2vw, 28px); }
+        .g { flex: var(--fl, 1) 1 0; min-height: 0; display: flex; flex-direction: column; cursor: pointer; opacity: 0.88; transition: opacity 200ms ease, filter 200ms ease; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%); }
+        .g:hover, .g:focus-visible { opacity: 1; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--c) 35%, transparent)); outline: none; }
+        .g figcaption { display: flex; align-items: center; gap: 0.5rem; padding: 0 0.4rem 0 0.9rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em; color: var(--text-muted); white-space: nowrap; }
+        .g figcaption i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); flex: none; } .g figcaption b { font-weight: 600; color: #fff; }
+        .g figcaption em { margin-left: auto; font-style: normal; opacity: 0; transition: opacity 200ms; color: var(--c); } .g:hover figcaption em { opacity: 1; }
+        .g canvas { flex: 1; min-height: 0; width: 100%; display: block; }
+
+        .d-bottom { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 9; width: min(740px, calc(100% - 24px)); display: grid; gap: 0.45rem; justify-items: center; }
+        .chip { appearance: none; cursor: pointer; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--text-muted); background: rgba(8,12,34,0.55); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.62rem; transition: all 150ms ease; }
+        .chip:hover { color: #fff; border-color: var(--border-accent); } .chip.on, .chip[aria-pressed="true"] { color: #04101c; background: var(--accent); border-color: var(--accent); } .chip:disabled { opacity: 0.35; }
+        .row { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; align-items: center; }
+        .seg { display: inline-flex; border: 1px solid var(--border-accent); border-radius: 7px; overflow: hidden; background: rgba(8,12,34,0.55); }
+        .seg button { appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em; padding: 0.3rem 0.6rem; } .seg button + button { border-left: 1px solid var(--border-accent); } .seg button.on { background: var(--accent); color: #04101c; }
+        .seg.dis { opacity: 0.4; pointer-events: none; }
+        .lbl { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.16em; color: var(--text-faint); margin-right: 0.15rem; }
+        .blurb { font-size: 0.74rem; color: var(--text-muted); text-align: center; min-height: 1.4em; }
+        .pid { width: 100%; display: grid; gap: 0.15rem; justify-items: center; }
+        .pid .head { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
+        #d-pidlabel { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.2em; color: #fff; text-shadow: 0 0 18px var(--accent); }
+        #d-bars { width: min(420px, 100%); height: 70px; display: block; }
+
+        .d-lab { display: none; width: 100%; padding: 0.4rem 0.2rem; } .d-lab.on { display: block; }
+        .d-lab .r { display: flex; align-items: center; gap: 0.7rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; color: var(--text-muted); } .d-lab .r input { flex: 1; } .d-lab .r output { color: #fff; min-width: 3.4ch; }
+        .plist { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.4rem; justify-content: center; max-height: 4.6rem; overflow-y: auto; }
+        .plist .chip { font-size: 0.55rem; padding: 0.22rem 0.5rem; } .plist .chip::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.4rem; background: var(--c, var(--accent)); vertical-align: 1px; }
+        input[type=range] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.16); outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 3px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 10px rgba(56,189,248,0.7); cursor: pointer; } input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 3px; background: var(--accent); cursor: pointer; }
+        .d-part { position: absolute; right: clamp(12px, 2vw, 28px); top: 74px; z-index: 14; width: min(370px, calc(100% - 24px)); max-height: calc(100% - 300px); overflow-y: auto; padding: 0.8rem 1rem 0.9rem; border-radius: 14px; background: rgba(8,12,34,0.93); border: 1px solid var(--border-accent); display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.55); } .d-part.on { display: block; }
+        .d-part .tagrow { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; } .d-part .tag { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.18em; padding: 0.12rem 0.5rem; border-radius: 999px; border: 1px solid; }
+        .d-part h3 { font-family: var(--display); font-size: 1.05rem; color: #fff; line-height: 1.2; } .d-part .acts { margin-left: auto; display: flex; gap: 0.35rem; }
+        .d-part .role { color: #d8dbef; margin: 0.4rem 0 0.35rem; font-size: 0.86rem; line-height: 1.5; } .d-part .desc { color: #b4b9d6; font-size: 0.76rem; line-height: 1.6; }
+        .d-part .specs { margin-top: 0.6rem; font-size: 0.7rem; } .d-part .specs div { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border); } .d-part .specs span { color: var(--text-faint); } .d-part .specs b { color: #fff; font-family: var(--mono); font-weight: 400; text-align: right; font-size: 0.66rem; }
+        .d-seltag { position: absolute; z-index: 9; pointer-events: none; transform: translate(-50%, -140%); font-family: var(--mono); font-size: 0.62rem; color: #04101c; background: var(--accent); padding: 0.16rem 0.5rem; border-radius: 5px; white-space: nowrap; opacity: 0; transition: opacity 150ms ease; } .d-seltag.on { opacity: 1; }
+        .d-tip { position: absolute; z-index: 9; pointer-events: none; transform: translate(12px, -28px); background: rgba(6,8,24,0.92); color: #fff; font-family: var(--mono); font-size: 0.62rem; padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-accent); white-space: nowrap; opacity: 0; transition: opacity 120ms ease; } .d-tip.on { opacity: 1; }
+
+        .d-modal { position: fixed; inset: 0; z-index: 100; display: none; flex-direction: column; background: #04061a; } .d-modal.on { display: flex; animation: mopen 240ms cubic-bezier(0.16,1,0.3,1); } @keyframes mopen { from { opacity: 0; transform: scale(0.98); } }
+        .mhead { display: flex; align-items: center; gap: 0.8rem; padding: 1rem clamp(1rem, 3vw, 2rem) 0.75rem; border-bottom: 1px solid var(--border); }
+        .mhead h2 { font-family: var(--display); font-size: 1.1rem; letter-spacing: 0.14em; text-transform: uppercase; display: flex; align-items: center; gap: 0.6rem; } .mhead h2 i { width: 10px; height: 10px; border-radius: 50%; } .mhead .chip { margin-left: auto; font-size: 0.66rem; padding: 0.4rem 0.8rem; }
+        .mbody { flex: 1; overflow: auto; padding: 1rem clamp(1rem, 3vw, 2rem) 2rem; }
+        .mbody .reads { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin-bottom: 1rem; } .mbody .rd { padding: 0.5rem 1.4rem 0.7rem 0; } .mbody .rd span { display: block; font-size: 0.66rem; color: var(--text-faint); } .mbody .rd b { font-family: var(--mono); font-size: 0.95rem; color: #fff; font-weight: 600; }
+        .mbody .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 1.6rem; } .mbody .card h4 { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.14em; color: var(--accent); font-weight: 400; text-transform: uppercase; margin-bottom: 0.2rem; }
+        .mbody .card canvas { display: block; width: 100%; height: clamp(240px, 46vh, 520px); } .mbody .n1 .card canvas { height: clamp(320px, 64vh, 700px); } .mbody .cap { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; margin-top: 0.3rem; min-height: 1.5em; }
+
+        /* ===== below the stage ===== */
+        .about { max-width: 920px; margin: 0 auto; padding: 4rem clamp(1rem, 5vw, 2rem) 3rem; }
+        .about h2 { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.08em; font-size: 1.4rem; margin-bottom: 0.4rem; } .about h2 span { color: var(--accent); }
+        .about h3 { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.18em; color: var(--accent); font-weight: 400; text-transform: uppercase; margin: 1.6rem 0 0.4rem; }
+        .about p, .about li { color: #c4c8e4; font-size: 0.92rem; } .about ul { padding-left: 1.2rem; display: grid; gap: 0.4rem; } .about b { color: #fff; }
+        .authors { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.4rem 1.5rem; margin-top: 0.6rem; } .authors div { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-weight: 600; color: #fff; } .authors small { display: block; font-weight: 400; color: var(--text-faint); font-size: 0.72rem; }
+        footer { text-align: center; padding: 2.5rem 1rem; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.85rem; }
+        .modal-open .prev { display: none; }
+        .dstage.lab-open .pid, .dstage.lab-open .blurb, .dstage.lab-open #d-scn { display: none; }   /* the parts list needs the room; the PID card appears when you pick the controller */
+
+        @media (max-width: 1100px) { .d-title { width: min(520px, 46vw); } .d-col { width: min(30vw, 340px); } }
+        @media (max-width: 899px) {
+            .dstage { height: auto; min-height: 0; display: flex; flex-direction: column; }
+            .d-viewport { position: relative; height: 92svh; min-height: 560px; }
+            .d-col { position: static; width: 100%; height: 200px; flex-direction: row; overflow-x: auto; padding: 0 12px; scrollbar-width: none; } .g { flex: 0 0 82vw; -webkit-mask-image: none; mask-image: none; }
+            .d-title { width: calc(100% - 24px); top: 60px; } .d-hud { top: 176px; }
+            .d-bottom { bottom: 8px; } .nav-status { display: none; } .prev span { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
     </style>
 </head>
 <body>
@@ -30,10 +113,88 @@
         <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
         <div class="nav-status"><span>SECTION</span> 02 &mdash; CONTROL SYSTEMS &amp; MECHATRONICS</div>
     </nav>
-    <main></main>
+
+    <section class="dstage" id="d-stage" aria-label="Self-stabilising drone teardown">
+        <div class="d-viewport">
+            <canvas id="d-gl" role="img" aria-label="Interactive 3D drone hovering in place with a minor sway. Use the Disassemble button to take it apart and click any part for a description."></canvas>
+            <svg class="d-leaders" id="d-leaders" aria-hidden="true"></svg>
+
+            <header class="d-title">
+                <div class="eyebrow">REFERENCE 2 &middot; MECN4029 &middot; WITS</div>
+                <h1>Self-<span>stabilising</span> drone</h1>
+                <div class="d-credit">Aggressive Manoeuvre Stabilisation of an Agricultural Drone, a group report by <b>Gopolang Makgothi</b>, <b>Emma van der Merwe</b>, <b>Tamzyn Alexander</b> and <b>Dean Graca</b></div>
+            </header>
+            <div class="d-hud" id="d-hud"></div>
+
+            <div class="d-bottom">
+                <div class="d-lab" id="d-lab" role="group" aria-label="Disassemble the drone">
+                    <div class="r"><label for="d-u">DISASSEMBLE</label><input type="range" id="d-u" min="0" max="1" step="0.001" value="0" aria-label="Disassemble"><output id="d-uo">0%</output><button class="chip" id="d-reasm">REASSEMBLE</button></div>
+                    <div class="plist" id="d-plist" aria-label="All parts"></div>
+                </div>
+                <div class="pid">
+                    <div class="head"><span id="d-pidlabel">PID CONTROLLER</span>
+                        <div class="seg" id="d-loop" role="group" aria-label="Control loop"><button data-v="z" class="on">ALTITUDE</button><button data-v="roll">ROLL</button><button data-v="pitch">PITCH</button><button data-v="yaw">YAW</button></div></div>
+                    <canvas id="d-bars" role="img" aria-label="Live proportional, integral and derivative terms of the selected loop"></canvas>
+                </div>
+                <div class="row" id="d-scn" role="group" aria-label="Scenario"></div>
+                <div class="blurb" id="d-blurb"></div>
+                <div class="row">
+                    <span class="lbl">CONTROLLER</span><div class="seg" id="d-ctrl"><button data-v="PID" class="on">PID</button><button data-v="PD">PD</button></div>
+                    <span class="lbl">GAINS</span><div class="seg" id="d-gains"><button data-v="report" class="on">REPORT</button><button data-v="derived">RE-DERIVED</button></div>
+                    <span class="lbl">MODEL</span><div class="seg" id="d-mode"><button data-v="nonlinear" class="on">NONLINEAR</button><button data-v="linear">LINEAR</button></div>
+                    <span class="lbl">SPEED</span><div class="seg" id="d-speed"><button data-v="0.25">¼×</button><button data-v="1" class="on">1×</button></div>
+                    <button class="chip" id="d-pause">PAUSE</button><button class="chip" id="d-replay">&#8635; REPLAY</button><button class="chip" id="d-lab-btn" aria-pressed="false" aria-controls="d-lab">&#9881; DISASSEMBLE</button>
+                </div>
+            </div>
+
+            <div class="d-part" id="d-part" aria-live="polite"></div>
+            <div class="d-seltag" id="d-seltag"></div><div class="d-tip" id="d-tip"></div>
+        </div>
+
+        <div class="d-col left" aria-label="Control graphs">
+            <figure class="g" data-g="simulink" tabindex="0" style="--fl:1.5" role="button" aria-label="Simulink model. Open full screen"><figcaption><i></i><b>SIMULINK MODEL</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
+            <figure class="g" data-g="locus" tabindex="0" role="button" aria-label="Root locus. Open full screen"><figcaption><i></i><b>ROOT LOCUS</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
+            <figure class="g" data-g="bode" tabindex="0" role="button" aria-label="Bode and Nyquist. Open full screen"><figcaption><i></i><b>BODE &middot; NYQUIST</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
+        </div>
+        <div class="d-col right" aria-label="Response graphs">
+            <figure class="g" data-g="states" tabindex="0" role="button" aria-label="Live states. Open full screen"><figcaption><i></i><b>LIVE STATES</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
+            <figure class="g" data-g="shoot" tabindex="0" role="button" aria-label="P, I, PI, PD and PID compared. Open full screen"><figcaption><i></i><b>P &middot; I &middot; PI &middot; PD &middot; PID</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
+            <figure class="g" data-g="effort" tabindex="0" role="button" aria-label="Control effort. Open full screen"><figcaption><i></i><b>CONTROL EFFORT</b><em>&#10530;</em></figcaption><canvas></canvas></figure>
+        </div>
+
+        <div class="d-modal" id="d-modal" role="dialog" aria-modal="true" aria-labelledby="d-mtitle">
+            <div class="mhead"><h2 id="d-mtitle"></h2><button class="chip on" id="d-mclose" aria-label="Close full-screen view">&#10005; CLOSE &middot; ESC</button></div>
+            <div class="mbody" id="d-mbody"></div>
+        </div>
+    </section>
+
     <a class="prev" href="mechatronics.html" aria-label="Previous robot: Patrick">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
         <span>PATRICK</span>
     </a>
+
+    <main class="about">
+        <h2>The <span>project</span></h2>
+        <p>A DJI Mavic 3M scouts a two-hectare sugar cane plantation in KwaZulu-Natal. Thrown from the hand, dropped, knocked upside down, hit by a gust or a bird, it has to stabilise and hold a hover at 10 m. A quadrotor has four inputs and six degrees of freedom, and the uncontrolled drone is unstable: its model is four double integrators, which sit on the edge of instability. The report designs a controller for them, tests it on the linear and nonlinear models, and finds that a PD controller meets the target (8 % overshoot, 1.2 s settling) and that the full PID is slower, because the extra integral term adds a third pole.</p>
+        <p>This page is built from that report: the nonlinear 12-state model, the four PID loops, the scenarios and the numbers are the authors&rsquo;. You can run the report&rsquo;s PID, the PD it chose, or the PID with gains re-derived by the report&rsquo;s own method, on either the linear or the nonlinear model.</p>
+
+        <h3>What was checked before it was built</h3>
+        <ul>
+            <li><b>PD gains:</b> the report&rsquo;s Table 2 gains place the closed-loop poles exactly at the design point, &minus;3.33 &plusmn; 4.15i. They check out.</li>
+            <li><b>PID gains:</b> the Table 4 gains do not reach that design point. Their poles are at about &minus;1.2 &plusmn; 3.0i and &minus;0.1, so the loop is slower and overshoots more, which matches what the report observed (undershoot and a longer settling time). Their ratios give zeros at &minus;4.2 and &minus;0.1, as designed, but the overall gain is about 2.7 times too small: the report&rsquo;s own method gives Kp &asymp; 30.4, Kd &asymp; 7.1, Ki &asymp; 3.0 for altitude, whose poles do land on the design point. Both are offered above; the root locus shows the two gains on the same curve.</li>
+            <li><b>Phase margin:</b> 40&deg; with the printed PID gains and 61&deg; with the re-derived ones, computed from the open loop.</li>
+            <li><b>Equation 2.1:</b> the printed altitude term reads cos&phi; + cos&theta;, which would give twice the needed thrust at hover. The page uses the product cos&phi; cos&theta;, the standard form.</li>
+            <li><b>Free fall:</b> on the nonlinear model the drone reaches the ground before it recovers (the page flags ground contact); the report&rsquo;s linear simulation, which has no ground and no loss of lift when tilted, settles first.</li>
+            <li><b>Simulink:</b> the original model file is not available, so the Simulink graph is redrawn from Figures 25 and 26 of the report.</li>
+        </ul>
+
+        <h3>Authors</h3>
+        <div class="authors">
+            <div>Gopolang Makgothi</div><div>Emma van der Merwe</div><div>Tamzyn Alexander</div><div>Dean Graca</div>
+        </div>
+        <p style="margin-top:0.8rem;font-size:0.8rem;color:var(--text-faint)">MECN4029, Group 17, University of the Witwatersrand. Lecturer: Dr A Panday. Report dated 22 May 2025.</p>
+    </main>
+
+    <footer>&copy; 2026 Gopolang Makgothi &middot; Aerospace Engineer</footer>
 </body>
 </html>
