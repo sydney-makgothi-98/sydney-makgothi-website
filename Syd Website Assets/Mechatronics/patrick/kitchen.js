@@ -11,6 +11,7 @@ import {Mission, K, ITEMS, PH, STEPS, PH2STEP} from './mission.js';
 import {buildRobot} from './robot.js';
 import {buildKitchen, buildItem, wz} from './kitchen-items.js';
 import {GRAPHS, makeCache, soundNow} from './graphs.js';
+import {INFO, TAGS} from './parts.js';
 import CPP from './patrick_mission.cpp';
 
 const $ = (id) => document.getElementById(id);
@@ -22,7 +23,7 @@ const stageEl = $('k-stage'), canvas = $('k-gl');
 if (!stageEl || !canvas) throw new Error('kitchen stage markup is missing');
 
 /* ------------------------------------------------------------------------------------------------- state -------- */
-const S = {speed: 1, cam: 'cinema', duty: 0.7};
+const S = {speed: 1, cam: 'cinema', duty: 0.7, u: 0, uT: 0, sel: null, iso: false, hover: null};
 const sim = new Mission({duty: S.duty});
 const D = {sim, cache: makeCache('desk', S.duty, true), duty: S.duty};
 const CASE = ['IDLE', 'APPROACH', 'BRAKE', 'REACH', 'GRIP', 'LIFT', 'TURN_CARRY', 'SETTLE_C', 'CARRY', 'BRAKE_C', 'PLACE', 'RETREAT_P', 'TURN_SHIFT', 'SETTLE_T', 'SHIFT', 'SETTLE_S', 'TURN_PANTRY', 'SETTLE_P', 'DONE'];
@@ -78,11 +79,12 @@ const hitDot = new THREE.Mesh(new THREE.SphereGeometry(0.005, 12, 8), new THREE.
 const rig = {az: -88 * D2R, el: 26 * D2R, dist: 1.45, t: new V3(K.start.x, 0.08, wz(K.start.z))};
 const want = {az: rig.az, el: rig.el, dist: rig.dist};
 const WIDE_T = new V3(-0.05, 0.0, 0);
-const tmpT = new V3();
+const tmpT = new V3(), selC = new V3();
 function targetPoint() {
   if (S.cam === 'wide' || S.cam === 'top') return tmpT.copy(WIDE_T);
   return tmpT.set(sim.x + Math.cos(sim.yaw) * 0.05, 0.075, wz(sim.z + Math.sin(sim.yaw) * 0.05));
 }
+const bbox = new THREE.Box3(), bsize = new V3();
 function stepCamera(dt, now) {
   const k = 1 - Math.exp(-dt * 3.2);
   let az = want.az, el = want.el, dist = want.dist;
@@ -92,8 +94,13 @@ function stepCamera(dt, now) {
     want.az = az; want.el = el; want.dist = dist;
   } else if (S.cam === 'wide') { az = -78 * D2R; el = 38 * D2R; dist = 3.3; }
   else if (S.cam === 'top') { az = -90 * D2R; el = 84 * D2R; dist = 2.4; }
+  let tgt = targetPoint();
+  if (S.sel && byId[S.sel]) {                                       // a selected part: look at it, close
+    bbox.setFromObject(byId[S.sel].group); bbox.getCenter(selC); bbox.getSize(bsize); tgt = selC;
+    dist = clamp(Math.max(bsize.x, bsize.y, bsize.z) * 3.2 + 0.1, 0.22, 0.7); az = rig.az; el = rig.el;
+  } else if (S.u > 0.02) { dist *= 1 + 0.5 * S.u; az = rig.az; el = rig.el; }
   rig.az += (az - rig.az) * k; rig.el += (el - rig.el) * k; rig.dist += (dist - rig.dist) * k;
-  rig.t.lerp(targetPoint(), 1 - Math.exp(-dt * 4));
+  rig.t.lerp(tgt, 1 - Math.exp(-dt * 4));
   const ce = Math.cos(rig.el);
   camera.position.set(rig.t.x + rig.dist * ce * Math.cos(rig.az), rig.t.y + rig.dist * Math.sin(rig.el), rig.t.z + rig.dist * ce * Math.sin(rig.az));
   camera.lookAt(rig.t);
@@ -105,17 +112,24 @@ function setCam(c) {
 }
 document.querySelectorAll('#k-cams .chip').forEach((b) => b.addEventListener('click', () => setCam(b.dataset.cam)));
 // drag to orbit, wheel to zoom; either takes the camera off its automatic mode
-const ptrs = new Map();
-canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); canvas.classList.add('drag'); });
+const ptrs = new Map(); let dragged = false, mouse = null;
+canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); canvas.classList.add('drag'); dragged = false; });
 canvas.addEventListener('pointermove', (e) => {
+  mouse = [e.clientX, e.clientY];
   if (!ptrs.has(e.pointerId)) return;
   const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (Math.abs(e.clientX - prev[0]) + Math.abs(e.clientY - prev[1]) > 1) dragged = true;
   if (ptrs.size === 1) {
     if (S.cam !== 'follow') { want.az = rig.az; want.el = rig.el; want.dist = rig.dist; setCam('follow'); }
     want.az += (e.clientX - prev[0]) * 0.008; want.el = clamp(want.el + (e.clientY - prev[1]) * 0.006, 0.04, 1.5); rig.az = want.az; rig.el = want.el;
   }
 });
-const endPtr = (e) => { ptrs.delete(e.pointerId); canvas.classList.remove('drag'); };
+const endPtr = (e) => {
+  const was = ptrs.size === 1 && !dragged;
+  ptrs.delete(e.pointerId); canvas.classList.remove('drag');
+  if (was && e.type === 'pointerup' && labOpen()) { const id = pick(e.clientX, e.clientY); select(id === S.sel ? null : id); }
+};
+canvas.addEventListener('pointerleave', () => { mouse = null; S.hover = null; tipEl.classList.remove('on'); highlight(); });
 canvas.addEventListener('pointerup', endPtr); canvas.addEventListener('pointercancel', endPtr);
 canvas.addEventListener('wheel', (e) => { e.preventDefault(); if (S.cam !== 'follow') { want.az = rig.az; want.el = rig.el; want.dist = rig.dist; setCam('follow'); } want.dist = clamp(want.dist * Math.exp(e.deltaY * 0.0012), 0.3, 4); }, {passive: false});
 
@@ -135,11 +149,64 @@ function resize() {
 }
 addEventListener('resize', resize);
 
+
+/* ------------------------------------------------------------------------------------------ disassembly ------- */
+const byId = robot.byId, labEl = $('k-lab'), partEl = $('k-part'), tipEl = $('k-tip'), selTag = $('k-seltag');
+const labOpen = () => labEl.classList.contains('on') || S.u > 0.02;
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), accent = new THREE.Color('#a78bfa');
+const visibleDeep = (o) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
+function pick(cx, cy) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects(robot.meshes.filter(visibleDeep), false).find((h) => !(S.iso && S.sel && h.object.userData.part !== S.sel));
+  return hit ? hit.object.userData.part : null;
+}
+function highlight() {
+  for (const p of robot.parts) {
+    const isSel = S.sel === p.id, isHov = S.hover === p.id && !isSel, dim = S.iso && S.sel && !isSel;
+    for (const m of p.mats) {
+      m.emissive.copy(accent).multiplyScalar(isSel ? 0.16 : isHov ? 0.12 : 0);
+      if (m.transparent !== !!dim) { m.transparent = !!dim; m.needsUpdate = true; }
+      m.opacity = dim ? 0.07 : 1; m.depthWrite = !dim;
+    }
+  }
+}
+function renderPart() {
+  if (!S.sel) { partEl.classList.remove('on'); return; }
+  const p = byId[S.sel], info = INFO[S.sel], [tn, tc] = TAGS[info.tag];
+  partEl.innerHTML = `<div class="tagrow"><span class="tag" style="color:${tc};border-color:${tc}66">${tn}</span><h3>${p.name}</h3><div class="acts"><button class="chip ${S.iso ? 'on' : ''}" id="kp-iso" aria-pressed="${S.iso}">ISOLATE</button><button class="chip" id="kp-x">CLOSE</button></div></div>
+    <p class="role">${info.role}</p><p class="desc">${info.desc}</p><div class="specs">${info.specs().map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
+  $('kp-iso').onclick = () => { S.iso = !S.iso; highlight(); renderPart(); };
+  $('kp-x').onclick = () => select(null);
+  partEl.classList.add('on');
+}
+function select(id) {
+  S.sel = id; if (!id) S.iso = false;
+  highlight(); renderPart();
+  document.querySelectorAll('#k-plist .chip').forEach((b) => b.classList.toggle('on', b.dataset.id === id));
+  if (id && S.u < 0.35) S.uT = Math.max(S.uT, 0.35);                 // a part buried in the robot needs the robot opened up first
+  if (id) ensureHalted();
+}
+function ensureHalted() { if (sim.status === 'RUNNING') sim.pause(); }
+robot.parts.forEach((p) => {
+  const b = document.createElement('button'); b.className = 'chip'; b.dataset.id = p.id; b.textContent = p.name.toUpperCase(); b.style.setProperty('--c', TAGS[INFO[p.id].tag][1]);
+  b.onclick = () => select(S.sel === p.id ? null : p.id); $('k-plist').appendChild(b);
+});
+function setLab(on) {
+  labEl.classList.toggle('on', on); $('k-lab-btn').setAttribute('aria-pressed', on);
+  if (on) { ensureHalted(); if (S.uT < 0.01) S.uT = 0.4; } else { S.uT = 0; select(null); }
+}
+$('k-lab-btn').addEventListener('click', () => setLab(!labEl.classList.contains('on')));
+$('k-reasm').addEventListener('click', () => { S.uT = 0; select(null); });
+$('k-u').addEventListener('input', (e) => { S.uT = S.u = +e.target.value; if (S.u > 0.02) ensureHalted(); });
+function reassemble() { S.uT = 0; if (S.sel) select(null); }     // the run starts from a whole robot
+
 /* --------------------------------------------------------------------------------------------- transport ------- */
 const btn = {start: $('k-start'), pause: $('k-pause'), stop: $('k-stop')};
 function act(kind) {
-  if (kind === 'start') sim.start();
-  else if (kind === 'pause') (sim.status === 'PAUSING' || sim.status === 'PAUSED') ? sim.resume() : sim.pause();
+  if (kind === 'start') { reassemble(); sim.start(); }
+  else if (kind === 'pause') { const was = sim.status === 'PAUSING' || sim.status === 'PAUSED'; if (was) { reassemble(); sim.resume(); } else sim.pause(); }
   else if (kind === 'stop') sim.stop();
   syncButtons();
 }
@@ -166,6 +233,7 @@ document.addEventListener('fullscreenchange', () => { $('k-full').setAttribute('
 addEventListener('keydown', (e) => {
   if (e.target.closest?.('input, select, textarea')) return;
   if (e.key === 'Escape' && modal.open) closeModal();
+  else if (e.key === 'Escape' && S.sel) select(null);
   else if (e.code === 'Space' && stageVisible) { e.preventDefault(); const s = sim.status; act(s === 'READY' || s === 'STOPPED' || s === 'DONE' ? 'start' : 'pause'); }
 });
 
@@ -348,12 +416,26 @@ function frame(dt, now) {
     if (n >= 160) acc = 0;
   } else acc = 0;
   syncButtons();
-  const st = robot.pose({phi: sim.phi, jaw: sim.jaw, wl: sim.wl, wr: sim.wr, bands: true, u: 0});
+  S.u += (S.uT - S.u) * (1 - Math.exp(-dt * 3)); if (Math.abs(S.uT - S.u) < 0.0005) S.u = S.uT;
+  if (document.activeElement !== $('k-u')) $('k-u').value = S.u; $('k-uo').textContent = Math.round(S.u * 100) + '%';
+  const st = robot.pose({phi: sim.phi, jaw: sim.jaw, wl: sim.wl, wr: sim.wr, bands: true, u: S.u});
   robot.root.position.set(sim.x, robot.root.userData.lift || 0, wz(sim.z)); robot.root.rotation.y = sim.yaw;
   sim.items.forEach((q, i) => { const m = itemMesh[i]; m.position.set(q.x, q.y, wz(q.z)); m.rotation.y = q.yaw; });
   key.target.position.set(sim.x, 0, wz(sim.z)); key.position.set(sim.x + 0.9, 1.6, wz(sim.z) - 0.7);
-  const d = Math.min(sim.sn.d, 0.5); wedge.scale.set(d, 1, d); hitDot.position.set(d, 0, 0); hitDot.visible = sim.sn.d < 0.5; sonarViz.visible = sim.status !== 'READY';
+  const d = Math.min(sim.sn.d, 0.5); wedge.scale.set(d, 1, d); hitDot.position.set(d, 0, 0); hitDot.visible = sim.sn.d < 0.5; sonarViz.visible = sim.status !== 'READY' && S.u < 0.3;
+  // a held item stays in the claw wherever the claw goes when Patrick is taken apart
+  if (S.u > 0.02 && sim.held) itemMesh[sim.item].position.copy(byId.gripper.group.localToWorld(new V3(0.072, -0.012 - 0.0225, 0)));
   updateHud(); stepCamera(dt, now); layoutBubbles(dt, now);
+  if (labOpen() && mouse && !ptrs.size && frameN % 2 === 0) {
+    const id = pick(mouse[0], mouse[1]);
+    if (id !== S.hover) { S.hover = id; highlight(); canvas.classList.toggle('pick', !!id); }
+    const r = stageEl.getBoundingClientRect();
+    if (id) { tipEl.textContent = byId[id].name; tipEl.style.left = (mouse[0] - r.left) + 'px'; tipEl.style.top = (mouse[1] - r.top) + 'px'; tipEl.classList.add('on'); } else tipEl.classList.remove('on');
+  }
+  if (S.sel && byId[S.sel]) {
+    const b = new THREE.Box3().setFromObject(byId[S.sel].group), c = b.getCenter(new V3()); c.y = b.max.y; c.project(camera);
+    selTag.style.left = ((c.x * 0.5 + 0.5) * stageEl.clientWidth) + 'px'; selTag.style.top = ((-c.y * 0.5 + 0.5) * stageEl.clientHeight) + 'px'; selTag.textContent = byId[S.sel].name; selTag.classList.add('on');
+  } else selTag.classList.remove('on');
 }
 function loop(now) {
   const dt = Math.min((now - last) / 1000, 0.1); last = now; frameN++;
@@ -374,6 +456,6 @@ function boot() {
   rig.t.copy(targetPoint());
   const ready = renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve();
   ready.catch(() => {}).finally(() => { last = performance.now(); requestAnimationFrame(loop); });
-  window.__KITCHEN = {sim, S, D, rig, want, robot, scene, camera, renderer, setCam, act, openModal, closeModal, modal, itemMesh, BUBBLES};
+  window.__KITCHEN = {select, setLab, sim, S, D, rig, want, robot, scene, camera, renderer, setCam, act, openModal, closeModal, modal, itemMesh, BUBBLES};
 }
 document.fonts?.ready?.then(boot, boot) ?? boot();
