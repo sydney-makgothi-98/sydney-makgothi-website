@@ -21,6 +21,10 @@ The website is a folder of plain files. There is no server code, no database, no
 | `propulsion.html` | 716 201 | Propulsion: an interactive isometric turbofan, a flight journey and a cycle console. |
 | `mechatronics.html` | | The first robot page: the self-stabilising drone, with a 3D teardown, its PID controller and its graphs. |
 | `mechatronics-2.html` | | The second robot page: Patrick, in his kitchen, with a 3D teardown. |
+| `pump.html` | | The turbomachinery page: a centrifugal irrigation pump teardown, with pump and system curves, velocity triangles, NPSH and the boundary layer on the blade. Built on the shared showcase kit. |
+| `engine.html` | | The combustion page: a twin-turbo V8's crank, piston and rod assembly, with live pressure, kinematics, force and torque curves. |
+| `project-management.html` | | A construction programme as an instrument: draggable Gantt chart, network diagram, S-curve, crew histogram and Monte Carlo risk run. |
+| `cad-gallery.html` | | A globe of CAD designs; each flies in and decomposes into the layout of its drawing (sheet-metal parts unfold to their flat patterns). |
 | `downloads.html` | 13 367 | Downloads. |
 | `PortfolioHero.jsx` | 17 895 | A React component that no page loads yet (Chapter 40). |
 | `Syd Website Assets/` | | Scripts, images and build tools for each page. |

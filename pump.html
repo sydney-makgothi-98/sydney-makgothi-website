@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Turbomachinery: Centrifugal Irrigation Pump | Gopolang Makgothi</title>
+    <meta name="description" content="A centrifugal irrigation pump you can take apart: impeller, volute, pump and system curves, velocity triangles, NPSH and the boundary layer on the blade.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/showcase.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script defer src="./Syd%20Website%20Assets/Showcase/pump/pump.js"></script>
+    <style>
+        :root { --accent: #22d3ee; --stage1: #0f3a52; --stage2: #0a1c38; }
+        .stage { background: radial-gradient(55% 60% at 50% 48%, #11425e 0%, #0a1d3a 52%, #060818 100%); }
+        .stage::after { content: ''; position: absolute; inset: auto 0 0 0; height: 40%; z-index: 0; pointer-events: none; background: repeating-linear-gradient(100deg, rgba(34,211,238,0.05) 0 2px, transparent 2px 46px); mask-image: linear-gradient(0deg, #000, transparent); -webkit-mask-image: linear-gradient(0deg, #000, transparent); }
+        .stat-row { display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin: 1rem 0 1.6rem; }
+        .ctl.lbl { font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; } .s-bottom input[type=range] { width: clamp(90px, 10vw, 140px); }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 03 &mdash; PROPULSION &amp; TURBOMACHINERY</div>
+    </nav>
+    <a class="sib" href="engine.html" aria-label="Next: the combustion engine"><small>NEXT</small><span>THE ENGINE</span></a>
+
+    <section class="stage" id="stage" aria-label="Centrifugal pump teardown">
+        <div class="viewport"><canvas id="gl" role="img"></canvas><div class="labels" id="labels"></div></div>
+        <div class="s-title"><div class="eyebrow">03 &mdash; TURBOMACHINERY &middot; IRRIGATION PUMP</div><h1>Centrifugal pump</h1><p>Designed to irrigate across the faculty building. Drag to orbit; change the impeller and watch every curve follow.</p></div>
+        <div class="s-hud" id="hud"></div>
+        <div class="s-col left">
+            <figure class="g" data-g="hq" style="--fl:1.25"><figcaption><b>01</b> Head &middot; pump and system</figcaption><canvas aria-label="Pump head against flow with the system curve and operating point"></canvas></figure>
+            <figure class="g" data-g="eff" style="--fl:1"><figcaption><b>02</b> Efficiency and power</figcaption><canvas aria-label="Efficiency and shaft power against flow"></canvas></figure>
+        </div>
+        <div class="s-col right">
+            <figure class="g" data-g="tri" style="--fl:2.3"><figcaption><b>03</b> Velocity triangle at the blade tip</figcaption><canvas aria-label="Velocity triangle at the impeller outlet"></canvas></figure>
+            <figure class="g" data-g="npsh" style="--fl:1.1"><figcaption><b>04</b> NPSH and cavitation</figcaption><canvas aria-label="NPSH available and required against flow"></canvas></figure>
+            <figure class="g" data-g="bl" style="--fl:1.2"><figcaption><b>05</b> Boundary layer on the blade</figcaption><canvas aria-label="Boundary layer thickness along the blade"></canvas></figure>
+        </div>
+        <div class="hint" id="hud-u">assembled</div>
+        <div class="partcard" id="card"><button class="x" aria-label="Close">&times;</button><div class="k"></div><h3></h3><p></p></div>
+        <div class="s-bottom">
+            <div class="grp"><button class="btn primary" id="b-apart" aria-pressed="false">Disassemble</button><button class="btn" id="b-cut" aria-pressed="false">Cutaway</button><button class="btn" id="b-spin" aria-pressed="true">Pause flow</button><button class="btn" id="b-reset">Reset design</button><button class="btn mobile-only" id="b-design" aria-expanded="false">Design ▾</button></div>
+            <div class="sep"></div>
+            <div class="grp sliders">
+                <label class="ctl lbl">speed <input type="range" id="s-n" min="1500" max="3600" step="50"><output id="s-n-v"></output></label>
+                <label class="ctl lbl">D&#8322; <input type="range" id="s-d2" min="110" max="180" step="2"><output id="s-d2-v"></output></label>
+                <label class="ctl lbl">&beta;&#8322; <input type="range" id="s-b2" min="15" max="45" step="1"><output id="s-b2-v"></output></label>
+                <label class="ctl lbl">valve <input type="range" id="s-valve" min="1" max="12" step="0.1"><output id="s-valve-v"></output></label>
+                <label class="ctl lbl">suction lift <input type="range" id="s-lift" min="0" max="7" step="0.1"><output id="s-lift-v"></output></label>
+            </div>
+        </div>
+        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
+    </section>
+
+    <main class="article">
+        <section class="sec">
+            <span class="tag">01 &middot; THE IDEA</span>
+            <h2>A pump adds angular momentum</h2>
+            <p>Water enters the impeller's eye along the shaft and is thrown outwards by the blades. Between the eye and the rim its angular momentum rises from almost nothing to <b>r&#8322;c<sub>u2</sub></b>, and the torque that did it is the motor's. Euler's turbomachinery equation turns that statement into a head:</p>
+            <div class="equation">$$H_{th}=\frac{u_2\,c_{u2}}{g},\qquad u_2=\omega r_2,\qquad c_{u2}=\sigma u_2-\frac{c_{m2}}{\tan\beta_2},\qquad c_{m2}=\frac{Q}{\pi D_2 b_2\,\tau_2}$$</div>
+            <p>The first term is the tip speed, which is why head goes with the <b>square</b> of speed. The second is the cost of moving more water: more flow means a larger meridional velocity <b>c<sub>m2</sub></b> and, for a backward-curved blade (small &beta;<sub>2</sub>), a smaller whirl velocity, so the head falls as flow rises. <b>&sigma;</b> is the slip factor: the water in the channel does not follow the blade perfectly, so it leaves with less whirl than the blade geometry promises. This pump uses Wiesner's correlation, <span style="font-family:var(--mono)">&sigma; = 1 &minus; &radic;sin&beta;<sub>2</sub> / z<sup>0.7</sup></span>.</p>
+            <div class="stat-row" id="ptable-wrap">
+                <table class="spec" id="ptable"><tbody>
+                    <tr><td>Duty point</td><td><b id="t-op"></b> where the pump curve crosses the system curve</td></tr>
+                    <tr><td>Best efficiency</td><td><b id="t-bep"></b></td></tr>
+                    <tr><td>Shut-off head</td><td><b id="t-shut"></b> with the valve closed</td></tr>
+                    <tr><td>Tip speed</td><td><b id="t-tip"></b></td></tr>
+                    <tr><td>Slip factor</td><td><b id="t-sig"></b></td></tr>
+                    <tr><td>Specific speed</td><td><b id="t-ws"></b> (dimensionless, \(\omega_s=\omega\sqrt{Q}/(gH)^{3/4}\)): below about 1 the pump is radial</td></tr>
+                    <tr><td>NPSH</td><td><b id="t-npsh"></b></td></tr>
+                    <tr><td>Blade Reynolds no.</td><td><b id="t-re"></b> along the blade surface</td></tr>
+                    <tr><td>Affinity laws</td><td><b id="t-aff"></b></td></tr>
+                </tbody></table>
+            </div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">02 &middot; PUMP AND SYSTEM</span>
+            <h2>Where the pump actually runs</h2>
+            <p>A pump has no flow of its own. It runs where its curve meets the <b>system curve</b>: the static lift to the roof tank plus the friction in the irrigation main, which grows with the square of the flow, <span style="font-family:var(--mono)">H<sub>sys</sub> = H<sub>static</sub> + K Q&sup2;</span>. Close the valve and K grows, the crossing slides up and to the left, efficiency falls: the pump is being throttled. The best efficiency point is where the water meets the blades most nearly without shock, and a pump left far from it suffers radial loads, recirculation and early bearing failure. Try the valve slider.</p>
+            <div class="equation">$$H(Q)=H_{th}-k_fQ^2-k_s\,(Q-Q_{sl})^2,\qquad \eta=\frac{\rho g Q H}{P_{shaft}}$$</div>
+            <p>The first loss is friction, rising with the square of the flow. The second is <b>incidence loss</b>, which is zero at the shockless flow Q<sub>sl</sub> where the water arrives exactly along the blade's leading edge and grows either side of it. Their sum is why the efficiency curve is a hill.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">03 &middot; THE BLADE</span>
+            <h2>Boundary layers and the choice of blade section</h2>
+            <p>Seen from the blade, the water is a free stream of relative speed <b>w</b>, and the blade surface is a wall. A thin <b>boundary layer</b> grows on it, laminar at first and then, past a critical Reynolds number near 5&times;10<sup>5</sup>, turbulent. The two have different thickness laws:</p>
+            <div class="equation">$$\delta_{lam}=\frac{5x}{\sqrt{Re_x}},\qquad \delta^*_{lam}=\frac{1.72\,x}{\sqrt{Re_x}},\qquad \delta_{turb}\approx\frac{0.37\,x}{Re_x^{1/5}},\qquad Re_x=\frac{wx}{\nu}$$</div>
+            <p>Chart 05 draws both along the blade at the current flow, with the transition marked. Raise the speed and the layer thins and transitions earlier. A turbulent layer is thicker and carries more friction but resists separation better, which matters on the suction side of the blade where the pressure rises along the flow. That is why the blade is not a flat plate but an aerofoil-like section: a rounded leading edge that tolerates a little incidence, a thickness that tapers, and a modest t/c. The Reynolds number the blade section sees (shown in the table above) is the one to enter into <b>XFLR5</b> when comparing candidate sections' lift, drag and separation behaviour; the section drawn in the chart uses a NACA 4-digit thickness form scaled to the blade's real thickness.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">04 &middot; CAVITATION</span>
+            <h2>Net positive suction head</h2>
+            <p>Inside the eye the water speeds up and its pressure drops. If the pressure falls to the vapour pressure at the water temperature, vapour bubbles form and then collapse violently against the metal: <b>cavitation</b>. The pump needs a certain margin over the vapour pressure at its inlet, <b>NPSH<sub>required</sub></b>, and the installation provides <b>NPSH<sub>available</sub></b>:</p>
+            <div class="equation">$$NPSH_a=\frac{p_{atm}-p_v}{\rho g}-z_s-h_{f,s},\qquad NPSH_r\approx\lambda_c\frac{c_{m1}^2}{2g}+\lambda_w\frac{w_1^2}{2g}$$</div>
+            <p>Raise the suction lift or the speed (the second term grows with the square of both the flow and the speed) and chart 04 shows the margin eaten away and the red cavitation zone opening up from the right. It is why irrigation pumps sit as close to the sump as the layout allows.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">05 &middot; MATERIALS</span>
+            <h2>What it is made of, and why</h2>
+            <ul>
+                <li><b>Casing: cast iron.</b> Cheap, easily cast into a spiral, stiff and good at damping vibration; the wall thickness is set by pressure and by corrosion allowance.</li>
+                <li><b>Impeller: bronze or stainless steel.</b> Cavitation erosion and corrosion from untreated irrigation water attack iron quickly; bronze resists both and casts well into thin blades.</li>
+                <li><b>Shaft: stainless steel.</b> Sized for torsion and bending, and it must not corrode where it passes the seal.</li>
+                <li><b>Seal faces: carbon against silicon carbide.</b> Self-lubricating and hard; the water itself is the lubricant.</li>
+            </ul>
+            <p style="margin-top:1rem">The physics on this page is a standard one-dimensional design model (Euler head with a slip factor, empirical friction, incidence and leakage losses). Its default dimensions describe a pump of the right size for lifting water to a roof tank and are illustrative: the geometry, curves and every number above change together when the sliders move, so any set of design values can be tried.</p>
+            <div class="more"><a href="engine.html">Combustion engine &rarr;</a><a href="project-management.html">Project management &rarr;</a><a href="cad-gallery.html">CAD gallery &rarr;</a><a href="propulsion.html">Turbofan &rarr;</a><a href="portfolio.html">Portfolio</a></div>
+        </section>
+    </main>
+    <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html">Back to portfolio</a></footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () { if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\(', right: '\\)', display: false }], throwOnError: false }); });
+    </script>
+    <script>document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('b-design'),bar=document.querySelector('.s-bottom');if(b)b.addEventListener('click',function(){var o=bar.classList.toggle('open');b.setAttribute('aria-expanded',o);});});</script>
+</body>
+</html>

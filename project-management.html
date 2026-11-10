@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Lifecycle &amp; Project Management: Gantt, Network and Risk | Gopolang Makgothi</title>
+    <meta name="description" content="A construction programme you can reshape: drag a Gantt bar and watch the critical path, network diagram, S-curve and Monte Carlo risk respond.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/showcase.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script defer src="./Syd%20Website%20Assets/Showcase/pm/pm.js"></script>
+    <style>
+        :root { --accent: #fbbf24; --accent2: #fb923c; }
+        .hero h1 span { background: linear-gradient(90deg, #fbbf24, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(60% 40% at 80% -5%, rgba(251,146,60,0.14), transparent), radial-gradient(50% 40% at 0% 20%, rgba(251,191,36,0.07), transparent); }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; padding: 0 1.2rem 0.5rem; position: relative; z-index: 1; font-family: var(--mono); font-size: 0.64rem; color: var(--text-muted); }
+        .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.4rem; vertical-align: -1px; }
+        #gantt { height: clamp(520px, 78vh, 700px); touch-action: pan-y; } #net { height: 340px; } #scurve, #crew { height: 270px; } #mc-hist { height: 280px; } #mc-crit { height: 280px; }
+        #sel-info { position: relative; z-index: 2; padding: 0 1.2rem 0.9rem; font-size: 0.8rem; color: var(--text-muted); min-height: 3.2em; } #sel-info b { font-family: var(--mono); } #sel-info span { font-family: var(--mono); font-size: 0.7rem; }
+        .steps { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin: 1.2rem 0; }
+        .step { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; } .step .n { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.18em; color: var(--accent); } .step h3 { font-family: var(--display); font-size: 1.05rem; margin: 0.2rem 0 0.3rem; } .step p { font-size: 0.82rem; margin: 0; }
+        table.tbl { border-collapse: collapse; font-family: var(--mono); font-size: 0.72rem; margin: 0.6rem 0 1.2rem; } .tbl th, .tbl td { padding: 0.35rem 0.8rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--text-muted); } .tbl th:first-child, .tbl td:first-child { text-align: left; } .tbl th { color: #fff; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 04 &mdash; LIFECYCLE &amp; PROJECT MANAGEMENT</div>
+    </nav>
+    <a class="sib" href="cad-gallery.html" aria-label="Next: the CAD gallery"><small>NEXT</small><span>CAD GALLERY</span></a>
+    <div id="tip" role="tooltip"></div>
+
+    <header class="hero">
+        <div class="eyebrow">04 &mdash; SYSTEMS ENGINEERING &middot; PROJECT MANAGEMENT</div>
+        <h1>Plan the work.<br><span>Then plan for being wrong.</span></h1>
+        <p class="lede">A project programme is a model, and like every model it can be interrogated. This page is a construction programme for a three-storey commercial building, run by six departments, rebuilt as an instrument: reshape any task and watch the critical path, the network, the cash flow and the risk move together. It is the mathematics behind the Gantt charts and network diagrams I built in MS Project during my project management course.</p>
+        <div class="stats">
+            <div class="stat"><div class="k">Programme length</div><div class="v"><span id="r-finish">186</span><small style="font-size:0.9rem;color:var(--text-muted)"> days</small></div><div class="sub" id="r-delta">on baseline</div></div>
+            <div class="stat"><div class="k">Critical tasks</div><div class="v" id="r-crit">12 of 25</div><div class="sub">zero float</div></div>
+            <div class="stat"><div class="k">Programme cost</div><div class="v" id="r-cost">R 5.57 M</div><div class="sub" id="r-extra">no crashing</div></div>
+            <div class="stat"><div class="k">Day <span id="r-day">0</span></div><div class="v"><span id="r-done">0%</span></div><div class="sub"><span id="r-crew">0</span> people on site</div></div>
+        </div>
+    </header>
+
+    <main class="article">
+        <section class="sec" id="gantt-sec">
+            <span class="tag">01 &middot; THE PROGRAMME</span>
+            <h2>The Gantt chart, made to be pulled about</h2>
+            <p>Each bar is a task, coloured by the department that does it. A white outline marks the <b>critical path</b>: the chain of tasks with no slack, where one lost day is a lost day for the whole project. The dotted extension behind a bar is its <b>float</b>, the days it can slip without hurting anyone. Grey ticks show the baseline. <b>Drag the right end of any bar</b> to change its duration; click anywhere on the timeline to move the day cursor.</p>
+            <div class="panel">
+                <div class="panel-head"><div class="t">Gantt chart &middot; 25 tasks &middot; 6 departments</div><div class="s">drag a bar end &middot; click a row to follow it</div></div>
+                <div class="legend" id="legend"></div>
+                <canvas id="gantt" role="img" aria-label="Gantt chart of the construction programme. Drag the right end of a bar to change a task's duration."></canvas>
+                <div id="sel-info"></div>
+                <div class="controls">
+                    <button class="btn" id="g-play">Play</button>
+                    <label class="ctl">day <input type="range" id="day" min="0" max="186" step="1" value="0" aria-label="Day cursor"></label>
+                    <button class="btn" id="g-group" aria-pressed="false">Group by department</button>
+                    <button class="btn" id="g-crash1">Crash 1 day</button><button class="btn" id="g-crash5">Crash 5 days</button>
+                    <button class="btn" id="g-reset">Reset</button>
+                </div>
+                <div class="readout"><span id="crash-note">Crashing pays to shorten the critical path from its cheapest shortenable task, one day at a time.</span></div>
+            </div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">02 &middot; THE METHOD</span>
+            <h2>How the critical path is found</h2>
+            <p>The <b>critical path method</b> needs only two sweeps over the network. A forward pass gives each task its earliest start and finish; a backward pass from the project end gives the latest times that still hold the finish date. The difference is the float.</p>
+            <div class="equation">$$ES_j=\max_{i\in\text{pred}(j)}EF_i,\qquad EF_j=ES_j+d_j,\qquad LF_i=\min_{j\in\text{succ}(i)}LS_j,\qquad LS_i=LF_i-d_i$$</div>
+            <div class="equation">$$\text{float}_i = LS_i - ES_i,\qquad \text{critical path}=\{\,i:\ \text{float}_i = 0\,\}$$</div>
+            <p>For this programme the forward pass runs A (10 d), C (12), D (20), E (8), F (25), G (18), I (30), N (16), O (12), R (20), X (10), Y (5): <b>10 + 12 + 20 + 8 + 25 + 18 + 30 + 16 + 12 + 20 + 10 + 5 = 186 days</b>. Steel procurement (B) looks urgent but has 25 days of float because the foundations take longer than the steel does to arrive.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">03 &middot; THE NETWORK</span>
+            <h2>The same plan as a network diagram</h2>
+            <p>Each box is an activity-on-node: name and duration on top, earliest start and finish in the middle, latest start and finish underneath, float in the centre. Amber outlines are critical. Hover or click a box to light up everything before it and after it: its whole chain of cause and effect. It is the same model as the Gantt above, so dragging a bar rewrites these numbers live.</p>
+            <div class="panel">
+                <div class="panel-head"><div class="t">Network diagram &middot; activity on node</div><div class="s">ES &middot; EF / LS &middot; LF, float in the middle</div></div>
+                <div class="scroller" id="net-wrap"><canvas id="net" role="img" aria-label="Network diagram of the programme with earliest and latest times on every activity."></canvas></div>
+            </div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">04 &middot; MONEY AND PEOPLE</span>
+            <h2>The banana curve and the crew histogram</h2>
+            <p>Cost accumulates as work is done. If every task starts as early as it can, money is spent sooner (amber); if every task starts as late as it can, later (blue). Any real schedule lives in the band between, which is why it is called the <b>banana curve</b>. The crew chart stacks the people on site by department and shows the peak: a programme that needs 58 people on site at its peak and about ten in its first weeks will not be resourced as drawn, which is when <b>resource levelling</b> starts moving tasks within their float.</p>
+            <div class="grid2">
+                <div class="panel"><div class="panel-head"><div class="t">S-curve &middot; cost</div></div><canvas id="scurve" role="img" aria-label="Cumulative cost against day with earliest and latest start envelopes."></canvas></div>
+                <div class="panel"><div class="panel-head"><div class="t">Crew histogram &middot; by department</div></div><canvas id="crew" role="img" aria-label="People on site each day, stacked by department."></canvas></div>
+            </div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">05 &middot; RISK</span>
+            <h2>Plan for being wrong: a Monte Carlo run</h2>
+            <p>A single finish date is a lie of precision. Give every task an optimistic and a pessimistic duration (here between about 0.8&times; and 1.8&times; the plan, skewed late because work overruns more often than it underruns), draw each duration at random from a triangular distribution, recompute the critical path, and repeat three thousand times. The histogram is the answer to "when will it really finish?".</p>
+            <div class="panel">
+                <div class="panel-head"><div class="t">Finish-date distribution &middot; 3 000 runs</div><div class="s">white = baseline plan</div></div>
+                <div class="grid2" style="position:relative;z-index:1;padding:0 0.6rem"><canvas id="mc-hist" role="img" aria-label="Histogram of simulated finish days."></canvas><canvas id="mc-crit" role="img" aria-label="How often each task was critical in the simulation."></canvas></div>
+                <div class="controls"><button class="btn primary" id="mc-run">Run 3000 simulations</button><label class="ctl">contingency <input type="range" id="mc-buffer" min="0" max="40" step="1" value="0"><output id="mc-buffer-v">+0 d</output></label></div>
+                <div class="readout" id="mc-readout">Pick a contingency and see how likely the plan becomes.</div>
+            </div>
+            <p>The lesson is the gap between the plan and the median. Even when every task is on its most likely duration, the project finishes on its baseline date only rarely, because several near-critical paths all have to go right at once (the effect called <b>merge bias</b>). The right-hand chart is the <b>criticality index</b>: how often each task sat on the critical path across all runs. It is how you find the tasks that deserve a manager's attention, which are not always the ones that are critical on paper.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">06 &middot; THE LIFECYCLE</span>
+            <h2>Where this sits in a project's life</h2>
+            <div class="steps">
+                <div class="step"><div class="n">01 INITIATE</div><h3>Scope and charter</h3><p>What is being built, for whom, and what counts as done. The work breakdown structure turns scope into the 25 tasks above.</p></div>
+                <div class="step"><div class="n">02 PLAN</div><h3>Schedule, cost, resource</h3><p>Durations, logic links, calendars and crews go into the model; the critical path, S-curve and histogram fall out of it.</p></div>
+                <div class="step"><div class="n">03 EXECUTE</div><h3>Coordinate departments</h3><p>Six trades hand work to each other. A baseline is saved so every later change is visible, as the grey ticks are here.</p></div>
+                <div class="step"><div class="n">04 CONTROL</div><h3>Track, crash, re-plan</h3><p>When a task slips, crashing buys days back from the cheapest critical task; the Monte Carlo run says how much contingency is honest.</p></div>
+                <div class="step"><div class="n">05 CLOSE</div><h3>Snag, hand over, learn</h3><p>Snagging and handover (X, Y) sit on the critical path: the end of the project is often the most expensive place to lose a day.</p></div>
+            </div>
+            <p style="margin-top:1rem">The programme on this page is a representative construction schedule written for this demonstration, with illustrative durations, crews and costs. The method is the one used in MS Project: logic links, a critical path, a baseline, resource histograms and cash-flow curves; what is different here is that all of it can be touched.</p>
+            <div class="more"><a href="mechatronics.html">Control systems &rarr;</a><a href="pump.html">Centrifugal pump &rarr;</a><a href="engine.html">Combustion engine &rarr;</a><a href="cad-gallery.html">CAD gallery &rarr;</a><a href="portfolio.html">Portfolio</a></div>
+        </section>
+    </main>
+    <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html">Back to portfolio</a></footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var L = document.getElementById('legend'), D = { pm: ['Project management', '#fbbf24'], civ: ['Civil', '#fb923c'], str: ['Structural', '#f87171'], mech: ['Mechanical', '#60a5fa'], elec: ['Electrical', '#a78bfa'], fin: ['Finishes', '#34d399'] };
+            Object.keys(D).forEach(function (k) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = D[k][1]; s.append(i, D[k][0]); L.append(s); });
+            var s = document.createElement('span'); var i = document.createElement('i'); i.style.cssText = 'background:transparent;border:1.5px solid #fff'; s.append(i, 'critical path'); L.append(s);
+            if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\(', right: '\\)', display: false }], throwOnError: false });
+        });
+    </script>
+</body>
+</html>

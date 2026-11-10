@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>CAD Modelling: A Globe of Designs | Gopolang Makgothi</title>
+    <meta name="description" content="A 3D globe of CAD designs. Click one to fly in, then decompose it, smoothly, into the layout of its exploded drawing.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/showcase.css">
+    <script defer src="./Syd%20Website%20Assets/Showcase/gallery/gallery.js"></script>
+    <style>
+        :root { --accent: #c084fc; --accent2: #e879f9; }
+        body { overflow: hidden; }
+        .stage { position: fixed; inset: 0; height: auto; min-height: 0; background: radial-gradient(60% 65% at 50% 48%, #231454 0%, #0f0b30 52%, #060818 100%); }
+        .stage::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image: radial-gradient(1px 1px at 12% 20%, #fff8, transparent), radial-gradient(1px 1px at 78% 12%, #fff6, transparent), radial-gradient(1.2px 1.2px at 30% 82%, #fff6, transparent), radial-gradient(1px 1px at 88% 70%, #fff5, transparent), radial-gradient(1px 1px at 55% 40%, #fff4, transparent), radial-gradient(1px 1px at 5% 60%, #fff5, transparent); }
+        .glabel { position: absolute; left: 0; top: 0; appearance: none; cursor: pointer; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; color: #fff; background: rgba(12,8,40,0.72); border: 1px solid rgba(232,121,249,0.55); border-radius: 100px; padding: 0.28rem 0.85rem; opacity: 0; backdrop-filter: blur(6px); transition: background 150ms ease, box-shadow 150ms ease; }
+        .glabel:hover, .glabel.on { background: rgba(192,132,252,0.4); box-shadow: 0 0 18px rgba(192,132,252,0.5); } .glabel.soon { border-style: dashed; border-color: rgba(167,139,250,0.35); color: var(--text-muted); cursor: default; }
+        #balloons { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 6; pointer-events: none; }
+        #balloons .bl { stroke: #e9e5ff; stroke-width: 1; opacity: 0.75; } #balloons .bd { fill: #e9e5ff; }
+        #balloons .bc { fill: rgba(10,8,34,0.92); stroke: #e9e5ff; stroke-width: 1.2; } #balloons .bc.on { fill: #c084fc; stroke: #fff; }
+        #balloons .bt { fill: #fff; font: 600 11px var(--mono); text-anchor: middle; }
+        .head { position: absolute; top: 66px; left: 50%; transform: translateX(-50%); z-index: 8; text-align: center; pointer-events: none; width: min(640px, 90vw); transition: opacity 300ms ease; }
+        .head h1 { font-family: var(--display); text-transform: uppercase; font-size: clamp(1.4rem, 3vw, 2.3rem); line-height: 1.05; margin-top: 0.15rem; text-shadow: 0 2px 22px rgba(0,0,0,0.6); } .head p { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+        #hintg { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 8; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.16em; color: var(--text-muted); text-transform: uppercase; pointer-events: none; transition: opacity 300ms ease; white-space: nowrap; }
+        .vonly { opacity: 0; pointer-events: none; transition: opacity 400ms ease 200ms, transform 400ms ease 200ms; } body.viewing .vonly { opacity: 1; pointer-events: auto; } body.viewing .gonly { opacity: 0 !important; pointer-events: none; }
+        .view-title { position: absolute; top: 66px; left: clamp(1rem, 3vw, 2.4rem); z-index: 8; max-width: min(430px, 44vw); } .view-title h1 { font-family: var(--display); text-transform: uppercase; font-size: clamp(1.3rem, 2.6vw, 2.1rem); line-height: 1.05; margin-top: 0.15rem; } .view-title p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.5rem; }
+        .view-title .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; } .view-title a.btn { text-decoration: none; display: inline-block; }
+        .bom { position: absolute; top: 66px; right: clamp(1rem, 3vw, 2.4rem); z-index: 8; width: min(300px, 38vw); max-height: calc(100vh - 150px); overflow-y: auto; display: flex; flex-direction: column; gap: 3px; scrollbar-width: thin; }
+        .bom h2 { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.2em; color: var(--accent2); font-weight: 600; margin-bottom: 0.3rem; }
+        .bom-row { appearance: none; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; text-align: left; color: var(--text-muted); background: rgba(12,8,40,0.55); border: 1px solid var(--border); border-radius: 8px; padding: 0.3rem 0.6rem; font-size: 0.74rem; line-height: 1.3; backdrop-filter: blur(6px); transition: all 140ms ease; }
+        .bom-row:hover, .bom-row:focus-visible { color: #fff; border-color: var(--accent2); background: rgba(192,132,252,0.18); } .bom-row i { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid #e9e5ff; display: grid; place-items: center; font: normal 600 0.62rem var(--mono); color: #fff; } .bom-row span { flex: 1; } .bom-row em { font: normal 0.62rem var(--mono); color: var(--text-faint); }
+        .bottom { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 9; display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; padding: 0.7rem 1rem; background: rgba(8,6,28,0.62); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 18px; }
+        .partcard { bottom: 92px; }
+        .partcard .k { color: var(--accent2); }
+        body.blueprint .stage { background: radial-gradient(60% 65% at 50% 48%, #101a44 0%, #0b1030 55%, #060818 100%); }
+        .back { position: absolute; top: 66px; left: 50%; transform: translateX(-50%); z-index: 9; }
+        @media (max-width: 860px) { .bom { top: auto; bottom: 78px; right: 0; left: 0; width: auto; max-height: none; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding: 0 8px; } .bom h2 { display: none; } .bom-row { flex: none; } .bottom { flex-wrap: nowrap; gap: 0.4rem; padding: 0.5rem 0.6rem; bottom: 12px; } .bottom .btn { padding: 0.4rem 0.7rem; font-size: 0.62rem; white-space: nowrap; } .view-title { max-width: 90vw; } .view-title p { display: none; } .partcard { bottom: 130px; } }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 04 &mdash; CAD MODELLING</div>
+    </nav>
+    <a class="sib" href="project-management.html" aria-label="Previous: project management"><small>ALSO</small><span>PROJECT MANAGEMENT</span></a>
+
+    <section class="stage" id="stage" aria-label="Globe of CAD designs">
+        <div class="viewport"><canvas id="gl" role="img" aria-label="An interactive 3D globe. Each floating model is a CAD design: drag to spin the globe, click a design to open it, then decompose it into its exploded drawing."></canvas><div class="labels" id="labels" style="z-index:7"></div></div>
+        <svg id="balloons" aria-hidden="true"></svg>
+        <div class="head gonly"><div class="eyebrow" style="font-family:var(--mono);font-size:0.66rem;letter-spacing:0.2em;color:var(--accent)">04 &mdash; SYSTEMS ENGINEERING &middot; CAD MODELLING</div><h1>A globe of designs</h1><p>Every design here was drawn in CAD, then rebuilt as a live model. Click one to fly in and take it apart.</p></div>
+        <div id="hintg">Drag to spin &middot; scroll to zoom &middot; click a design</div>
+
+        <div class="view-title vonly" id="g-title"><div class="eyebrow" style="font-family:var(--mono);font-size:0.66rem;letter-spacing:0.2em;color:var(--accent)"></div><h1></h1><p id="g-blurb"></p><div class="row"><a class="btn" id="g-link" hidden></a></div></div>
+        <div class="bom vonly"><h2>BILL OF MATERIALS &middot; tap an item</h2><div id="bom" style="display:contents"></div></div>
+        <div class="bottom vonly"><button class="btn" id="b-back">&larr; Globe</button><button class="btn primary" id="b-apart" aria-pressed="false">Decompose to reference</button><button class="btn" id="b-bp" aria-pressed="false" title="Show the design as a line drawing, like the CAD reference">Drawing view</button></div>
+        <div class="partcard" id="card"><button class="x" aria-label="Close">&times;</button><div class="k"></div><h3></h3><p></p></div>
+    </section>
+</body>
+</html>

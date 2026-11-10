@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Combustion Analysis: A Twin-Turbo V8 Crank Assembly | Gopolang Makgothi</title>
+    <meta name="description" content="A twin-turbo V8's crank, piston and connecting-rod assembly you can take apart, with live pressure, kinematics, force and torque curves sized to the Koenigsegg One:1's published figures.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/showcase.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script defer src="./Syd%20Website%20Assets/Showcase/engine/engine.js"></script>
+    <style>
+        :root { --accent: #fb7185; }
+        .stage { background: radial-gradient(55% 60% at 50% 48%, #3b1424 0%, #1c0f22 50%, #060818 100%); }
+        .stage::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 36%; z-index: 0; pointer-events: none; background: radial-gradient(60% 100% at 50% 100%, rgba(251,146,60,0.14), transparent); }
+        .ctl.lbl { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; } .s-bottom input[type=range] { width: clamp(80px, 9vw, 130px); } .ctl.lbl output { min-width: 5.2em; }
+        .s-col { top: 76px; } .s-hud { top: 168px; }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 03 &mdash; PROPULSION &amp; COMBUSTION</div>
+    </nav>
+    <a class="sib" href="project-management.html" aria-label="Next: project management"><small>NEXT</small><span>PROJECT MANAGEMENT</span></a>
+
+    <section class="stage" id="stage" aria-label="V8 engine teardown">
+        <div class="viewport"><canvas id="gl" role="img"></canvas><div class="labels" id="labels"></div></div>
+        <div class="s-title"><div class="eyebrow">03 &mdash; COMBUSTION ANALYSIS &middot; CRANK ASSEMBLY</div><h1>Twin-turbo V8</h1><p>Crankshaft, pistons and connecting rods, sized for a Koenigsegg One:1. Watch the cylinders fire in step with the curves.</p></div>
+        <div class="s-hud" id="hud"></div>
+        <div class="s-col left">
+            <figure class="g" data-g="pv" style="--fl:1.1"><figcaption><b>01</b> Pressure &middot; volume</figcaption><canvas id="g-pv" aria-label="Pressure against cylinder volume for the real cycle and the ideal Otto cycle"></canvas></figure>
+            <figure class="g" data-g="pt" style="--fl:1.1"><figcaption><b>02</b> Cylinder pressure and heat release</figcaption><canvas id="g-pt" aria-label="Cylinder pressure and heat release rate against crank angle"></canvas></figure>
+            <figure class="g" data-g="kin" style="--fl:1"><figcaption><b>03</b> Piston motion</figcaption><canvas id="g-kin" aria-label="Piston position, velocity and acceleration against crank angle"></canvas></figure>
+        </div>
+        <div class="s-col right">
+            <figure class="g" data-g="forces" style="--fl:1.25"><figcaption><b>04</b> Forces on the piston</figcaption><canvas id="g-forces" aria-label="Gas, inertia and net force on the piston over a full cycle"></canvas></figure>
+            <figure class="g" data-g="torque" style="--fl:1.25"><figcaption><b>05</b> Torque, one cylinder and all eight</figcaption><canvas id="g-torque" aria-label="Crankshaft torque over a full cycle for one cylinder and for the whole engine"></canvas></figure>
+        </div>
+        <div class="hint" id="hud-u"></div>
+        <div class="partcard" id="card"><button class="x" aria-label="Close">&times;</button><div class="k"></div><h3></h3><p></p></div>
+        <div class="s-bottom">
+            <div class="grp"><button class="btn primary" id="b-apart" aria-pressed="false">Disassemble</button><button class="btn" id="b-spin" aria-pressed="true">Pause engine</button><button class="btn" id="b-lock" aria-pressed="true" title="Keep the displacement at 5.065 L when the bore changes">Hold 5.065 L</button><button class="btn" id="b-reset">Reset design</button><button class="btn mobile-only" id="b-design" aria-expanded="false">Design ▾</button></div>
+            <div class="sep"></div>
+            <div class="grp sliders">
+                <label class="ctl lbl">speed <input type="range" id="s-rpm" min="1000" max="8250" step="50"><output id="s-rpm-v"></output></label>
+                <label class="ctl lbl">boost <input type="range" id="s-boost" min="1" max="3.2" step="0.05"><output id="s-boost-v"></output></label>
+                <label class="ctl lbl">CR <input type="range" id="s-cr" min="7" max="12" step="0.1"><output id="s-cr-v"></output></label>
+                <label class="ctl lbl">bore <input type="range" id="s-bore" min="80" max="104" step="1"><output id="s-bore-v"></output></label>
+                <label class="ctl lbl">rod <input type="range" id="s-rod" min="125" max="195" step="1"><output id="s-rod-v"></output></label>
+            </div>
+        </div>
+        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
+    </section>
+
+    <main class="article">
+        <section class="sec">
+            <span class="tag">01 &middot; THE BRIEF</span>
+            <h2>One litre of cylinder, one megawatt of engine</h2>
+            <p>The target is the engine of the Koenigsegg One:1: a twin-turbocharged 5.0-litre V8, named for its one megawatt of power for one tonne of car. The manufacturer's published figures (5 065 cm&sup3; from a 92 mm bore and 95.25 mm stroke, a 9.0:1 compression ratio, 1 360 hp at 7 500 rpm, 1 371 N&middot;m at 6 000 rpm, an 8 250 rpm limiter) are the starting constraints. Everything else, the rod length, the boost, the masses, is a design choice, and this page is the machinery for making those choices: change a dimension and see the pressure, the loads and the torque change with it.</p>
+            <table class="spec"><tbody>
+                <tr><td>Displacement</td><td><b id="e-disp"></b></td></tr>
+                <tr><td>Stroke / bore</td><td><b id="e-sb"></b>: a slightly long stroke, which favours torque and burn efficiency</td></tr>
+                <tr><td>Rod ratio</td><td><b id="e-lam"></b>: typically 0.28 to 0.33 in high-performance engines</td></tr>
+                <tr><td>Mean piston speed</td><td><b id="e-sp"></b>: above about 25 m/s ring and bearing life suffers</td></tr>
+                <tr><td>Peak pressure</td><td><b id="e-pmax"></b></td></tr>
+                <tr><td>Output</td><td><b id="e-pow"></b>; published 1 000 kW at 7 500 rpm</td></tr>
+                <tr><td>Torque</td><td><b id="e-tq6"></b>; published 1 371 N&middot;m</td></tr>
+                <tr><td>Loads</td><td><b id="e-fin"></b></td></tr>
+                <tr><td>Torque ripple</td><td><b id="e-ripple"></b> (the flywheel's job)</td></tr>
+                <tr><td>Efficiency</td><td><b id="e-eta"></b></td></tr>
+                <tr><td>Fuel use</td><td><b id="e-bsfc"></b> at the current speed (brake specific)</td></tr>
+            </tbody></table>
+        </section>
+
+        <section class="sec">
+            <span class="tag">02 &middot; KINEMATICS</span>
+            <h2>The slider-crank, exactly</h2>
+            <p>A piston on a connecting rod of length <b>l</b> driven by a crank of radius <b>r</b> turning at &omega; is the slider-crank. Its position from top dead centre is exact:</p>
+            <div class="equation">$$x(\theta)=r(1-\cos\theta)+l-\sqrt{l^2-r^2\sin^2\theta},\qquad \lambda=\frac{r}{l}$$</div>
+            <p>Differentiating twice gives the acceleration, which is what loads the rod and bearings. To a good approximation, and exactly at the dead centres:</p>
+            <div class="equation">$$a(\theta)\approx r\omega^2\left(\cos\theta+\lambda\cos2\theta\right),\qquad a_{TDC}=r\omega^2(1+\lambda),\qquad a_{BDC}=-r\omega^2(1-\lambda)$$</div>
+            <p>The piston is not symmetrical: it spends longer in the lower half of the stroke and is thrown hardest at the top. A shorter rod (larger &lambda;) raises the peak acceleration and the side thrust on the cylinder wall, <span style="font-family:var(--mono)">F<sub>side</sub> = F tan&psi;</span> with <span style="font-family:var(--mono)">sin&psi; = &lambda; sin&theta;</span>; a longer one makes the engine taller and the rod heavier. Chart 03 plots all three at once.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">03 &middot; THERMODYNAMICS</span>
+            <h2>From the Otto cycle to the pressure trace</h2>
+            <p>The air-standard Otto cycle is the ideal against which an engine is judged: compress, add heat instantly at top dead centre, expand, reject heat. Its efficiency depends only on the compression ratio and the gas:</p>
+            <div class="equation">$$\eta_{Otto}=1-r_c^{\,1-\gamma}$$</div>
+            <p>At 9.0:1 and &gamma; = 1.35 that is 54 percent, and the real engine achieves about 44 percent (chart 01 shows the ideal cycle dashed against the real one). Raising the compression ratio improves it, but peak pressure rises and, on a boosted engine, so does the temperature at which the end gas knocks, which is why a turbocharged engine runs a low compression ratio. The real cylinder is solved step by step from the first law, with a Wiebe function for how fast the charge burns:</p>
+            <div class="equation">$$\frac{dp}{d\theta}=\frac{\gamma-1}{V}\frac{dQ}{d\theta}-\gamma\frac{p}{V}\frac{dV}{d\theta},\qquad x_b(\theta)=1-\exp\!\left[-a\left(\frac{\theta-\theta_0}{\Delta\theta}\right)^{m+1}\right]$$</div>
+            <p>The first term is heat release raising the pressure; the second is the piston's volume change taking it back. The Wiebe curve starts slowly, accelerates, and tails off, which is what real flames do; chart 02 shows its rate in pink under the pressure it produces.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">04 &middot; FORCES AND TORQUE</span>
+            <h2>What the piston feels, and what the crank gets</h2>
+            <p>The gas pushes the piston down with <b>p&middot;A</b>. Its own mass fights back: the reciprocating inertia force is <b>m<sub>r</sub>a</b>, which pulls the piston away from the crank near top dead centre and grows with the <b>square</b> of engine speed. Chart 04 draws gas, inertia and their sum. At the redline the inertia force alone is tens of kilonewtons, which is why piston and rod mass are minimised. The net force turns into torque on the crank through the rod's geometry:</p>
+            <div class="equation">$$T(\theta)=F_{net}\,r\,\frac{\sin(\theta+\psi)}{\cos\psi},\qquad bmep=imep-fmep,\qquad T=\frac{bmep\,V_d}{4\pi},\qquad P=T\omega$$</div>
+            <p>One cylinder delivers its torque in a single violent pulse every two revolutions. Eight cylinders overlap, and chart 05 shows how the ripple falls from huge to modest. Here the cylinders fire every 90&deg;. The flywheel fills in the rest. Friction is estimated with the Chen&ndash;Flynn correlation, which charges the engine for peak pressure and piston speed.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">05 &middot; OPTIMISING THE DIMENSIONS</span>
+            <h2>What each slider trades away</h2>
+            <ul>
+                <li><b>Bore (with displacement held).</b> A bigger bore means a shorter stroke, so a lower piston speed at the same rpm and room for larger valves; but the flame has further to travel and the combustion chamber is less compact.</li>
+                <li><b>Rod length.</b> Longer rods lower the side thrust and the piston's time at the top, but lengthen the engine and add mass; the practical window is a rod ratio of 0.28 to 0.33.</li>
+                <li><b>Compression ratio.</b> Higher gives more efficiency and more peak pressure; on boost it is capped by knock.</li>
+                <li><b>Boost.</b> Power rises almost linearly with the manifold pressure and so does peak cylinder pressure, which sets the strength of the block, head studs, pistons and crank.</li>
+                <li><b>Speed.</b> Power rises with rpm, torque falls slowly as breathing worsens and friction grows, and the inertia force grows with the square: the redline is where the rods and bearings run out of margin.</li>
+            </ul>
+            <p style="margin-top:1rem">The model is a design-study tool: a single-zone first-law cycle with a Wiebe burn, an exact slider-crank, and a friction correlation. Its boost, masses and rod length are chosen here so that the output lands on the published figures (within about five percent on torque), and every number on the page changes together when a slider moves.</p>
+            <div class="more"><a href="pump.html">Centrifugal pump &rarr;</a><a href="propulsion.html">Turbofan &rarr;</a><a href="project-management.html">Project management &rarr;</a><a href="cad-gallery.html">CAD gallery &rarr;</a><a href="portfolio.html">Portfolio</a></div>
+        </section>
+    </main>
+    <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html">Back to portfolio</a></footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () { if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }], throwOnError: false }); });
+    </script>
+    <script>document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('b-design'),bar=document.querySelector('.s-bottom');if(b)b.addEventListener('click',function(){var o=bar.classList.toggle('open');b.setAttribute('aria-expanded',o);});});</script>
+</body>
+</html>
