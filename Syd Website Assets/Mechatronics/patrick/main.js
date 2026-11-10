@@ -11,6 +11,9 @@ import {buildRobot, PALETTE} from './robot.js';
 import {INFO, TAGS} from './parts.js';
 import * as C from './charts.js';
 
+// The teardown lab is below the full-screen kitchen, so it is only built when the visitor scrolls near it (entry.js calls start()).
+export function start() {
+
 const $ = (id) => document.getElementById(id);
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const D2R = Math.PI / 180;
@@ -660,8 +663,7 @@ function loop(now) {
   const dt = Math.min((now - last) / 1000, 0.1); last = now; frameN++;
   if (!document.hidden) {
     if (stageVisible) { frame(reduce && !tour.running ? 0 : dt); (useComposer ? composer.render() : renderer.render(scene, camera)); }
-    chartTick++;
-    if (chartTick % 2 === 0) drawAllCharts(false, now);
+    if (stageVisible) { chartTick++; if (chartTick % 2 === 0) drawAllCharts(false, now); }
     // quality: step down if the page can't hold ~45 fps
     if (tier < TIERS.length - 1 && stageVisible) {
       perf.age += dt;
@@ -687,3 +689,4 @@ function boot() {
   window.__PATRICK = {seek: (t) => { tRun = t; hold = 0; }, S, run: () => run, robot, rig, scene, camera, renderer, M, select, setView, tour};
 }
 document.fonts?.ready?.then(boot, boot) ?? boot();
+}

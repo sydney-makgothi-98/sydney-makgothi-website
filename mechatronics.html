@@ -280,6 +280,11 @@
         .k-tip { position: absolute; z-index: 9; pointer-events: none; transform: translate(12px, -28px); background: rgba(7,10,26,0.92); color: #fff; font-family: var(--mono); font-size: 0.64rem; padding: 0.22rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-accent); white-space: nowrap; opacity: 0; transition: opacity 120ms ease; } .k-tip.on { opacity: 1; }
         .kstage canvas#k-gl.pick { cursor: pointer; }
         @media (max-width: 900px) { .k-part { top: auto; bottom: 150px; right: 12px; max-height: 38%; } .k-lab { bottom: 78px; } }
+        /* weaker devices: no blur behind panels (it re-blurs the moving 3D view every frame), slightly more solid panels */
+        .kstage.lite .bub, .kstage.lite .k-intro .directive, .kstage.lite .k-status, .kstage.lite .k-list, .kstage.lite .k-bar, .kstage.lite .k-lab, .kstage.lite .k-part, .kstage.lite .k-modal, .kstage.lite .chip { backdrop-filter: none; -webkit-backdrop-filter: none; }
+        .kstage.lite .bub { background: rgba(10,14,38,0.93); box-shadow: 0 8px 24px rgba(0,0,0,0.45); will-change: auto; transition: width 220ms ease, height 220ms ease; }
+        .kstage.lite .k-status, .kstage.lite .k-list, .kstage.lite .k-bar, .kstage.lite .k-lab, .kstage.lite .k-part { background: rgba(9,13,36,0.95); box-shadow: none; }
+        .kstage.lite .k-intro .directive { background: rgba(9,13,36,0.88); } .kstage.lite .k-modal { background: rgba(5,8,22,0.97); }
         .modal-open .next { display: none; }
         @media (max-width: 900px) { .k-intro .directive, .k-intro .steps { display: none; } .k-intro { max-width: 60vw; } .k-list { width: 150px; bottom: 90px; } .k-status span.t { display: none; } }
         @media (max-width: 720px) { .k-intro .eyebrow { display: none; } .k-right { top: 128px; left: 12px; right: 12px; align-items: flex-start; } .k-row { justify-content: flex-start; } .k-right .chip { font-size: 0.58rem; padding: 0.25rem 0.5rem; } .k-bar { gap: 0.35rem; padding: 0.4rem; } .tbtn { padding: 0.55rem 0.7rem; letter-spacing: 0.08em; } .k-sep, #k-speed { display: none; } .k-list { display: none; } .mhead { padding-top: 4rem; } }

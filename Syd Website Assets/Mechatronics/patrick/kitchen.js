@@ -19,7 +19,7 @@ const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const D2R = Math.PI / 180;
 const V3 = THREE.Vector3;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const stageEl = $('k-stage'), canvas = $('k-gl');
+const stageEl = $('k-stage'), canvas = $('k-gl'), introEl = document.querySelector('.k-intro');
 if (!stageEl || !canvas) throw new Error('kitchen stage markup is missing');
 
 /* ------------------------------------------------------------------------------------------------- state -------- */
@@ -62,7 +62,7 @@ let useComposer = true;
 
 /* --------------------------------------------------------------------------------------------- the scene -------- */
 const kitchen = buildKitchen(scene);
-const robot = buildRobot(); scene.add(robot.root);
+const robot = buildRobot({lite: startTier() >= 1}); scene.add(robot.root);
 const itemMesh = ITEMS.map((it, i) => { const g = buildItem(it.id); scene.add(g); return g; });
 // the sonar beam in 3D: a translucent wedge out to whatever the sensor sees, and a dot where it lands
 const sonarViz = new THREE.Group(); robot.root.add(sonarViz); sonarViz.position.set(M.R.sensorX + 0.008, M.R.sensorY, 0);
@@ -134,18 +134,44 @@ canvas.addEventListener('pointerup', endPtr); canvas.addEventListener('pointerca
 canvas.addEventListener('wheel', (e) => { e.preventDefault(); if (S.cam !== 'follow') { want.az = rig.az; want.el = rig.el; want.dist = rig.dist; setCam('follow'); } want.dist = clamp(want.dist * Math.exp(e.deltaY * 0.0012), 0.3, 4); }, {passive: false});
 
 /* ------------------------------------------------------------------------------------------ quality tiers ------ */
-const TIERS = [{pr: 1.6, shadow: 2048, post: 2}, {pr: 1.3, shadow: 1024, post: 1}, {pr: 1, shadow: 512, post: 0}];
-let tier = matchMedia('(pointer: coarse)').matches || Math.min(innerWidth, innerHeight) < 700 ? 2 : 0;
+// Tier 0 is the full look (ambient occlusion, MSAA, 2048 shadows, glass panels). Each tier below removes the most expensive thing
+// first. The page starts at the tier its device can probably afford, then steps down on its own if the frame rate says otherwise.
+const TIERS = [
+  {pr: 1.6, shadow: 2048, post: 2, lite: false, shEvery: 1, charts: 4, idle: 1},
+  {pr: 1.25, shadow: 1024, post: 0, lite: true, shEvery: 1, charts: 5, idle: 2},
+  {pr: 1, shadow: 512, post: 0, lite: true, shEvery: 2, charts: 6, idle: 2},
+  {pr: 0.75, shadow: 0, post: 0, lite: true, shEvery: 0, charts: 8, idle: 2},
+];
+function startTier() {
+  const forced = new URLSearchParams(location.search).get('tier');          // ?tier=0..3 forces a quality tier (for testing)
+  if (forced !== null && forced !== '') return clamp(+forced || 0, 0, 3);
+  const coarse = matchMedia('(pointer: coarse)').matches, small = Math.min(innerWidth, innerHeight) < 700;
+  const cores = navigator.hardwareConcurrency || 4, mem = navigator.deviceMemory || 4, big = innerWidth * innerHeight * (devicePixelRatio || 1) ** 2 > 5.5e6;
+  if (coarse || small) return 2;
+  if (cores <= 4 || mem <= 4 || big) return 1;
+  return 0;
+}
+let tier = startTier();
+let VP = {W: 1, H: 1};
+const keep = {introR: 0, introB: 0, listR: 230};
+function measure() {                                                // layout reads happen here, on resize, never once per frame
+  VP.W = stageEl.clientWidth; VP.H = stageEl.clientHeight;
+  const ir = introEl.getBoundingClientRect(), sr = stageEl.getBoundingClientRect(); keep.introR = ir.right - sr.left; keep.introB = ir.bottom - sr.top;
+}
 function applyTier() {
   const t = TIERS[tier];
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, t.pr)); useComposer = t.post > 0; gtao.enabled = t.post > 1;
-  key.shadow.mapSize.set(t.shadow, t.shadow); if (key.shadow.map) { key.shadow.map.dispose(); key.shadow.map = null; }
+  key.castShadow = t.shadow > 0; renderer.shadowMap.autoUpdate = t.shEvery === 1;
+  if (t.shadow) { key.shadow.mapSize.set(t.shadow, t.shadow); if (key.shadow.map) { key.shadow.map.dispose(); key.shadow.map = null; } }
+  stageEl.classList.toggle('lite', t.lite);
+  for (const m of robot.meshes) { if (m.userData.r === undefined) { m.geometry.computeBoundingSphere(); m.userData.r = m.geometry.boundingSphere.radius; m.userData.cs = m.castShadow; } m.castShadow = m.userData.cs && (tier < 2 || m.userData.r > 0.012); }   // tiny parts cast no shadow on weak tiers
   resize();
 }
 function resize() {
   const w = stageEl.clientWidth, h = stageEl.clientHeight;
   renderer.setSize(w, h, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h);
   camera.aspect = w / h; camera.fov = w / h < 0.9 ? 58 : 36; camera.updateProjectionMatrix();
+  measure();
 }
 addEventListener('resize', resize);
 
@@ -300,14 +326,12 @@ BUBBLES.forEach((b, i) => {
   el.addEventListener('click', () => openModal(b.id));
   el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(b.id); } });
 });
-const screenPos = new V3(), keep = {introR: 0, introB: 0, listR: 230}, introEl = document.querySelector('.k-intro');
+const screenPos = new V3();
 function layoutBubbles(dt, now) {
-  const W = stageEl.clientWidth, H = stageEl.clientHeight;
+  const W = VP.W, H = VP.H;
   const dock = W < 760;
   bubblesEl.classList.toggle('dock', dock); leadersEl.style.display = dock ? 'none' : '';
   if (dock) return;
-  const ir = introEl.getBoundingClientRect(), sr = stageEl.getBoundingClientRect();
-  keep.introR = ir.right - sr.left; keep.introB = ir.bottom - sr.top; keep.listR = 230;
   screenPos.set(robot.root.position.x, 0.12, robot.root.position.z).project(camera);
   const rx = (screenPos.x * 0.5 + 0.5) * W, ry = (-screenPos.y * 0.5 + 0.5) * H;
   const k = 1 - Math.exp(-dt * 3.2);
@@ -438,15 +462,21 @@ function frame(dt, now) {
   } else selTag.classList.remove('on');
 }
 function loop(now) {
+  const T = TIERS[tier];
+  if (document.hidden || !stageVisible) { last = now; requestAnimationFrame(loop); return; }
+  // on weaker tiers, a halted robot only needs 30 frames a second
+  if (T.idle === 2 && !sim.active && !modal.open && (frameN + 1) % 2) { frameN++; requestAnimationFrame(loop); return; }
   const dt = Math.min((now - last) / 1000, 0.1); last = now; frameN++;
-  if (!document.hidden && stageVisible) {
-    frame(reduce && sim.status === 'READY' ? 0 : dt, now);
-    (useComposer ? composer.render() : renderer.render(scene, camera));
-    BUBBLES.forEach((b) => { if (frameN % (b.hover ? 2 : 4) === b.id.length % 2 || frameN < 4) drawBubbleMini(b, now); });
-    if (modal.open && frameN % 2 === 0) drawModal(now);
-    if (tier < TIERS.length - 1) {                                  // step the quality down if the page cannot hold about 45 fps
-      perf.age += dt;
-      if (perf.age > 1.5) { perf.sum += dt; perf.n++; if (perf.n >= 20) { perf.slow = perf.sum / perf.n > 0.026 ? perf.slow + 1 : 0; perf.sum = perf.n = 0; if (perf.slow >= 2) { tier++; applyTier(); perf.slow = 0; perf.age = 0; } } }
+  frame(reduce && sim.status === 'READY' ? 0 : dt, now);
+  if (T.shEvery > 1 && frameN % T.shEvery === 0) renderer.shadowMap.needsUpdate = true;
+  (useComposer ? composer.render() : renderer.render(scene, camera));
+  BUBBLES.forEach((b) => { if (frameN % (b.hover ? 2 : T.charts) === b.id.length % 2 || frameN < 4) drawBubbleMini(b, now); });
+  if (modal.open && frameN % 2 === 0) drawModal(now);
+  if (tier < TIERS.length - 1) {                                    // step the quality down if the page cannot hold about 40 fps
+    perf.age += dt;
+    if (perf.age > 1.0) {
+      perf.sum += dt; perf.n++;
+      if (perf.n >= 15) { const avg = perf.sum / perf.n; perf.slow = avg > 0.045 ? 2 : avg > 0.027 ? perf.slow + 1 : 0; perf.sum = perf.n = 0; if (perf.slow >= 2) { tier++; applyTier(); perf.slow = 0; perf.age = 0; } }
     }
   }
   requestAnimationFrame(loop);
@@ -456,6 +486,6 @@ function boot() {
   rig.t.copy(targetPoint());
   const ready = renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve();
   ready.catch(() => {}).finally(() => { last = performance.now(); requestAnimationFrame(loop); });
-  window.__KITCHEN = {select, setLab, sim, S, D, rig, want, robot, scene, camera, renderer, setCam, act, openModal, closeModal, modal, itemMesh, BUBBLES};
+  window.__KITCHEN = {tier: () => tier, setTier: (n) => { tier = n; applyTier(); }, select, setLab, sim, S, D, rig, want, robot, scene, camera, renderer, setCam, act, openModal, closeModal, modal, itemMesh, BUBBLES};
 }
 document.fonts?.ready?.then(boot, boot) ?? boot();

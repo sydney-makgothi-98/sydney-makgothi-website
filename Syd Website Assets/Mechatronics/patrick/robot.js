@@ -93,8 +93,10 @@ const M = {
 };
 
 /* ---------------------------------------------------------------------------------------------- geometry kit --- */
-const rbox = (w, h, d, r = 0.0015) => new RoundedBoxGeometry(w, h, d, 3, Math.min(r, w / 2.2, h / 2.2, d / 2.2));
-const cyl = (r, h, seg = 28) => new THREE.CylinderGeometry(r, r, h, seg);
+// Lite build (weaker devices): rounded corners with one segment instead of three, fewer sides on round parts. Same shapes, about a third of the triangles.
+let SEG = 3, LITE = false;
+const rbox = (w, h, d, r = 0.0015) => new RoundedBoxGeometry(w, h, d, SEG, Math.min(r, w / 2.2, h / 2.2, d / 2.2));
+const cyl = (r, h, seg = 28) => new THREE.CylinderGeometry(r, r, h, LITE ? Math.max(10, Math.round(seg * 0.6)) : seg);
 const hexPrism = (r, h) => new THREE.CylinderGeometry(r, r, h, 6);
 const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler();
 /** a copy of geo moved to pos, rotated r (euler), scaled s: for merging many small features into one mesh */
@@ -126,7 +128,8 @@ function bar(len, w, t, holes = 0, hr = 0.0022) {
 }
 
 /* ----------------------------------------------------------------------------------------------- robot build --- */
-export function buildRobot() {
+export function buildRobot(opts = {}) {
+  LITE = !!opts.lite; SEG = LITE ? 1 : 3;
   const root = new THREE.Group();
   const parts = [], byId = {}, meshes = [];
 
@@ -263,16 +266,16 @@ export function buildRobot() {
       const a = i * Math.PI * 2 / 5, h = new THREE.Path(), r0 = 0.0108, r1 = 0.0246, w0 = 0.2, w1 = 0.13;
       h.moveTo(Math.cos(a - w0) * r0, Math.sin(a - w0) * r0); h.absarc(0, 0, r1, a - w1, a + w1, false); h.absarc(0, 0, r0, a + w0, a - w0, true); h.closePath(); rim.holes.push(h);
     }
-    const rg = new THREE.ExtrudeGeometry(rim, {depth: 0.010, bevelEnabled: true, bevelSize: 0.0006, bevelThickness: 0.0006, bevelSegments: 2, curveSegments: 28});
+    const rg = new THREE.ExtrudeGeometry(rim, {depth: 0.010, bevelEnabled: true, bevelSize: 0.0006, bevelThickness: 0.0006, bevelSegments: LITE ? 1 : 2, curveSegments: LITE ? 16 : 28});
     rg.translate(0, 0, -0.005);
     add(wheel, rg, PALETTE.yellow, [0, 0, 0], M.yellow, spin);
-    add(wheel, new THREE.TorusGeometry(0.0272, 0.0017, 10, 64), PALETTE.yellow, [0, 0, side * 0.0058], M.yellow, spin);
+    add(wheel, new THREE.TorusGeometry(0.0272, 0.0017, LITE ? 6 : 10, LITE ? 40 : 64), PALETTE.yellow, [0, 0, side * 0.0058], M.yellow, spin);
     add(wheel, new THREE.CylinderGeometry(0.0108, 0.0128, 0.0140, 32), PALETTE.yellow, [0, 0, 0], {...M.yellow, rot: [Math.PI / 2, 0, 0]}, spin);
     add(wheel, new THREE.SphereGeometry(0.0072, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2), PALETTE.yellow, [0, 0, side * 0.0068], {...M.yellow, rot: [side * Math.PI / 2, 0, 0]}, spin);
     merged(wheel, [G(hexPrism(0.0040, 0.0030), [0, 0, side * 0.0092], [Math.PI / 2, 0, 0]), G(cyl(0.0021, 0.0050, 12), [0, 0, side * 0.0108], [Math.PI / 2, 0, 0])], PALETTE.steel, M.zinc, spin);
     const pr = [], rw = 0.0128, ri = 0.0286, ro = 0.0324, sh = 0.0018;
     pr.push([ri, -rw], [ro - sh, -rw], [ro - sh * 0.3, -rw + sh * 0.4], [ro, -rw + sh], [ro, rw - sh], [ro - sh * 0.3, rw - sh * 0.4], [ro - sh, rw], [ri, rw]);
-    add(wheel, new THREE.LatheGeometry(pr.map(([r, yy]) => new THREE.Vector2(r, yy)), 80), PALETTE.tyre, [0, 0, 0], {...M.rubber, rot: [Math.PI / 2, 0, 0]}, spin);
+    add(wheel, new THREE.LatheGeometry(pr.map(([r, yy]) => new THREE.Vector2(r, yy)), LITE ? 48 : 80), PALETTE.tyre, [0, 0, 0], {...M.rubber, rot: [Math.PI / 2, 0, 0]}, spin);
     const ribsG = [];
     for (let i = 0; i < 44; i++) { const a = i / 44 * Math.PI * 2; ribsG.push(G(rbox(0.0017, 0.0017, 0.0200, 0.0006), [Math.cos(a) * 0.0325, Math.sin(a) * 0.0325, 0], [0, 0, a])); }
     merged(wheel, ribsG, PALETTE.tyre, M.rubber, spin);
