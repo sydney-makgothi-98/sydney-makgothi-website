@@ -20,17 +20,17 @@ The book has five parts, and they build on each other.
 
 **Part I** is theory. It explains how the web works and how a browser thinks, in plain English, before you write any serious code. Every chapter ends with questions to check what you have taken in.
 
-**Part II** goes through the tools one at a time: HTML, CSS, JavaScript, React, canvas and SVG drawing, GSAP, three.js, the build tools, and C++, the language of the robot's controller. Each tool gets a list of words you will meet, an explanation of how it works, worked examples, and practice problems that have nothing to do with the website. A skill you can only use on one project is not really a skill.
+**Part II** goes through the tools one at a time: HTML, CSS, JavaScript, React, canvas and SVG drawing, GSAP, three.js, the build tools, and a full C++ course, from a first program to a controller for a robot of your own. Each tool gets a list of words you will meet, an explanation of how it works, worked examples, and practice problems that have nothing to do with the website. A skill you can only use on one project is not really a skill.
 
 **Part III** is six guided projects, from a first page up to a 3D model you can take apart and a C++ cart that brakes before a wall. Each one uses what you learned in Part II, and each ends with a short quiz.
 
 **Part IV** covers the advanced material for each tool, including stable simulation and twin testing in C++.
 
-**Part V** is a guided tour of the real website, one section, function and decision at a time. It includes a guided project on how the robot's C++ program was written, and covers the Claude skills that helped build it.
+**Part V** is a guided tour of the real website, one section, function and decision at a time. It includes a guided project that builds the robot's whole C++ program from an empty file in nine runnable stages, and covers the Claude skills that helped build it.
 
 #### A living book
 
-This is Edition 0.3. It will change. Whenever the website grows or a better way of explaining something turns up, the book grows with it. The Book Map after this introduction shows what the book contains today.
+This is Edition 0.4. It will change. Whenever the website grows or a better way of explaining something turns up, the book grows with it. The Book Map after this introduction shows what the book contains today.
 
 #### A promise about honesty
 
@@ -91,9 +91,9 @@ The table lists every part of the book and where it stands today.
 | Part | What is in it | State |
 |---|---|---|
 | I. Foundations | The theory of the frontend: the web, the browser, the three languages, space and size, events, animation, graphics, and quality. Eight chapters with questions. | Written |
-| II. The Tech Stack | HTML, CSS, JavaScript, React, canvas and SVG, GSAP, three.js, build tools with Git, and C++. Words you will meet, theory, worked examples, practice problems. | Written, first edition |
+| II. The Tech Stack | HTML, CSS, JavaScript, React, canvas and SVG, GSAP, three.js, build tools with Git, and a full C++ course (18 sections, five mini projects, 40 practice problems with line answers). Words you will meet, theory, worked examples, practice problems. | Written; C++ is the most complete |
 | III. Six Guided Projects | A landing page, a responsive gallery, an animated story, an interactive physics chart, a 3D model you can take apart, and a C++ cart that brakes before a wall. Each ends with a quiz. | Written, first edition |
 | IV. Advanced Topics | Advanced CSS, JavaScript, React, canvas, GSAP, three.js, accessibility with performance, and C++ (stable simulation, twin testing). | Written, first edition |
-| V. The Guided Build | The real website: its shape, the HTML, CSS and JavaScript of the flight dynamics page, the stability model, the Patrick robot page, the robot's C++ program written step by step, the build pipeline, React and GSAP (honestly), and the Claude skills. | Written, first edition |
+| V. The Guided Build | The real website: its shape, the HTML, CSS and JavaScript of the flight dynamics page, the stability model, the Patrick robot page, the robot's C++ program built from scratch in nine stages, the build pipeline, React and GSAP (honestly), and the Claude skills. | Written, first edition |
 
 "First edition" means the chapter is complete enough to learn from, and will be deepened as the site grows. The exercises in Part I are the most polished; the later parts will gain more exercises and more line-by-line detail over time.

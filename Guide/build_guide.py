@@ -43,7 +43,7 @@ OUT = os.path.join(HERE, 'Building-the-Portfolio-Website.pdf')
 TITLE = 'Building an Interactive Engineering Portfolio'
 SUBTITLE = 'A Textbook and Guided Build of the Website, from the Theory of the Frontend to the Last Line of Code'
 AUTHOR = 'Gopolang Makgothi'
-EDITION = 'Edition 0.3, living document'
+EDITION = 'Edition 0.4, living document'
 
 # ------------------------------------------------------------------ fonts
 FONTS = os.environ.get('WINFONTS', r'C:\Windows\Fonts')
