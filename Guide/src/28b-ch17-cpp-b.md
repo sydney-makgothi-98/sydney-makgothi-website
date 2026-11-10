@@ -1,6 +1,10 @@
 ## 17.10 Choosing Between States: enum and switch
 
-An `enum` is a list of named choices; a `switch` runs the code for the current one. Together they make a **state machine**, which is how Patrick thinks: APPROACH, BRAKE, REACH, GRIP and so on. At any moment the machine is in exactly one state, and each state knows what to do and when to move on. Here is a smaller one, an automatic door:
+An `enum` is a list of named choices; a `switch` runs the code for the current one. Together they make a **state machine**, which is how Patrick thinks: APPROACH, BRAKE, REACH, GRIP and so on. At any moment the machine is in exactly one state, and each state knows what to do and when to move on.
+
+@figure state-machine The first phases of the breakfast run as a state machine. The arrows carry the condition that moves the robot on; everything else about a phase is what it does while it waits for that condition.
+
+Here is a smaller one, an automatic door:
 
 @code Guide/code/cpp/s10_door.cpp 1-23
 
@@ -36,6 +40,10 @@ t= 7.0 s  button=0  CLOSED   position 0.0
 ## 17.11 References, Pointers and Cleaning Up After Yourself
 
 A **reference** is another name for a variable. A **pointer** is a variable that holds the *address* of another, written with `*`; you follow it with `*p`, take an address with `&x`, and a pointer that points at nothing is `nullptr`. In modern C++ you meet raw pointers less than you might fear, because the standard library manages memory for you.
+
+@figure cpp-pointer A pointer holds an address. `&x` asks where `x` lives; `*p` goes there. Reading `*p` reads `x`; writing `*p = 4` changes `x`.
+
+@figure cpp-stack-heap Where variables live. Locals sit on the stack in the frame of the function that made them and vanish when it returns. Anything whose size is only known at run time, such as a vector's contents, lives on the heap, and a local vector holds a pointer to it and frees it for you.
 
 @code Guide/code/cpp/s11_pointers.cpp 1-22
 
@@ -219,7 +227,11 @@ Even semi-implicit Euler has a limit: for a spring-like system the step size tim
 
 ## 17.16 A PID Controller in Code
 
-You met PID control on the drone page. A PID controller computes a command from the *error* (target minus measured): *u = Kp x e + Ki x (integral of e) + Kd x (rate of change of e)*. The **P** term pushes in proportion to the error; the **I** term builds up while an error lingers and removes steady offsets; the **D** term brakes when the error is changing fast. In code it is a small class with a little memory (the integral and the previous error):
+You met PID control on the drone page. A PID controller computes a command from the *error* (target minus measured): *u = Kp x e + Ki x (integral of e) + Kd x (rate of change of e)*. The **P** term pushes in proportion to the error; the **I** term builds up while an error lingers and removes steady offsets; the **D** term brakes when the error is changing fast.
+
+@figure pid-loop The feedback loop. The measurement is subtracted from the setpoint to give the error, the controller turns the error into a command, the plant responds, and the new measurement comes back round. The controller's memory (the integral and the last error) is what the class below keeps between calls.
+
+In code it is a small class with a little memory (the integral and the previous error):
 
 @code Guide/code/cpp/s16_pid.cpp 1-40
 

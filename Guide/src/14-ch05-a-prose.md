@@ -2,6 +2,14 @@
 
 A page that only shows things is a document. A page that responds to you is a program, and every program needs three things: a way to hear what you do, a place to remember what has happened, and a rule for turning what it remembers into what you see. Those three are **events**, **state** and **rendering**. Underneath all of them is a little piece of machinery called the event loop, which decides the order your code runs in. It is the single most useful thing to understand about JavaScript, and also the least obvious. Take a deep breath. It is simpler than it sounds.
 
+:::objectives
+- Explain what "single-threaded" means and why it is both a gift and a limit.
+- Describe the call stack, the task queue, the microtask queue and the loop that ties them together, and predict the order of a mixed script.
+- Register handlers, read the event object, and use capture, bubble and delegation on purpose.
+- Handle mouse, touch and pen with one set of pointer events.
+- Decide what belongs in state, keep each fact once, and draw the screen as a function of it.
+:::
+
 ## JavaScript Does One Thing at a Time
 
 JavaScript on a page is **single-threaded**. It runs one piece of code at a time, all the way to the end, before it starts another. Picture a cashier with one till and a very polite queue. Nobody is served simultaneously.
@@ -26,6 +34,8 @@ The **event loop** is the rule that ties them together. It repeats forever:
 2. Run *every* microtask, including any new ones they add, until none are left.
 3. If it is time, let the browser redraw the screen.
 4. Go back to step 1.
+
+@figure event-loop The three structures and the loop. Whatever is on the stack runs to the end. Then every microtask runs. Only then does the next task (a click, a timer) get its turn, and only between tasks can the browser redraw.
 
 :::remember
 The current code always finishes first. Then every waiting microtask runs. Then the next task begins. If you remember only that sentence from this chapter, you can predict almost any ordering puzzle JavaScript throws at you.
@@ -70,6 +80,8 @@ The event object passed to your handler carries the details: where the pointer w
 An event does not just arrive at the element you clicked. The page is a tree, and the event travels through it in three phases. In **capture**, it travels down from the root to the target. At the **target**, it fires on the element itself. In **bubble**, it climbs back up through every ancestor. A normal handler listens during the bubble phase, so clicking a button inside a panel inside the page triggers the button's handler, then the panel's, then the page's.
 
 This is handy. Instead of attaching a handler to each of a hundred chips in a list, you attach *one* handler to the list and look at `event.target` to see which chip was clicked. That is called **event delegation**.
+
+@figure event-propagation A click on the button travels down the tree in the capture phase, fires at the target, and climbs back up in the bubble phase. A normal listener on `div.panel` hears the click on its way back up.
 
 :::why One handler on the parent instead of many on the children
 **What it is.** `list.addEventListener('click', ...)`, then checking `event.target.closest('li')`.
@@ -134,6 +146,20 @@ This brings us to the idea that organises modern interface programming. Think of
 
 Given the same state, you get the same screen. You do not write "when the tab changes, hide this and show that". You write "given the current tab, here is what the page looks like", and run it again whenever the state changes. The first style piles up special cases. The second has none, because the page simply *is* whatever the state says.
 
+@figure state-render The loop every interactive page runs. Events change one fact in the state; the screen is redrawn from the state; the visitor sees it and acts again. Nothing on screen is a second copy of anything.
+
+:::worked Deciding what is state
+A panel shows one of three charts (speed, power, sound), chosen by three chip buttons, and has a "pause" button that freezes the animation. List the state, and say what is *not* state.
+
+**Step 1. List the facts that can change.** Which chart is chosen: one of three values. Whether the animation is paused: true or false. How far the animation has run: a time in seconds. That is the whole state: `{ chart: 'speed', paused: false, t: 0 }`.
+
+**Step 2. Find the impostors.** "Which chip has the highlighted class" is not state. It is a consequence of `chart`. "Whether the pause button says Pause or Resume" is not state; it follows from `paused`. "The pixels of the chart" are not state; they are drawn from `chart` and `t`. Each of these is something `render` works out.
+
+**Step 3. Write the render.** `render(state)` sets the highlighted class on the chip whose `data-chart` matches `state.chart`, writes the button label from `state.paused`, and draws the chart named by `state.chart` at time `state.t`.
+
+**Step 4. Check it.** Could the page ever show the power chart with the speed chip highlighted? Only if `render` has a bug, because both come from the same field. Before, with the class toggled by hand in three different click handlers, it was one forgotten line away.
+:::
+
 Part II shows how the React library automates this for a whole page. A canvas animation already does it in its purest form: every frame it clears the canvas and redraws everything from the current state, with no memory of the previous frame.
 
 ```
@@ -154,3 +180,12 @@ function frame() {
 :::
 
 The next chapter takes up this loop.
+
+:::summary
+- JavaScript runs one thing at a time. The running code always finishes, then every microtask, then the next task, then (if it is time) a redraw.
+- `setTimeout(fn, 0)` means "after the current work", never "now". Promise follow-ups run before any timer.
+- A handler receives an event object with the details. Keep handlers small; do the heavy work once per frame.
+- Events capture down and bubble up. One listener on a parent can serve every child, including children added later.
+- Pointer events cover mouse, touch and pen. Capture the pointer when a drag starts.
+- State is the set of facts the page needs. Keep each fact once and draw everything from it: screen = render(state).
+:::

@@ -2,6 +2,15 @@
 
 Think of a browser as a very fast short-order cook. Orders come in (HTML, CSS, scripts), and the cook has one pair of hands, a strict timetable, and a customer who walks out if dinner is late. Understand how the kitchen runs and you will write pages that feel smooth almost by accident. Ignore it, and your pages will stutter, and you will not know why.
 
+:::objectives
+- Name the steps that turn bytes into pixels, and say which of them a given CSS change repeats.
+- Draw the DOM tree for a small piece of HTML.
+- Explain why stylesheets block the first paint and why scripts block the parser, and what `async` and `defer` change.
+- Work out the frame budget for any refresh rate.
+- Recognise layout thrashing in code and rewrite it.
+- Measure before guessing, using the Performance panel.
+:::
+
 ## From Bytes to Pixels: The Critical Rendering Path
 
 When the first bytes of an HTML file arrive, the browser does not wait for the rest. It starts cooking immediately, in a fixed sequence of steps called the **critical rendering path**.
@@ -18,6 +27,8 @@ The browser reads the HTML text and builds a **tree** of objects from it, called
 ```
 
 The DOM is the browser's working model of your page, and it is the thing your JavaScript reads and changes. Notice that the browser is forgiving. If you forget an end tag, it quietly repairs the tree and carries on. That is friendly, and it is also why a typo in HTML usually gives you a *weird layout* and not an error message.
+
+@figure dom-tree The DOM for a tiny page. Every tag becomes an element node and every run of text becomes a text node. The `em` sits *inside* the paragraph's text, between two text nodes, which is exactly how it appears in the source.
 
 #### Step 2: Parse the CSS into the CSSOM
 
@@ -40,6 +51,8 @@ The browser combines the DOM and the CSSOM into a **render tree**, which holds o
 1. **Layout** (also called *reflow*) works out the size and position of every box. It is pure geometry: given the width of the window, how wide is each box, where does the text wrap, how tall is each row?
 2. **Paint** turns each box into drawing instructions: fill this rectangle, draw this text, draw this border.
 3. **Composite** takes the painted pieces, which live on separate **layers**, and stacks them on the screen, usually with the graphics processor (the GPU) doing the work.
+
+@figure rendering-pipeline The critical rendering path. HTML and CSS are parsed into two trees, combined, laid out, painted and composited. JavaScript can reach into both trees, which is why a script can change anything, and why it can force the later steps to run again.
 
 :::remember
 This last trio is the most useful idea in the chapter. Changing something that affects **geometry** (like `width`) redoes layout, paint *and* composite. Changing something that only affects **appearance** (like `background-color`) skips layout but still repaints. Changing `transform` or `opacity` on an element with its own layer can be done at the composite step alone, which is by far the cheapest.
@@ -65,6 +78,8 @@ Two small attributes fix this. An **`async`** script downloads while parsing con
 <script defer src="katex.min.js"></script>
 <script defer src="auto-render.min.js"></script>   <!-- runs after katex.min.js -->
 ```
+
+@figure script-loading What the parser does while a script arrives. A plain script stops parsing until it has downloaded and run. An `async` script downloads alongside parsing and runs the moment it lands. A `defer` script downloads alongside parsing and runs only after the whole document is parsed.
 
 :::why Marking library scripts defer
 **What it is.** Adding the word `defer` to a script tag.
@@ -93,6 +108,8 @@ A display refreshes at 144 hertz. The robot page of this website redraws a 3D sc
 
 **What happens when you go over?** The browser does not squeeze the work in. It misses the frame and shows the old picture again, and the motion appears to stutter. That is why the robot page measures its own frame times and, if they stay too long, lowers its rendering quality a step at a time until it fits.
 :::
+
+@figure frame-budget One frame at 60 hertz and one at 144 hertz, drawn to the same scale. The browser's own steps (style, layout, paint, composite) come out of the same budget as your script.
 
 ## The Graphics Processor
 
@@ -123,10 +140,31 @@ boxes.forEach((b, i) => { b.style.width = widths[i] / 2 + 'px'; });
 **What happens if you do not.** Your page does the same amount of "real" work but feels a hundred times slower, and the cause is invisible in the code unless you know the rule.
 :::
 
+:::worked The cost of a thrashing loop
+A page has 500 boxes. Recalculating the layout of the page takes 0.4 ms. How long does each version of the loop above spend in layout, and what does that mean for the frame budget?
+
+**Step 1. The slow version.** Each pass reads `offsetWidth` after the previous pass wrote a width, so the browser must recalculate layout before it can answer. That is one recalculation per box: 500 × 0.4 = 200 ms.
+
+**Step 2. The fast version.** All the reads happen first, against one clean layout, so one recalculation serves them all. Then all the writes happen, and the browser lays out once more before it paints: 2 × 0.4 = 0.8 ms.
+
+**Step 3. Against the budget.** At 60 hertz the budget is 16.7 ms. The slow version misses twelve frames in a row; the visitor sees the page freeze for a fifth of a second. The fast version uses one twentieth of a single frame.
+
+**What the answer tells you.** The two loops do the same arithmetic and set the same widths. The only difference is the *order* of reads and writes. This is the kind of bug a profile finds and a code review usually misses.
+:::
+
 ## Measure, Don't Guess
 
 The developer tools have a **Performance** panel. It records a few seconds of your page's life and draws a timeline showing how the main thread spent every millisecond: scripting, rendering, painting. Long tasks are marked in red. The first rule of making a page faster is to measure it. The second is to measure it again after the change, because human intuition about speed is wrong a surprising amount of the time.
 
 :::tip
 Before you "optimise" anything, record a profile. A change that feels like it should help often does nothing, and a boring line you never suspected is often the real culprit.
+:::
+
+:::summary
+- The browser turns HTML into the **DOM** and CSS into the **CSSOM**, combines them into a render tree, then runs **layout**, **paint** and **composite**.
+- Changing geometry repeats all three steps; changing colour repeats paint; changing `transform` or `opacity` on a layer repeats only composite. Animate the cheap ones.
+- Stylesheets block the first paint on purpose. Plain scripts block the parser; `defer` lets the page appear first and keeps scripts in order.
+- Everything shares one **main thread**. A **long task** (over 50 ms) freezes the page. The **frame budget** is 1000 ms ÷ refresh rate: 16.7 ms at 60 Hz, 6.9 ms at 144 Hz.
+- Reading a layout value after writing one forces a recalculation. Batch reads, then writes.
+- Measure with the Performance panel. Then measure again.
 :::

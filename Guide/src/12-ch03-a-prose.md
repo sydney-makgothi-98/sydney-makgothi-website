@@ -4,6 +4,17 @@ A web page is written in three languages at once. That sounds like a punishment,
 
 When each language sticks to its own job, a page is easy to change. You can recolour the whole site without touching its structure, or give a button new behaviour without touching how it looks. When the jobs get mixed, every change is a gamble. This chapter explains each job, and then the thing that connects them: the document tree.
 
+:::objectives
+- State the job of each of the three languages in one sentence each.
+- Explain what makes an element *semantic* and why a real `<button>` beats a styled `<div>`.
+- Settle a fight between CSS rules using importance, specificity and source order.
+- Use inheritance and custom properties to say a thing once.
+- Find, change and listen to elements from JavaScript, and explain why scripts should set classes rather than colours.
+- Describe progressive enhancement and spot a page that breaks it.
+:::
+
+@figure three-jobs The three languages meet in the document tree. HTML builds it, CSS describes how its nodes look, and JavaScript reads and changes it.
+
 ## Structure: HTML
 
 HyperText Markup Language describes the *meaning and organisation* of your content. It does not describe looks, even though it is tempting to think a heading is "the big bold text". A heading is a statement: *this text introduces a section*. The browser happens to draw headings big by default, but a screen reader announces them as headings, a search engine uses them to understand your page, and your stylesheet can make them any size you like.
@@ -45,9 +56,13 @@ Cascading Style Sheets describe how things look and where they go. A stylesheet 
 
 The important word is *cascading*. Lots of rules can apply to the same element, and they will not always agree. The cascade is the referee. It settles disagreements in this order: first by **importance** (a declaration marked `!important` beats one that is not), then by **specificity**, then by **order** (a later rule beats an earlier one of equal specificity). Nearly every baffling CSS bug is a case of not knowing which rule the referee picked.
 
+@figure cascade-order The cascade as a sequence of tie-breaks. The referee moves right only when the rules are still tied. Cascade layers, the step between importance and specificity, are covered in Part IV.
+
 #### Specificity
 
 Specificity is a score for a selector, written as three numbers (a, b, c). Count the **ID selectors** (like `#header`) for a. Count the **class selectors, attribute selectors and pseudo-classes** (like `.panel`, `[type=range]`, `:hover`) for b. Count the **element selectors** (like `p`, `div`) for c. Compare the scores from left to right. One ID beats any number of classes, and one class beats any number of elements.
+
+@figure specificity Four selectors and their scores. `.panel p` and `a:hover` tie at (0, 1, 1), so between those two the later one in the file wins.
 
 @include blocks/ch03-w1.md
 
@@ -130,6 +145,31 @@ button.addEventListener('click', () => {
 **What happens if you do not.** A polling loop freezes the whole page.
 :::
 
+:::worked Untangling three jobs that got mixed
+A beginner's page contains this line. Rewrite it so that each language does its own job, and say what each rewrite buys.
+
+```
+<div style="color:red; cursor:pointer" onclick="this.style.color='green'">Start</div>
+```
+
+**Step 1. What is it?** It is something you click to start an action. That is a button, so the HTML job is `<button>`. A `<div>` says nothing, and cannot be reached with the keyboard.
+
+**Step 2. The looks.** The red colour and the pointer cursor are looks, so they move to the stylesheet under a class. The green "done" look is a second state, so it gets a second class.
+
+**Step 3. The behaviour.** The click should record a fact ("it has started"), not paint a colour. The script toggles the class and the stylesheet decides what the class looks like.
+
+```
+<button class="start">Start</button>
+
+.start { color: red; }                /* a real button already shows a pointer and takes focus */
+.start.started { color: green; }
+
+document.querySelector('.start').addEventListener('click', e => e.target.classList.add('started'));
+```
+
+**Step 4. What it bought.** Keyboard users can now press Space to start it. A designer can change "started" from green to a tick mark without touching the script. And the script no longer knows or cares about colours, so it keeps working when the design changes.
+:::
+
 ## Progressive Enhancement
 
 A well-built page works in layers. Layer one is the HTML alone: content, in the right order, with the right meaning, readable without any styling or scripting. Layer two adds CSS, which makes it a designed page. Layer three adds JavaScript, which makes it an interactive page. This is called **progressive enhancement**.
@@ -142,4 +182,13 @@ A well-built page works in layers. Layer one is the HTML alone: content, in the 
 **Why it matters.** If a script fails to load, the visitor gets the explanation and the equations instead of a blank screen. Many pages on this website follow the pattern in miniature: the explanation is HTML, and the instruments are canvases that a script fills in.
 
 **What happens if you do not.** One failed script takes down the whole page, and the visitor sees nothing at all.
+:::
+
+:::summary
+- **HTML** says what a thing is, **CSS** says what it looks like, **JavaScript** says what it does. Keep the jobs apart and every change stays small.
+- Semantic elements carry behaviour you cannot see: focus, keyboard handling, announcements. Use them.
+- The cascade settles fights by importance, then specificity (a, b, c), then source order. Keep selectors flat and let order do the work.
+- Inherited properties flow down the tree; custom properties let you name a value once and use it everywhere.
+- Scripts find elements with CSS selectors, change them by adding classes, and respond to events with listeners.
+- Build in layers: content first, then style, then behaviour, so a failure in a later layer never hides the earlier ones.
 :::

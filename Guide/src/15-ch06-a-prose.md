@@ -2,6 +2,15 @@
 
 Animation is a magic trick. It is a series of still pictures shown fast enough that your brain sees motion. Whether the trick works depends on two things: *when* each picture appears, and *which in-between values* you choose. This chapter covers both: the loop that drives every animation on the web, the maths of easing and smoothing, and the good manners a page should show to visitors who would rather it sat still.
 
+:::objectives
+- Write an animation loop with `requestAnimationFrame` and explain why a timer is the wrong tool.
+- Make motion independent of the frame rate with delta time, and clamp it.
+- Interpolate between two values and shape the motion with an easing function.
+- Smooth a value towards a moving target in a way that behaves the same at every frame rate.
+- Choose between a CSS transition, a CSS animation and a script loop.
+- Honour `prefers-reduced-motion`.
+:::
+
 ## The Animation Loop
 
 An animation needs a fresh picture every time the screen refreshes. The wrong way to ask for one is a timer. `setInterval(draw, 16)` fires about every 16 milliseconds, but its rhythm has nothing to do with the screen's. Frames land just before or just after a refresh, and the motion shivers. The right way is to ask the browser itself, with **`requestAnimationFrame`**. You hand it a function, and the browser calls it once, just before the next paint, with a timestamp. Your function draws a frame and asks again.
@@ -17,6 +26,8 @@ function frame(now) {                       // now: milliseconds since the page 
 }
 requestAnimationFrame(frame);
 ```
+
+@figure raf-timing A timer set to 16 ms slowly drifts against a 16.67 ms refresh: sometimes two of its frames land inside one refresh and one is thrown away, sometimes a refresh gets none and the old picture repeats. `requestAnimationFrame` is called once per refresh, just before the paint.
 
 :::why requestAnimationFrame instead of a timer
 **What it is.** The browser's own "call me before the next paint" service.
@@ -64,6 +75,12 @@ The simplest useful one is **smoothstep**:
 
 It is 0 at the start, 1 at the end, and its slope is zero at both ends, so motion eases out of rest and settles back into it. CSS has a more flexible family, the cubic Bézier curves (`cubic-bezier(0.16, 1, 0.3, 1)` is a popular "quick start, long gentle stop"). A good habit: ease things *out* when they arrive (fast, then settling) and *in* when they leave (slow, then fast).
 
+@figure easing-curves Four ways to get from 0 to 1 in the same time. The horizontal axis is how much of the time has passed; the vertical axis is how much of the distance has been covered. The slope at any point is the speed.
+
+:::technical Technical Stuff
+A `cubic-bezier(x1, y1, x2, y2)` curve is drawn by a point that moves from (0, 0) to (1, 1) while being pulled towards two control points, (x1, y1) and (x2, y2). The browser treats the curve as a graph of progress against time, so the x values must stay between 0 and 1, but the y values may overshoot: `cubic-bezier(0.34, 1.56, 0.64, 1)` goes past 1 and comes back, which is how a "bouncy" arrival is made. The four CSS keywords are shorthands: `ease` is `cubic-bezier(0.25, 0.1, 0.25, 1)`, `ease-in` is `(0.42, 0, 1, 1)`, `ease-out` is `(0, 0, 0.58, 1)` and `ease-in-out` is `(0.42, 0, 0.58, 1)`.
+:::
+
 @include blocks/ch06-w1.md
 
 :::why Easing instead of linear motion
@@ -89,6 +106,20 @@ The trouble is that this is frame-rate dependent: more frames per second means t
 **k = 1 − e^{−s Δt}**
 
 where s is a "snappiness" in units of 1 per second. Compute k from Δt every frame and the motion is identical on every screen.
+
+@figure exp-smoothing Exponential smoothing towards a target of 1 for three values of s. The curve never quite arrives, but it is 95 percent of the way there after 3/s seconds, and 99 percent after 4.6/s.
+
+:::worked How long until the camera settles?
+The robot page's camera uses s = 5.5 per second. How long does it take to close half the gap? To be within 1 percent of the target? And if a designer asks for it to feel "twice as snappy", what should s become?
+
+**Step 1. Half the gap.** The remaining gap after time t is e^{−st}. Half remains when e^{−st} = 0.5, so t = ln 2 / s = 0.693 / 5.5 = 0.126 s. (This is the smoothing's *half-life*.)
+
+**Step 2. Within 1 percent.** e^{−st} = 0.01 gives t = ln 100 / s = 4.605 / 5.5 = 0.837 s.
+
+**Step 3. Twice as snappy.** Every time in this motion scales as 1/s, so doubling s to 11 halves every settling time: 0.063 s to half and 0.419 s to 1 percent.
+
+**What the answer tells you.** With this kind of smoothing you never choose a duration. You choose a *rate*, and all the durations follow. That is why one number, s, is enough to tune the whole feel of the camera.
+:::
 
 @include blocks/ch06-w2.md
 
@@ -153,4 +184,13 @@ In JavaScript you read it with `window.matchMedia('(prefers-reduced-motion: redu
 **Why it matters.** It can be the difference between a page someone can use and a page that makes them ill. The instruments still work: every control still redraws the picture. Only the *unrequested* motion goes away.
 
 **What happens if you do not.** Some visitors simply cannot use your site, and they will not tell you. They will just leave.
+:::
+
+:::summary
+- Ask the browser for frames with `requestAnimationFrame`; it calls you once per refresh and stops when the tab is hidden.
+- Move by speed × Δt, never by a fixed amount per frame, and clamp Δt so a long pause cannot become a leap.
+- `lerp(a, b, t)` blends two values; an easing function reshapes t so motion starts and stops like a real object.
+- To follow a moving target, close a fraction k = 1 − e^{−sΔt} of the gap each frame. The rate s sets every settling time.
+- Timelines are lists of keyframes walked by a clock. CSS transitions and animations handle simple state changes without script.
+- Honour `prefers-reduced-motion`: keep the controls working, drop the unrequested motion.
 :::

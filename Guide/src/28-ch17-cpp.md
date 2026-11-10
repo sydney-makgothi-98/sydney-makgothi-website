@@ -44,6 +44,8 @@ Create a file called `hello.cpp` and type this:
 
 @code Guide/code/cpp/s01_hello.cpp 1-6
 
+@figure cpp-build What `g++` does with the file. The preprocessor pastes in the headers, the compiler turns the text into machine code, and the linker joins it with the standard library into a program. Each stage has its own kind of error message, which is why "undefined reference" (the linker) reads so differently from "expected ';'" (the compiler).
+
 **Line 1** pulls in the header for printing. **Line 3** is `main`, where the program starts; the `int` in front says it hands back a whole number when it finishes. **Line 4** prints a line of text: `std::printf` is the function, the text is in quotes, and the two characters `\n` inside the quotes mean "start a new line". **Line 5** returns 0, which by tradition means "everything went well". Every statement ends with a semicolon.
 
 Now compile and run it, in a terminal:

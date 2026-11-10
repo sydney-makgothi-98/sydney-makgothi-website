@@ -2,6 +2,14 @@
 
 HTML and CSS are great at documents: text, boxes, pictures. But when a page needs to draw a chart of a phugoid, the path of a spiral climb, or a robot you can take apart, it has to draw pictures *from data*. The browser gives you three ways to do that, and they are different in kind. This chapter describes them, and then explains the maths that turns a 3D model into the flat picture on your screen. That maths is the same whether you write it yourself or let a library do it, so it is worth knowing.
 
+:::objectives
+- Choose between SVG, Canvas 2D and WebGL for a given drawing, and explain retained against immediate mode.
+- Use the canvas state machine: paths, the current transform, `save` and `restore`.
+- Map data coordinates to pixels with one pair of functions.
+- Follow a 3D point from model space to the screen, and compute where it lands with the perspective formula.
+- Explain depth precision, Lambert lighting, physically based materials, and why draw calls, not triangles, usually limit speed.
+:::
+
 ## Raster and Vector
 
 A **raster** image is a grid of coloured pixels. A photograph is a raster. It has a fixed resolution and goes soft when you enlarge it. A **vector** image is a list of *instructions*: draw a circle here, a curve there, fill with this colour. It can be drawn at any size without loss, because the drawing is worked out afresh each time.
@@ -45,6 +53,8 @@ The origin is the *top-left* corner, x increases to the right, and y increases *
 const X = v => left + (v - xmin) / (xmax - xmin) * width;          // data x -> pixel x
 const Y = v => top + height - (v - ymin) / (ymax - ymin) * height; // data y -> pixel y (flipped)
 ```
+
+@figure canvas-axes The canvas counts from the top-left corner with y pointing down; a chart counts from the bottom-left with y pointing up. The `Y` mapping function is where the flip happens, once, for every mark on the chart.
 
 :::why Mapping functions for X and Y
 **What it is.** Two small functions that turn a data value into a pixel position.
@@ -128,6 +138,8 @@ A point passes through a series of **coordinate spaces**, each described by a ma
 4. **Clip space and normalised device coordinates.** After the **projection matrix** squeezes the view into a cube where x, y and z each run from −1 to 1. Anything outside the cube is not visible.
 5. **Screen space.** After a last scaling to the pixel size of the canvas.
 
+@figure projection-pipeline The chain of coordinate spaces. Each arrow is a matrix multiplication, and three.js does all of them for you; the perspective division happens in the projection step.
+
 For a **perspective** camera the projection is what makes distant things small. If the vertical field of view is θ and the aspect ratio (width over height) is a, then for a point at camera-space (x, y, z), with z negative in front of the camera:
 
 **x_ndc = (f / a) · x / (−z)    y_ndc = f · y / (−z)    where f = 1 / tan(θ/2)**
@@ -138,11 +150,15 @@ The division by −z is the whole of perspective: double the distance and the of
 
 The minus in y_px is the flip between the 3D convention (y up) and the canvas convention (y down).
 
+@figure perspective Where the perspective formula comes from. The camera sits at the origin and the picture is formed on a plane at distance f. The triangle from the camera to the point and the triangle from the camera to its image are similar, so y′ / f = y / (−z).
+
 @include blocks/ch07-w1.md
 
 #### Depth
 
-The projection also maps depth, so nearer things can hide farther ones. The mapping is **not linear**, so precision is concentrated close to the camera. With the near plane at 0.05 and the far plane at 9 (the values used by the robot page), the normalised depth is 0.0056 at 0.1 metres, 0.81 at 0.5 metres, 0.91 at 1 metre and 0.99 at 5 metres. Over four-fifths of the depth range is used up within the first half metre.
+The projection also maps depth, so nearer things can hide farther ones. The mapping is **not linear**, so precision is concentrated close to the camera. The depth value runs from −1 at the near plane to +1 at the far plane. With the near plane at 0.05 and the far plane at 9 (the values used by the robot page), it is 0.0056 at 0.1 metres, 0.81 at 0.5 metres, 0.91 at 1 metre and 0.99 at 5 metres. Nine-tenths of the whole range is used up within the first half metre, and the remaining eight and a half metres share the last tenth.
+
+@figure depth-precision Depth value against distance for the robot page's camera. The curve shoots up within the first half metre and is almost flat beyond a metre, which is where two surfaces close together start to receive the same depth value.
 
 :::why Tight near and far planes
 **What it is.** Setting the camera's `near` and `far` to the smallest and largest distances the scene really needs (0.05 and 9 on the robot page).
@@ -158,11 +174,15 @@ The projection also maps depth, so nearer things can hide farther ones. The mapp
 
 In three.js a visible object is a **mesh**: a **geometry** (the shape, a list of triangles) plus a **material** (how the surface responds to light). The scene is a tree (a robot contains an arm, which contains a claw), so moving a parent moves its children, exactly as the DOM tree moves nested boxes. A **light** lights the scene, a **camera** defines the view, and a **renderer** draws the result onto a canvas.
 
+@figure scene-tree A scene graph. Each node's position and rotation are relative to its parent, so swinging the arm group carries the claw with it, and driving the robot group carries everything.
+
 #### How a surface is lit
 
 The simplest model of light on a matt surface is **Lambert's law**: brightness is proportional to the cosine of the angle between the surface's **normal** (the unit vector sticking straight out of it) and the direction towards the light. For unit vectors n and l the cosine is their dot product, and a surface facing away gets nothing.
 
 **brightness = max(0, n · l)**
+
+@figure lambert Lambert's law. The brightness of a matt surface is the cosine of the angle between its normal and the direction to the light: full when the light is overhead, zero when it grazes the surface, and clamped at zero when the light is behind it.
 
 @include blocks/ch07-w2.md
 
@@ -194,4 +214,14 @@ A GPU can draw millions of triangles, but each separate object costs a **draw ca
 **Why it matters.** The detailed robot still runs smoothly on a laptop's built-in graphics.
 
 **What happens if you do not.** Hundreds of separate meshes mean hundreds of draw calls, and the frame rate collapses long before the GPU is busy.
+:::
+
+:::summary
+- SVG retains shapes as elements (style them, click them, but not thousands); Canvas 2D forgets what it drew (fast, redraw everything); WebGL hands triangles to the GPU.
+- The canvas context is a pen with state. Begin a path, draw, stroke. Wrap transforms and clips in `save` and `restore`.
+- Map data to pixels with one `X` and one `Y`, and flip the y axis there.
+- A 3D point passes through model, world, camera, clip and screen space. Perspective is division by depth: x_ndc = (f / a) · x / (−z).
+- Depth precision is spent near the camera; keep `near` and `far` tight.
+- A surface's brightness is n · l; physically based materials add roughness, metalness and an environment to reflect.
+- Draw calls, not triangles, usually limit speed. Merge and instance.
 :::

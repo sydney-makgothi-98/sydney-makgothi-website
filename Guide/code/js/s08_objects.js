@@ -1,0 +1,24 @@
+// Chapter 11, section 11.8: objects, Map and Set. Run with: node s08_objects.js
+const motor = { name: 'TT', rpm: 200, 'stall torque': 0.08, spin() { return `${this.name} spins at ${this.rpm} rpm`; } };
+console.log('1:', motor.rpm, motor['stall torque'], motor.spin(), 'rpm' in motor, motor.volts);
+const { name, rpm: speed, volts = 6 } = motor;
+console.log('2:', name, speed, volts);
+const faster = { ...motor, rpm: 260 };
+console.log('3:', faster.rpm, motor.rpm, faster.spin());
+console.log('4:', Object.keys(motor), Object.values({ a: 1, b: 2 }), Object.entries({ a: 1, b: 2 }));
+const o1 = { n: 1 }, o2 = o1, o3 = { ...o1 };
+o1.n = 9;
+console.log('5:', o2.n, o3.n, o1 === o2, o1 === o3);
+const nested = { arm: { len: 0.24 } }, shallow = { ...nested }, deep = structuredClone(nested);
+nested.arm.len = 0.3;
+console.log('6:', shallow.arm.len, deep.arm.len);
+const json = JSON.stringify({ id: 3, tags: ['aero'], when: undefined, f: () => 1 });
+console.log('7:', json, JSON.parse(json).tags[0]);
+const m = new Map([['speed', 0.3]]);
+m.set('power', 1.2).set(motor, 'an object as a key');
+console.log('8:', m.get('speed'), m.has('power'), m.size, m.get(motor));
+const s = new Set([1, 2, 2, 3, 3, 3]);
+console.log('9:', [...s], s.has(2), s.size, [...new Set('mississippi')].join(''));
+const frozen = Object.freeze({ k: 1 });
+frozen.k = 2;
+console.log('10:', frozen.k, Object.isFrozen(frozen));

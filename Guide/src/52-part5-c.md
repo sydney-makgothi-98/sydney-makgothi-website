@@ -13,6 +13,8 @@ The folder `Syd Website Assets/Mechatronics/patrick/` holds six files, and each 
 | `main.js` | The page: renderer, camera, picking, tour, panels. |
 | `build.mjs` | Bundles the lot into `patrick.js`. |
 
+@figure patrick-data-flow How the files depend on each other. The physics is the source; the mission runs on it; the geometry, the charts and the page read from the mission. Nothing to the right of the model is typed in by hand.
+
 ## The Motor
 
 @code Syd Website Assets/Mechatronics/patrick/model.js 22-36

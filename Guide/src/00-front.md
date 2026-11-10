@@ -20,7 +20,7 @@ The book has five parts, and they build on each other.
 
 **Part I** is theory. It explains how the web works and how a browser thinks, in plain English, before you write any serious code. Every chapter ends with questions to check what you have taken in.
 
-**Part II** goes through the tools one at a time: HTML, CSS, JavaScript, React, canvas and SVG drawing, GSAP, three.js, the build tools, and a full C++ course, from a first program to a controller for a robot of your own. Each tool gets a list of words you will meet, an explanation of how it works, worked examples, and practice problems that have nothing to do with the website. A skill you can only use on one project is not really a skill.
+**Part II** goes through the tools one at a time, and each is a complete course: HTML, CSS, JavaScript, React, canvas and SVG drawing, GSAP, three.js, the build tools with Git, and C++, from a first program to a controller for a robot of your own. Each tool gets a list of words you will meet, the theory of how it works, diagrams, worked examples, practice problems with full answers, and mini projects that have nothing to do with the website. A skill you can only use on one project is not really a skill. Every program whose output is printed in these chapters was run to produce it; the files are in the `Guide/code` folder.
 
 **Part III** is six guided projects, from a first page up to a 3D model you can take apart and a C++ cart that brakes before a wall. Each one uses what you learned in Part II, and each ends with a short quiz.
 
@@ -30,7 +30,7 @@ The book has five parts, and they build on each other.
 
 #### A living book
 
-This is Edition 0.4. It will change. Whenever the website grows or a better way of explaining something turns up, the book grows with it. The Book Map after this introduction shows what the book contains today.
+This is Edition 0.5. It will change. Whenever the website grows or a better way of explaining something turns up, the book grows with it. The Book Map after this introduction shows what the book contains today.
 
 #### A promise about honesty
 
@@ -68,9 +68,11 @@ Technical Stuff is for the curious. It explains what is going on underneath. You
 **What happens if you do not.** The failure you would see. This is often the most useful line of the four.
 :::
 
+Two more boxes frame each chapter. **In This Chapter** lists what you will be able to do by the end, and **What You Learned** is the chapter in ten lines, for revision. The figures are numbered within each chapter and drawn from the same numbers as the text, so a curve in a figure is the curve the formula gives.
+
 #### Questions and answers
 
-Part I ends every chapter with **Check Your Knowledge** (short questions) and **Review Problems** (longer ones, often with a calculation). Part II ends every chapter with **Practice Problems**, and Part III ends each project with a **Check Yourself** quiz. All the answers are at the back of the book. Please try each question before you peek. Your brain only remembers what it has had to dig for.
+Part I ends every chapter with **Check Your Knowledge** (short questions) and **Review Problems** (longer ones, often with a calculation). Part II chapters have several sets of **Practice Problems** and end with **Mini Projects**, and Part III ends each project with a **Check Yourself** quiz. All the answers are at the back of the book, worked line by line. Please try each question before you peek. Your brain only remembers what it has had to dig for.
 
 #### Typography
 
@@ -90,10 +92,10 @@ The table lists every part of the book and where it stands today.
 
 | Part | What is in it | State |
 |---|---|---|
-| I. Foundations | The theory of the frontend: the web, the browser, the three languages, space and size, events, animation, graphics, and quality. Eight chapters with questions. | Written |
-| II. The Tech Stack | HTML, CSS, JavaScript, React, canvas and SVG, GSAP, three.js, build tools with Git, and a full C++ course (18 sections, five mini projects, 40 practice problems with line answers). Words you will meet, theory, worked examples, practice problems. | Written; C++ is the most complete |
+| I. Foundations | The theory of the frontend: the web, the browser, the three languages, space and size, events, animation, graphics, and quality. Eight chapters with objectives, diagrams, worked examples, questions and summaries. | Written, second edition |
+| II. The Tech Stack | Nine full courses: HTML, CSS, JavaScript (17 sections, four runnable mini projects), React (every example rendered for real), canvas and SVG, GSAP (timelines checked by GSAP), three.js (numbers checked by three.js), build tools with Git (real builds and a real history), and C++ (18 sections, five mini projects). Each with words, theory, diagrams, worked examples, problem sets with line answers and mini projects. | Written, second edition |
 | III. Six Guided Projects | A landing page, a responsive gallery, an animated story, an interactive physics chart, a 3D model you can take apart, and a C++ cart that brakes before a wall. Each ends with a quiz. | Written, first edition |
 | IV. Advanced Topics | Advanced CSS, JavaScript, React, canvas, GSAP, three.js, accessibility with performance, and C++ (stable simulation, twin testing). | Written, first edition |
 | V. The Guided Build | The real website: its shape, the HTML, CSS and JavaScript of the flight dynamics page, the stability model, the Patrick robot page, the robot's C++ program built from scratch in nine stages, the build pipeline, React and GSAP (honestly), and the Claude skills. | Written, first edition |
 
-"First edition" means the chapter is complete enough to learn from, and will be deepened as the site grows. The exercises in Part I are the most polished; the later parts will gain more exercises and more line-by-line detail over time.
+"First edition" means the chapter is complete enough to learn from, and will be deepened as the site grows. Parts I and II are now at their second edition. Part IV is the next to be deepened, and Part V will grow as more of the site's pages are read line by line.

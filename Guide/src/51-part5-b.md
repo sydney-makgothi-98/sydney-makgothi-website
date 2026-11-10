@@ -146,6 +146,8 @@ The instruments on the page are drawn by `ui.js`, which is bundled with `core.js
 
 **Line 88** is the page's state: the Mach number, the static margin, the PID gains, and whether the PID is on. **Line 89** declares the results (the model, the characteristic polynomial, the poles, the modes). **Line 90** is an empty list called `subs`. Every panel that cares about the shared numbers adds a function to it. **Line 91** recomputes the results from the state. **Line 94** is the key one: `changed()` recomputes, then calls every function in `subs`. **Line 95 onwards** connects three static-margin sliders in three different panels, so moving any one moves all three.
 
+@figure subscribers The subscriber pattern. One state, one recompute, and a list of functions that redraw. A panel that wants to follow the numbers adds itself to the list and never needs to know about the sliders.
+
 :::why A list of subscriber functions
 **What it is.** Each panel registers a "redraw me" function in `subs`. When something changes, all are called.
 

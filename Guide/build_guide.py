@@ -14,9 +14,11 @@ Chapter-file markup (one blank line between paragraphs):
     ``` ... ```              a code listing
     | a | b |                a table (first row is the header; a |---| row is ignored)
     :::worked Title / :::check / :::problems / :::note Title   ...   :::     boxed teaching blocks
+    :::objectives / :::summary                                   "In This Chapter" and "What You Learned" boxes
     :::tip / :::warning / :::remember / :::technical / :::why Title   callout boxes (the 'why' box has four labelled lines)
     :::answers ... :::       answers for the chapter, collected into the Answer Key appendix
     **bold**  *italic*  `code`  ^{superscript}  _{subscript}
+    @figure name Caption     a numbered vector figure from figures.py, with its caption
     @toc  @answerkey  @titlepage  @pagebreak
 """
 import glob
@@ -37,13 +39,15 @@ from reportlab.platypus import (BaseDocTemplate, CondPageBreak, Frame, HRFlowabl
 from reportlab.platypus.tableofcontents import TableOfContents
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from figures import FIGS  # noqa: E402
 SRC = os.path.join(HERE, 'src')
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(HERE, 'Building-the-Portfolio-Website.pdf')
 TITLE = 'Building an Interactive Engineering Portfolio'
 SUBTITLE = 'A Textbook and Guided Build of the Website, from the Theory of the Frontend to the Last Line of Code'
 AUTHOR = 'Gopolang Makgothi'
-EDITION = 'Edition 0.4, living document'
+EDITION = 'Edition 0.5, living document'
 
 # ------------------------------------------------------------------ fonts
 FONTS = os.environ.get('WINFONTS', r'C:\Windows\Fonts')
@@ -56,11 +60,12 @@ pdfmetrics.registerFontFamily('CN', normal='CN', bold='CN-B', italic='CN-I', bol
 BODY, HEAD, SUB = 11, 13, 12
 def lead(pt): return pt * 1.5
 S = {
-    'body': ParagraphStyle('body', fontName='TNR', fontSize=BODY, leading=lead(BODY), alignment=TA_JUSTIFY, spaceAfter=4, hyphenationLang=None),
-    'h1': ParagraphStyle('h1', fontName='TNR-B', fontSize=HEAD, leading=lead(HEAD), alignment=TA_LEFT, spaceBefore=0, spaceAfter=10),
-    'h2': ParagraphStyle('h2', fontName='TNR-B', fontSize=HEAD, leading=lead(HEAD), alignment=TA_LEFT, spaceBefore=12, spaceAfter=3, keepWithNext=1),
-    'h3': ParagraphStyle('h3', fontName='TNR-B', fontSize=SUB, leading=lead(SUB), alignment=TA_LEFT, spaceBefore=8, spaceAfter=2, keepWithNext=1),
-    'h4': ParagraphStyle('h4', fontName='TNR-BI', fontSize=BODY, leading=lead(BODY), alignment=TA_LEFT, spaceBefore=4, spaceAfter=0, keepWithNext=1),
+    'body': ParagraphStyle('body', fontName='TNR', fontSize=BODY, leading=lead(BODY), alignment=TA_JUSTIFY, spaceAfter=6, hyphenationLang=None),
+    'h1': ParagraphStyle('h1', fontName='TNR-B', fontSize=HEAD, leading=lead(HEAD), alignment=TA_LEFT, spaceBefore=0, spaceAfter=12),
+    'h2': ParagraphStyle('h2', fontName='TNR-B', fontSize=HEAD, leading=lead(HEAD), alignment=TA_LEFT, spaceBefore=16, spaceAfter=4, keepWithNext=1),
+    'h3': ParagraphStyle('h3', fontName='TNR-B', fontSize=SUB, leading=lead(SUB), alignment=TA_LEFT, spaceBefore=10, spaceAfter=3, keepWithNext=1),
+    'h4': ParagraphStyle('h4', fontName='TNR-BI', fontSize=BODY, leading=lead(BODY), alignment=TA_LEFT, spaceBefore=6, spaceAfter=1, keepWithNext=1),
+    'caption': ParagraphStyle('caption', fontName='TNR', fontSize=10, leading=14, alignment=TA_JUSTIFY, spaceBefore=4, spaceAfter=12, leftIndent=12, rightIndent=12),
     'part': ParagraphStyle('part', fontName='TNR-B', fontSize=HEAD, leading=lead(HEAD), alignment=TA_CENTER, spaceAfter=8),
     'partsub': ParagraphStyle('partsub', fontName='TNR-I', fontSize=BODY, leading=lead(BODY), alignment=TA_CENTER),
     'title': ParagraphStyle('title', fontName='TNR-B', fontSize=HEAD, leading=lead(HEAD), alignment=TA_CENTER, spaceAfter=8),
@@ -80,7 +85,7 @@ def inline(t):
     codes = []
     def keep(m): codes.append(m.group(1)); return f'\x00{len(codes) - 1}\x00'
     t = re.sub(r'`([^`]+)`', keep, t)
-    t = escape(t)
+    t = escape(t).replace('✓', '√')   # Times New Roman has no tick mark; the radical sign reads as one
     t = re.sub(r'\*\*([^*]+)\*\*', r'<b>\1</b>', t)
     t = re.sub(r'(?<![\w*])\*([^*\s][^*]*)\*(?![\w*])', r'<i>\1</i>', t)
     t = re.sub(r'\^\{([^}]*)\}', r'<super>\1</super>', t)
@@ -127,22 +132,32 @@ class Switch(Paragraph):
 class Builder:
     def __init__(self):
         self.story, self.answers = [], []
-        self.ch = self.sec = self.sub = 0
+        self.ch = self.sec = self.sub = self.fig = 0
         self.chlabel = ''
         self.have_part = False
 
     # -- headings
     def chapter(self, title, numbered):
-        self.sec = self.sub = 0
+        self.sec = self.sub = self.fig = 0
         if numbered:
             self.ch += 1; label = f'Chapter {self.ch}'; text = f'{label}. {inline(title)}'
         else:
             label = ''; text = inline(title)
         self.chlabel = label or title
         self.story += [PageBreak(), Heading(text, S['h1'], 1, label)]
+    UNNUMBERED = ('Words You Will Meet', 'Practice Problems', 'Worked Example', 'Mini Project', 'What Comes Next', 'Try It Yourself', 'Review Problems')
+
     def section(self, title):
-        self.sec += 1; self.sub = 0
-        txt = (f'{self.ch}.{self.sec}  ' if self.ch and self.chlabel.startswith('Chapter') else '') + inline(title)
+        # A title that already carries its number ("17.3 Reading Input") keeps it; the conventional unnumbered sections of a tool
+        # chapter stay plain; everything else is numbered chapter.section in order.
+        self.sub = 0
+        m = re.match(r'^(\d+)\.(\d+)\s+(.*)$', title)
+        if m:
+            self.sec = int(m.group(2)); txt = f'{m.group(1)}.{m.group(2)}  ' + inline(m.group(3))
+        elif title.startswith(self.UNNUMBERED) or not (self.ch and self.chlabel.startswith('Chapter')):
+            txt = inline(title)
+        else:
+            self.sec += 1; txt = f'{self.ch}.{self.sec}  ' + inline(title)
         self.story += [CondPageBreak(3.2 * cm), Heading(txt, S['h2'], 2, self.chlabel + txt)]
     def subsection(self, title):
         self.sub += 1
@@ -158,7 +173,12 @@ class Builder:
             ln = lines[i]
             if ln.startswith('```'):
                 flush(); i += 1; code = []
-                while i < len(lines) and not lines[i].startswith('```'): code.append(lines[i].rstrip('\n')); i += 1
+                while i < len(lines) and not lines[i].startswith('```'):
+                    raw = lines[i].rstrip('\n').replace('\t', '    ')
+                    # wrap lines that would run off the page (84 columns of Courier at 8.5 pt), with a visible continuation indent
+                    while len(raw) > 84:
+                        code.append(raw[:84]); raw = '      ' + raw[84:].lstrip()
+                    code.append(raw); i += 1
                 out.append(Preformatted('\n'.join(code), S['code'])); i += 1; continue
             if ln.startswith(':::'):
                 flush(); head = ln[3:].strip(); kind, _, title = head.partition(' '); inner = []; i += 1
@@ -206,12 +226,13 @@ class Builder:
         callouts = {'tip': 'TIP', 'warning': 'WARNING', 'remember': 'REMEMBER', 'technical': 'TECHNICAL STUFF', 'why': 'WHY DO IT THIS WAY?'}
         if kind in callouts:
             self.callout(callouts[kind] + (f' {title}' if title and kind == 'why' else (f': {title}' if title else '')), inner, out); return
-        names = {'check': 'Check Your Knowledge', 'problems': 'Review Problems', 'worked': 'Worked Example', 'note': 'Note', 'quiz': 'Check Yourself'}
+        names = {'check': 'Check Your Knowledge', 'problems': 'Review Problems', 'worked': 'Worked Example', 'note': 'Note', 'quiz': 'Check Yourself',
+                 'objectives': 'In This Chapter', 'summary': 'What You Learned', 'practice': 'Practice Problems', 'project': 'Mini Project'}
         head = names.get(kind, kind.title()) + (f': {title}' if title else '')
-        rule = HRFlowable(width='100%', thickness=0.6, color=HexColor('#666666'), spaceBefore=0, spaceAfter=2)
+        rule = HRFlowable(width='100%', thickness=0.6, color=HexColor('#666666'), spaceBefore=0, spaceAfter=4)
         out.append(Paragraph(inline(head), S['box'])); out.append(rule)
         self.parse(inner, out)
-        out.append(HRFlowable(width='100%', thickness=0.6, color=HexColor('#666666'), spaceBefore=2, spaceAfter=8))
+        out.append(HRFlowable(width='100%', thickness=0.6, color=HexColor('#666666'), spaceBefore=2, spaceAfter=12))
 
     def callout(self, label, inner, out):
         flows = [Paragraph(inline(label), S['calllabel'])]
@@ -220,11 +241,18 @@ class Builder:
         t.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, -1), HexColor('#f2f2ef')), ('LINEBEFORE', (0, 0), (0, -1), 3, HexColor('#4a4a4a')),
                                ('LEFTPADDING', (0, 0), (-1, -1), 10), ('RIGHTPADDING', (0, 0), (-1, -1), 8), ('TOPPADDING', (0, 0), (-1, -1), 1),
                                ('BOTTOMPADDING', (0, 0), (-1, -1), 1), ('TOPPADDING', (0, 0), (0, 0), 6), ('BOTTOMPADDING', (0, -1), (-1, -1), 6)]))
-        out += [Spacer(1, 4), t, Spacer(1, 8)]
+        out += [Spacer(1, 6), t, Spacer(1, 10)]
 
     def directive(self, d, out):
         name, _, arg = d[1:].partition(' ')
-        if name == 'code':
+        if name == 'figure':
+            # @figure name Caption : a vector figure from figures.py, numbered within the chapter, kept with its caption
+            fname, _, caption = arg.strip().partition(' ')
+            self.fig += 1
+            drawing = FIGS[fname](); drawing.hAlign = 'CENTER'
+            label = f'Figure {self.ch}.{self.fig}' if self.chlabel.startswith('Chapter') else f'Figure {self.fig}'
+            out.append(KeepTogether([Spacer(1, 8), drawing, Paragraph(f'<b>{label}.</b> {inline(caption.strip())}', S['caption'])]))
+        elif name == 'code':
             # @code path/from/repo/root first-last : a verbatim excerpt of a real file, with line numbers, wrapped to fit the page
             path, rng = arg.rsplit(' ', 1)
             first, last = [int(x) for x in rng.split('-')]

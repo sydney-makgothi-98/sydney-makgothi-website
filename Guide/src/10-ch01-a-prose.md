@@ -5,6 +5,15 @@
 
 Here is a secret that most beginners are never told: a website is not a thing. It is a conversation. One computer asks, another computer answers, and the page you see is just what happens when the answer arrives. Once you picture that conversation, a great deal of web development stops being mysterious. This chapter introduces the two speakers, the language they use, and what each exchange costs.
 
+:::objectives
+- Tell a client from a server, and explain why one machine can be both.
+- Take a URL apart into its six pieces, and say which piece never leaves the browser.
+- Read an HTTP request and response, including the status code and the `Content-Type` header.
+- Explain what a packet, a connection and an encrypted connection are, and why each costs a round trip.
+- Estimate how long a file takes to arrive from its size, the bandwidth and the round-trip time.
+- Say what caching is, what goes wrong with it, and how a changed file name fixes that.
+:::
+
 ## Meet the Client and the Server
 
 The two speakers have names. The **client** is whoever asks. In this book the client is always a web browser on a phone or a laptop. The **server** is whoever answers: a computer, usually far away, that keeps files and hands them to anyone who asks correctly.
@@ -53,6 +62,19 @@ Cache-Control: max-age=600
 
 The status code is a quick summary of how things went. Codes in the 200s mean success. The 300s mean "it moved". The 400s mean *you* made a mistake (the famous `404 Not Found` means you asked for a path that does not exist). The 500s mean the *server* made a mistake.
 
+@figure http-conversation The whole conversation for one page: a name lookup, a connection, an encryption handshake, and only then the request for the page, followed by a request for every file the page mentions. Each pair of arrows is one round trip.
+
+| Code | Name | What it means |
+|---|---|---|
+| 200 | OK | Here is what you asked for. |
+| 301 / 302 | Moved | Ask at this other address instead (permanently / for now). |
+| 304 | Not Modified | Your cached copy is still good; use it. |
+| 400 | Bad Request | The request itself was malformed. |
+| 403 | Forbidden | You are not allowed to see this. |
+| 404 | Not Found | No such path. The most common error on the web, and usually a typo in a link. |
+| 500 | Internal Server Error | The server's program crashed. |
+| 503 | Service Unavailable | The server is overloaded or down for maintenance. |
+
 :::why Sending a Content-Type header
 **What it is.** A header on the response that says what kind of thing the body is, for example `text/html` or `text/css` or `application/javascript`.
 
@@ -88,6 +110,8 @@ A **static site** is one whose files are ready-made and identical for every visi
 
 This website is static, and that was a deliberate choice.
 
+@figure static-vs-dynamic A static server has one job: find the file and send it. A dynamic server runs a program and often asks a database before it can answer, so every visit costs work on the server.
+
 :::why Making the site static
 **What it is.** Every page is a finished file sitting on a server. There is no program running on the server and no database.
 
@@ -96,6 +120,22 @@ This website is static, and that was a deliberate choice.
 **Why it matters.** A static site has nothing to hack, because there is no program to attack and no database to steal. It costs almost nothing to host, because any service that can serve files will do. It is fast, because the server's whole job is to hand over a file.
 
 **What happens if you do not.** A dynamic site must be maintained, patched, backed up and paid for, and every one of those is a place for something to go wrong. For a portfolio that is a lot of trouble for no benefit. The pages are still interactive, by the way. The interactivity lives in JavaScript that runs in the visitor's browser.
+:::
+
+## What Travels on the Wire
+
+It helps to know what is really happening underneath, because the costs in the next section come straight from it. Three layers are stacked under every request.
+
+**Packets.** Nothing travels in one piece. A file is cut into **packets** of about 1 500 bytes, each stamped with the address it is going to and the address it came from, and each finds its own way across the network. They may arrive out of order, and some may not arrive at all.
+
+**TCP.** The **Transmission Control Protocol** turns that unreliable stream of packets into a reliable conversation. It numbers the packets, puts them back in order, asks again for any that went missing, and slows down when the network is congested. Before any of that can start, the two computers exchange a small "hello, hello back, thanks" called the **handshake**, which costs one round trip.
+
+**TLS.** The **Transport Layer Security** protocol is what the *s* in `https` stands for. The browser and the server agree on secret keys so that nobody in between can read or alter what passes. Agreeing takes another round trip (older versions took two). Everything after that, including the URL path and the headers, is encrypted; only the host name is visible to the network.
+
+Only when all three layers are ready does the first `GET` go out. That is why the worked example below counts several round trips before a single byte of the file arrives, and why a page that needs files from five different servers pays this set-up five times.
+
+:::technical Technical Stuff
+Newer versions of HTTP change the arithmetic a little. **HTTP/2** sends many requests over one connection at the same time, so the "six at a time" limit of HTTP/1.1 goes away and small files stop queuing. **HTTP/3** replaces TCP with a protocol called QUIC that folds the connection and encryption handshakes together, saving a round trip. The ideas in this chapter still hold: set-up costs round trips, transfer costs bandwidth, and the fastest request is the one you never make.
 :::
 
 ## The Cost of a Request
@@ -116,6 +156,24 @@ The bundle that runs the robot page of this website is about 686 kilobytes. A vi
 **Step 4. Total.** 0.549 + 0.320 = 0.869 seconds.
 
 **What the answer tells you.** More than a third of the time is set-up, and no change to the file can remove it. Halve the file and the total only falls to about 0.59 seconds. That is why a page with many small requests feels slower than one with a few bigger ones. It is also why servers compress text files, which can shrink a script like this one to a third of its size.
+:::
+
+@figure load-time-bar The 869 milliseconds of the worked example, drawn to scale. The four grey blocks are round trips that depend only on distance; the violet block is the only part that shrinks when the file does.
+
+:::worked A page with a chain of files
+A page is made of `index.html` (20 kB), which links to `style.css` (10 kB) and `app.js` (60 kB), and the stylesheet names a font file `font.woff2` (40 kB). The connection is already open and encrypted. The round-trip time is 80 ms and the bandwidth is 10 Mbit/s. How long until the font arrives, and what is the longest chain?
+
+**Step 1. Find the chain.** The browser cannot ask for a file until it has seen the file that mentions it. So: HTML first; then CSS and JS, which it discovers while reading the HTML; then the font, which it discovers only while reading the CSS. That is three *rounds* of requests, one after another.
+
+**Step 2. Round 1, the HTML.** One round trip for the request plus the transfer: 20 000 × 8 / 10 000 000 = 0.016 s. Total 0.080 + 0.016 = 0.096 s.
+
+**Step 3. Round 2, CSS and JS together.** They are requested at the same moment and share the bandwidth. One round trip plus the transfer of 70 kB: 70 000 × 8 / 10 000 000 = 0.056 s. Total 0.080 + 0.056 = 0.136 s.
+
+**Step 4. Round 3, the font.** It cannot be requested until the CSS has been read. One round trip plus 40 000 × 8 / 10 000 000 = 0.032 s. Total 0.112 s.
+
+**Step 5. Add up the chain.** 0.096 + 0.136 + 0.112 = 0.344 s before the text can be drawn in the right font.
+
+**What the answer tells you.** The sizes add up to only 130 kB, which would take 0.104 s to transfer on its own. The chain of discovery costs more than the bytes do. That is why this website's pages use `preconnect` and load fonts early (Part V), and why a stylesheet that imports another stylesheet is a quiet performance bug: it adds a whole round to the chain.
 :::
 
 ## Caching
@@ -140,4 +198,13 @@ Because a static site is only files, publishing it means putting the files where
 
 :::tip
 Whenever a page does something odd, open the developer tools first (press F12) and look at the Console for red errors and the Network tab for failed requests. Nine times out of ten, the answer is sitting there.
+:::
+
+:::summary
+- A website is a conversation: the **client** asks with an HTTP request and the **server** answers with a status code, headers and a body. The browser does all the drawing.
+- A URL has a scheme, host, port, path, query and fragment. The fragment is never sent.
+- The `Content-Type` header tells the browser what the bytes are. The wrong type gives silent failures.
+- Underneath, packets travel unreliably, TCP makes them reliable, and TLS makes them private. Each layer costs a round trip before the first request can be sent.
+- Time = set-up (round trips × latency) + transfer (bits ÷ bandwidth). Small files are all latency; big files are all bandwidth; chains of discovery multiply the round trips.
+- Caching makes the fastest request the one you never send, and a changed file name makes long caching safe.
 :::

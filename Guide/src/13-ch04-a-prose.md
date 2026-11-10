@@ -2,6 +2,14 @@
 
 Every page lives inside a rectangle that you do not control. It might be a phone held upright, a laptop, or a monitor three times as wide, and your page has to look right on all of them. This chapter is about that problem: what a pixel really is, how boxes get their size and position, which units adapt to the screen and which refuse to, and why a drawing on a canvas needs to be told how dense the screen is.
 
+:::objectives
+- Tell a CSS pixel from a device pixel, and size a canvas so that it is sharp on both.
+- Draw the box model and compute a box's size under `content-box` and `border-box`.
+- Choose between normal flow, Flexbox and Grid for a given layout, and do the arithmetic of `fr`, `gap` and `flex-grow`.
+- Pick a unit (`px`, `rem`, `em`, `%`, `vw`, `fr`) on purpose, and evaluate a `clamp()`.
+- Make a page respond to width, pointer type and motion preference.
+:::
+
 ## What Is a Pixel, Really?
 
 The word *pixel* secretly means two different things, and mixing them up causes most blurry canvases. A **device pixel** is one physical dot on the screen. A **CSS pixel** is a unit of length in your stylesheet. On an old monitor they were the same thing. On a modern phone the dots are far smaller, so a CSS pixel is built from several device pixels, which keeps text a readable physical size. The ratio is the **device pixel ratio** (DPR).
@@ -9,6 +17,8 @@ The word *pixel* secretly means two different things, and mixing them up causes 
 **device pixels = CSS pixels × DPR**
 
 On a DPR 2 screen, something 300 CSS pixels wide covers 600 device pixels. Text and vector shapes are drawn at the full device resolution automatically, so they stay sharp. A **bitmap**, though, has a fixed number of pixels. If it has fewer pixels than the screen area it must cover, the browser stretches it, and it goes soft.
+
+@figure css-pixels-dpr The same three-by-three CSS pixels on a DPR 1 screen and a DPR 2 screen. A bitmap drawn with nine pixels has to be stretched over thirty-six, and the stretching is the blur.
 
 ## The Canvas Problem
 
@@ -59,6 +69,8 @@ Every element is a rectangular **box** made of four nested layers. In the middle
 
 By default, the `width` you set describes the *content only*, so the box you see is wider than you asked for, by all the padding and border. That is rarely what anyone means, which is why almost every modern stylesheet starts with this rule.
 
+@figure box-model The four layers of every box, with the numbers for `width: 300px; padding: 20px; border: 2px solid`. The margin is outside the box and transparent; the padding is inside and shows the background.
+
 ```
 * { box-sizing: border-box; }    /* width now includes padding and border */
 ```
@@ -82,6 +94,24 @@ The browser has three main ways of arranging boxes.
 **Flexbox** (`display: flex`) arranges children along one direction and shares out the spare room. It is perfect for a row of buttons or a navigation bar. The properties you will reach for are `justify-content`, `align-items`, `gap` and `flex-wrap`.
 
 **Grid** (`display: grid`) arranges children in rows *and* columns at once. It is the right tool for page layouts and sets of cards.
+
+@figure flex-grid Flexbox lays items along one **main axis** and aligns them on the **cross axis**; Grid defines tracks in both directions and places items in the cells.
+
+#### How Flexbox shares the room
+
+Flexbox has a small piece of arithmetic that is worth knowing by heart, because it explains every "why is this item that wide?" puzzle. Each item starts at its **basis** (its `flex-basis`, or its content width). The container adds up the bases and the gaps; whatever is left over is the **free space**. If the free space is positive, it is handed out in proportion to each item's `flex-grow`. If it is negative, the shortfall is taken away in proportion to `flex-shrink` (weighted by basis). The shorthand `flex: 1` means `flex: 1 1 0`: a basis of zero, grow 1, shrink 1, which makes all the items equal.
+
+:::worked Three items, three different grows
+A row is 600 px wide with `gap: 20px`. Its three items each have `flex-basis: 100px` and `flex-grow` of 1, 2 and 1. How wide is each?
+
+**Step 1. The free space.** Bases 3 × 100 = 300, gaps 2 × 20 = 40, so 600 − 300 − 40 = 260 px to share.
+
+**Step 2. The shares.** The grows add to 4, so one share is 260 / 4 = 65 px. The items get 65, 130 and 65.
+
+**Step 3. The widths.** 100 + 65 = 165, 100 + 130 = 230, 100 + 65 = 165.
+
+**Step 4. Check.** 165 + 230 + 165 + 40 = 600. ✓ The middle item is not twice as wide as the others (230 against 165); only its *share of the spare room* is twice as big. If you want "twice as wide", give all three a basis of zero.
+:::
 
 ```
 .cards {
@@ -132,6 +162,8 @@ CSS offers many units, and choosing one is choosing how the element responds to 
 .hero h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); }
 ```
 
+@figure clamp-curve The size the heading takes at every viewport width. It follows the sloping `6vw` line between the two limits and is pinned to the limits outside them. With a 16 px root, `6vw` meets 2.4 rem at 640 px and 4.2 rem at 1 120 px.
+
 @include blocks/ch04-w2.md
 
 ## Responsive Design
@@ -169,4 +201,13 @@ Screens are not the only thing that varies. A phone has no hover, so an interfac
 
 :::tip
 Test responsiveness by dragging your browser window narrow, and by using the device toolbar in the developer tools to pretend to be a phone. It takes ten seconds and catches most layout bugs.
+:::
+
+:::summary
+- Device pixels = CSS pixels × DPR. A canvas needs a surface of device size and a transform back to CSS units, or it blurs.
+- Every element is content, padding, border, margin. `box-sizing: border-box` makes the width you write the width you get.
+- Normal flow for text, Flexbox for one direction, Grid for two. Flexbox shares free space by `flex-grow`; Grid shares it by `fr`.
+- `rem` respects the visitor's text size; `px` for hairlines; `%` and `fr` for flexible widths; `clamp()` for fluid sizes without queries.
+- The viewport meta tag, media queries and fluid layout are the three tools of responsive design. Let fluid layout do as much as it can.
+- Screens vary in more than width: ask about pointer type and motion preference too.
 :::

@@ -9,6 +9,8 @@ Time to open the hood. This part walks through the real website, using the real 
 
 The website is a folder of plain files. There is no server code, no database, no framework to install before you can open a page.
 
+@figure site-map The pages and how they connect. The portfolio links to every page; the two robot pages link to each other; three pages load a bundle built from source folders next to them.
+
 | File | Size (bytes) | What it is |
 |---|---|---|
 | `portfolio.html` | 45 491 | The home page: a scroll-driven showcase, a selection wheel, and links to every other page. |

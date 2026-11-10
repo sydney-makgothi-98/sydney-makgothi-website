@@ -197,7 +197,14 @@ function Viewer() {
 
 ## Avoiding Wasted Renders
 
-React re-renders a component whenever its state or props change, and by default also re-renders its children. `React.memo` skips a child whose props have not changed, and `useMemo` and `useCallback` keep a value or function the same between renders.
+React re-renders a component whenever its state or props change, and by default also re-renders its children. `React.memo` skips a child whose props have not changed, and `useMemo` and `useCallback` keep a value or function the same between renders. The book's React examples (`Guide/code/react/examples.jsx`) measured both:
+
+```
+7: parent rendered 3 times, memoised child rendered 1 time(s)
+9: total 6 computed 1 time(s) over 2 renders
+```
+
+A `memo` child with a fixed `label` prop rendered once while its parent rendered three times; a `useMemo` sum with an unchanged `items` dependency was computed once across two renders. Both are real savings, and both are invisible until a render is slow enough to notice.
 
 :::why Measuring before memoising
 **What it is.** Wrapping something in `memo` only after you have *seen* a slow render in the profiler.
@@ -212,6 +219,15 @@ React re-renders a component whenever its state or props change, and by default 
 ## Custom Hooks and Context
 
 When two components share the same logic, move it into a **custom hook**, a function whose name starts with `use` that calls other hooks. **Context** lets a value be read by any descendant without passing props through every level.
+
+```
+const Theme = createContext('light');
+function Deep() { return <em>{useContext(Theme)}</em>; }
+function Middle() { return <section><Deep /></section>; }
+// <Theme.Provider value="dark"><Middle /></Theme.Provider>  renders  <section><em>dark</em></section>
+```
+
+`Middle` passes nothing down, yet `Deep` reads `dark`: the provider makes the value available to the whole subtree. Use it for things that genuinely belong to the whole tree (the theme, the signed-in user, the current units), not as a way to avoid thinking about where state should live.
 
 :::why Custom hooks for repeated logic
 **What it is.** `useWindowWidth()` wraps the resize effect from Chapter 12's exercises.
