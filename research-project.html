@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Senior Research Project: Evolution of Recurve Bow Limbs | Gopolang Makgothi</title>
+    <meta name="description" content="Senior research project: have recurve bow limbs really improved from one generation to the next? Draw six limb sets, release an arrow and compare their energy, efficiency and smoothness using the report's measurements.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/showcase.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script defer src="./Syd%20Website%20Assets/Showcase/research/research.js"></script>
+    <style>
+        :root { --accent: #34d399; }
+        .stage { background: #0b1a22; }
+        .ctl.lbl { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; } .s-bottom input[type=range] { width: clamp(90px, 12vw, 170px); } .ctl.lbl output { min-width: 5em; }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; } .chips .btn { padding: 0.35rem 0.7rem; font-size: 0.62rem; }
+        .grid2 canvas { height: 280px; } .s-col { width: min(26vw, 380px); }
+        table.cmp { border-collapse: collapse; font-family: var(--mono); font-size: 0.74rem; margin: 0.8rem 0; width: 100%; max-width: 74ch; } .cmp th, .cmp td { padding: 0.45rem 0.8rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--text-muted); } .cmp th:first-child, .cmp td:first-child { text-align: left; } .cmp th { color: var(--accent); font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        <div class="nav-status"><span>SECTION</span> 05 &mdash; SENIOR PROJECTS &middot; RESEARCH</div>
+    </nav>
+    <a class="sib" href="design-project.html" aria-label="Also: design project"><small>ALSO</small><span>DESIGN PROJECT</span></a>
+
+    <section class="stage" id="stage" aria-label="Recurve bow limb experiment">
+        <div class="viewport"><canvas id="gl" role="img"></canvas></div>
+        <div class="s-title"><div class="eyebrow">05 &mdash; SENIOR RESEARCH PROJECT</div><h1>Draw the evidence</h1><p>Six sets of recurve limbs, three old and three new. Pick one, draw it and let the arrow go, then see what the energy account says.</p></div>
+        <div class="s-hud" id="hud"></div>
+        <div class="s-col left"><figure class="g" data-g="dfc" style="--fl:1"><figcaption><b>01</b> Draw-force curve</figcaption><canvas aria-label="Normalised draw force against draw length with the stored energy shaded"></canvas></figure><figure class="g" data-g="effd" style="--fl:1"><figcaption><b>02</b> Efficiency against draw</figcaption><canvas aria-label="Efficiency against draw length on a log scale"></canvas></figure></div>
+        <div class="s-col right"><figure class="g" data-g="bars" style="--fl:1"><figcaption><b>03</b> What each limb gave the arrow</figcaption><canvas aria-label="Average arrow kinetic energy and efficiency of the six limb sets"></canvas></figure></div>
+        <div class="hint" id="hud-u">drawn</div>
+        <div class="s-bottom">
+            <div class="grp chips"><button class="btn" id="l-ns" aria-pressed="false">NS</button><button class="btn" id="l-nsxp" aria-pressed="false">NS-XP</button><button class="btn" id="l-mxt10" aria-pressed="false">MXT-10</button><button class="btn" id="l-mxtxt" aria-pressed="true">MXT-XT</button><button class="btn" id="l-cv" aria-pressed="false">Carbon Velos</button><button class="btn" id="l-ha" aria-pressed="false">Hoyt Axia</button></div>
+            <div class="sep"></div>
+            <div class="grp"><label class="ctl lbl">draw <input type="range" id="s-d" min="9.5" max="30" step="0.5"><output id="s-d-v"></output></label><button class="btn primary" id="b-rel">Release</button></div>
+        </div>
+        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
+    </section>
+
+    <main class="article">
+        <section class="sec">
+            <span class="tag">01 &middot; THE QUESTION</span>
+            <h2>Has there really been evolution?</h2>
+            <p>Each year the two largest makers of recurve bow limbs, Hoyt and Win&amp;Win, release new limb sets and claim that they are a clear improvement on the last. The question the project asked was simple: <b>has there really been evolution in the newer limb sets?</b> Three families of limbs were supplied for the test, each family an older and a newer generation: the NS and NS-XP, the MXT-10 and MXT-XT, and the Carbon Velos and the Hoyt Axia. The experiment was non-destructive, so what could be tested was how the limbs behave, and not what they are made of inside.</p>
+            <p>Two measurements answer it. <b>Static tests</b> draw each limb with a load cell and a winch, one inch at a time, to build the draw-force curve. <b>Dynamic tests</b> shoot an arrow of the appropriate stiffness from each limb set through a chronograph and measure its speed. Everything on this page is built from those numbers.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">02 &middot; METHOD</span>
+            <h2>The test rig, and the arithmetic behind it</h2>
+            <p>A load cell on the string, a winch to draw the bow slowly, and an arrow marked off in one-inch sections as the measuring stick gave the force at every inch from a brace height of 9 in to a full draw of 30 in. The string was then let back inch by inch. Drawing and un-drawing curves lay on each other, so hysteresis did not explain any difference between limbs. For the shooting tests each limb set got an arrow chosen by the manufacturer's shaft selector for its poundage and the 28 in draw length, and was shot four times through a chronograph. Limb ratings and masses are in the table, and the arrow masses follow from the energies.</p>
+            <table class="cmp"><tr><th>Limb</th><th>Rating, lb</th><th>Upper / lower limb, g</th><th>Arrow speed, ft/s</th><th>Arrow energy, J</th><th>Efficiency</th></tr>
+                <tr><td>NS (older)</td><td>30</td><td>182.4 / 182.7</td><td>173.75</td><td>29.06</td><td>69 %</td></tr>
+                <tr><td>NS-XP (newer)</td><td>36</td><td>202.2 / 201.1</td><td>173.98</td><td>28.39</td><td>61 %</td></tr>
+                <tr><td>MXT-10 (older)</td><td>38</td><td>183.1 / 184.1</td><td>172.48</td><td>30.94</td><td>64 %</td></tr>
+                <tr><td>MXT-XT (newer)</td><td>38</td><td>198.3 / 199.8</td><td>176.15</td><td>34.72</td><td>70 %</td></tr>
+                <tr><td>Carbon Velos (older)</td><td>36</td><td>205.1 / 203.0</td><td>169.13</td><td>29.75</td><td>66 %</td></tr>
+                <tr><td>Hoyt Axia (newer)</td><td>40</td><td>205.6 / 207.5</td><td>182.68</td><td>37.34</td><td>70 %</td></tr></table>
+            <p>The energy stored in the limbs is the area under the draw-force curve, and the curve has no formula, so the area was found by the <b>trapezoidal rule</b>: add up the trapezoids between neighbouring points. As a check, a cubic polynomial was fitted to the NS curve and integrated exactly; the two answers were 57.13 J and 56.42 J, a difference of 1 %. The arrow's kinetic energy comes from its speed, and the efficiency is the ratio of the two:</p>
+            <div class="equation">$$U=\int_{x_0}^{x}F\,dx\approx\sum_{n}\tfrac12\,(F_n+F_{n+1})\,\Delta x,\qquad E_k=\tfrac12\,m\,v^{2},\qquad \eta=\frac{E_k}{U}$$</div>
+            <p>The report does not give arrow masses, so this page derives them from the kinetic energy and speed (m = 2E<sub>k</sub>/v&sup2;), which comes to 20 to 24 g, and the stored energy from E<sub>k</sub>/&eta;. The draw-force curves of the six limbs lie almost on top of each other once each is divided by its peak (the report's carpet plot), so the page uses one shared curve, read off that plot, scaled to each limb's energy. Only the energies and speeds are measurements; the curve in chart 01 is a reconstruction, which is why it is plotted as force over force at 28 in.</p>
+            <div class="stat-row" style="display:grid;gap:0.7rem;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:1rem 0">
+                <div class="stat"><div class="k">Selected limb: arrow energy</div><div class="v" id="x-ke"></div></div>
+                <div class="stat"><div class="k">Arrow speed at 28 in</div><div class="v" id="x-v" style="font-size:1.1rem"></div></div>
+                <div class="stat"><div class="k">Arrow mass (derived)</div><div class="v" id="x-m"></div></div>
+                <div class="stat"><div class="k">Energy stored at 28 in (derived)</div><div class="v" id="x-pe"></div></div>
+                <div class="stat"><div class="k">Efficiency</div><div class="v" id="x-eff"></div></div></div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">03 &middot; RESULTS</span>
+            <h2>Efficiency, and a spike that is only arithmetic</h2>
+            <p>Dividing the same arrow energy by the energy stored at each draw length gives an efficiency curve (chart 02). At short draws the limbs have stored almost nothing, so the ratio explodes: more than a hundred times over near the brace height. The report is clear that this is a mathematical artefact, division by a small number, and it is also why nobody shoots at a 10 in draw: the arrow would go nowhere. What matters is the <b>region of interest</b> near the 28 in draw, where the efficiency is below 100 % and the comparison between old and new limbs is meaningful. There the report's results are:</p>
+            <table class="cmp"><tr><th>Family</th><th>Older</th><th>Newer</th><th>Change in the report</th></tr>
+                <tr><td>NS</td><td>69 %</td><td>61 %</td><td>&minus;14 %</td></tr>
+                <tr><td>MXT</td><td>64 %</td><td>70 %</td><td>+8 %</td></tr>
+                <tr><td>Hoyt (Carbon Velos to Axia)</td><td>66 %</td><td>70 %</td><td>+6 %</td></tr></table>
+            <p>Two of the three families did evolve, the MXT and the Hoyt pair, and the third did not: the newer NS-XP is less efficient at long draws than the older NS. The static tests found a matching but marginal result: the draw force needed by the newer MXT limbs was a little lower at 60 % of the draw, and every newer set asked slightly less force, though the normalised curves are close to identical. The NS limbs, at 30 lb, had the lowest force demand of all, which makes them the natural choice for a beginner.</p>
+            <h3 style="font-family:var(--display);margin:1.4rem 0 0.4rem">Smoothness, and three ways to differentiate</h3>
+            <p>The report defines the <b>smoothness</b> of a limb as the slope of its draw-force curve, the force added per millimetre of draw. A lower value means the limb stacks up force more gently towards full draw and is kinder to the shoulder. Because the curve has no formula, its slope was estimated by finite differences, three ways:</p>
+            <div class="equation">$$F'_{fwd}=\frac{F(x+h)-F(x)}{h},\qquad F'_{bwd}=\frac{F(x)-F(x-h)}{h},\qquad F'_{ctr}=\frac{F(x+h)-F(x-h)}{2h}$$</div>
+            <p>The forward and backward formulas are first-order accurate, with an error that falls in proportion to the step h. The central formula looks at both sides and is second-order accurate, with an error that falls as h&sup2;: halve the step and the error is a quarter. That is why the report treats it as the ideal. Try it below: switch method, enlarge the step and add measurement scatter, and compare each estimate with the exact slope of the curve.</p>
+            <div class="more" style="margin:0.6rem 0"><button class="btn" id="d-forward" aria-pressed="false">Forward</button><button class="btn" id="d-backward" aria-pressed="false">Backward</button><button class="btn" id="d-central" aria-pressed="true">Central</button><label style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--text-muted)"><input type="checkbox" id="d-noise"> measurement scatter</label><label class="ctl lbl" style="display:inline-flex;align-items:center;gap:0.5rem">step h <input type="range" id="d-h" min="0.5" max="3" step="0.5" value="1" style="width:110px"><output id="d-h-v"></output></label></div>
+            <div class="panel"><div class="panel-head"><div class="t">Smoothness by finite differences</div><div class="s">for the limb selected in the stage</div></div><div style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="diff" style="min-height:320px;display:block"><figcaption style="display:none">Smoothness</figcaption><canvas aria-label="Smoothness estimated by forward, backward or central differences against the exact slope"></canvas></figure></div></div>
+            <p>In every family the newer limbs came out smoother, and so a lower force demand per millimetre at full draw. The report combined the two ideas in one number, <b>efficiency to smoothness</b>, to ask which core material is better: wood in the Hoyt Axia, or the carbon-foam core in the MXT-XT.</p>
+            <div class="panel"><div class="panel-head"><div class="t">Efficiency to smoothness</div><div class="s">Table 5 of the report</div></div><div style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="ratio" style="min-height:190px;display:block"><figcaption style="display:none">Efficiency to smoothness</figcaption><canvas aria-label="Efficiency to smoothness for the carbon foam and wood core limbs"></canvas></figure></div></div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">04 &middot; CONCLUSIONS</span>
+            <h2>What the limbs say, and what they cannot</h2>
+            <ul>
+                <li><b>The claim was validated, with a caveat.</b> There has been evolution within one generation of limbs, in the MXT and Hoyt families, though the improvement is small, and the NS family regressed in efficiency at long draws.</li>
+                <li><b>A result against intuition.</b> The newer limbs curve more at rest and when drawn, which one would expect to make them better at storing energy and so more efficient. The data does not support that simple link between curvature and efficiency: the geometry changed, but it does not by itself explain the gains.</li>
+                <li><b>Best for an Olympic recurve archer: the Hoyt Axia.</b> They have the highest efficiency-to-smoothness ratio of the six sets. For an archer who wants smoothness above all, the NS limbs, with the lowest force at full draw.</li>
+                <li><b>Wood against foam.</b> The wooden-core limbs, the Carbon Velos and the Hoyt Axia, were the most efficient at full draw and the wood core came out 58 % better on efficiency to smoothness. The report does not call this an objective result: the NS limbs also have a wooden core and were outperformed by the foam-core MXT limbs, so the choice of core depends on the archer and their preference.</li>
+            </ul>
+            <h3 style="font-family:var(--display);margin:1.4rem 0 0.4rem">What would settle it</h3>
+            <p>The geometric variation is the only cause that was tested. Material variation was not, because the test was non-destructive and dissecting a pair of expensive limbs would destroy the laminates round the core. The recommended next step is to extract the <b>stiffness matrices</b> of the old and new limbs in finite-element software and check whether the extra stored energy comes from the newer limbs being stiffer. That is exactly the method of the <a href="energy-methods.html" style="color:var(--accent)">Energy Methods page</a>: a stiffness matrix built from a displacement series and a strain-energy functional.</p>
+            <p style="color:var(--text-faint);font-size:0.82rem">Source: the author's senior research report, &ldquo;Evolution of Recurve Bow Limbs&rdquo;, October 2025. Arrow masses, stored energies and the shared force curve on this page are derived from the report's tables and plots, as explained above.</p>
+            <div class="more"><a href="design-project.html">Design project &rarr;</a><a href="energy-methods.html">Energy methods &rarr;</a><a href="portfolio.html">Portfolio</a></div>
+        </section>
+    </main>
+    <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html">Back to portfolio</a></footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }], throwOnError: false });
+        });
+    </script>
+</body>
+</html>

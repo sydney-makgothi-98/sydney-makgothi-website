@@ -87,3 +87,7 @@ table.spec { border-collapse: collapse; width: 100%; max-width: 74ch; font-size:
 
 .mobile-only { display: none; }
 @media (max-width: 720px) { .mobile-only { display: inline-block; } .s-bottom .grp.sliders { display: none; width: 100%; } .s-bottom.open .grp.sliders { display: flex; } .s-bottom { width: calc(100% - 1rem); } .s-bottom .grp:first-child .btn { padding: 0.4rem 0.8rem; font-size: 0.62rem; } .partcard { bottom: 120px; } .s-bottom.open ~ .partcard { display: none; } .s-title p { display: none; } }
+
+/* long equations and wide tables scroll inside their own box instead of widening the page */
+.katex-display { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: 0.2rem 0; }
+@media (max-width: 720px) { table.cmp, table.spec, table.km { display: block; overflow-x: auto; max-width: 100%; } }

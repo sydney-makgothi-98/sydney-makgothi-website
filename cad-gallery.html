@@ -35,6 +35,12 @@
         .bottom { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 9; display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; padding: 0.7rem 1rem; background: rgba(8,6,28,0.62); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 18px; }
         .partcard { bottom: 92px; }
         .partcard .k { color: var(--accent2); }
+        .paper { position: absolute; z-index: 7; left: clamp(0.5rem, 4vw, 3rem); right: min(330px, 42vw); top: 128px; bottom: 96px; display: grid; place-items: center; background: #fbfbfd; border-radius: 6px; box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.4); opacity: 0; transform: scale(0.94); pointer-events: none; transition: opacity 1.5s cubic-bezier(0.4,0,0.2,1), transform 1.5s cubic-bezier(0.16,1,0.3,1); }
+        .paper img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; padding: 6px; }
+        .paper span { position: absolute; left: 12px; bottom: 8px; font: 600 0.62rem var(--mono); letter-spacing: 0.14em; color: #4b4468; text-transform: uppercase; }
+        body.paper-on .view-title p, body.paper-on .view-title .row { opacity: 0; transition: opacity 0.6s ease; } .view-title p, .view-title .row { transition: opacity 0.6s ease 0.8s; }
+        body.paper-on .paper { opacity: 1; transform: scale(1); } body.paper-on .viewport canvas { opacity: 0.06; } body.paper-on #balloons { opacity: 0; } .viewport canvas { transition: opacity 1.4s ease; } #balloons { transition: opacity 0.6s ease; }
+        @media (max-width: 860px) { .paper { right: 0.5rem; bottom: 150px; top: 100px; } }
         body.blueprint .stage { background: radial-gradient(60% 65% at 50% 48%, #101a44 0%, #0b1030 55%, #060818 100%); }
         .back { position: absolute; top: 66px; left: 50%; transform: translateX(-50%); z-index: 9; }
         @media (max-width: 860px) { .bom { top: auto; bottom: 78px; right: 0; left: 0; width: auto; max-height: none; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding: 0 8px; } .bom h2 { display: none; } .bom-row { flex: none; } .bottom { flex-wrap: nowrap; gap: 0.4rem; padding: 0.5rem 0.6rem; bottom: 12px; } .bottom .btn { padding: 0.4rem 0.7rem; font-size: 0.62rem; white-space: nowrap; } .view-title { max-width: 90vw; } .view-title p { display: none; } .partcard { bottom: 130px; } }
@@ -50,6 +56,7 @@
     <section class="stage" id="stage" aria-label="Globe of CAD designs">
         <div class="viewport"><canvas id="gl" role="img" aria-label="An interactive 3D globe. Each floating model is a CAD design: drag to spin the globe, click a design to open it, then decompose it into its exploded drawing."></canvas><div class="labels" id="labels" style="z-index:7"></div></div>
         <svg id="balloons" aria-hidden="true"></svg>
+        <div class="paper" id="paper"><img id="paper-img" alt="The original CAD drawing" draggable="false"><span id="paper-cap"></span></div>
         <div class="head gonly"><div class="eyebrow" style="font-family:var(--mono);font-size:0.66rem;letter-spacing:0.2em;color:var(--accent)">04 &mdash; SYSTEMS ENGINEERING &middot; CAD MODELLING</div><h1>A globe of designs</h1><p>Every design here was drawn in CAD, then rebuilt as a live model. Click one to fly in and take it apart.</p></div>
         <div id="hintg">Drag to spin &middot; scroll to zoom &middot; click a design</div>
 

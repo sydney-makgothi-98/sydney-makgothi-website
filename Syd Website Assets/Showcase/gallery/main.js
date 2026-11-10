@@ -24,12 +24,12 @@ const ACC = '#c084fc', ACC2 = '#e879f9';
 /* ------------------------------------------------------------------------------------ the designs ---- */
 const withExplode = (m, extra) => { const ap = exploder(m.parts); return {...m, setU: (u, dt) => { ap(u); if (extra) extra(u, dt); }}; };
 const ITEMS = [
-  {id: 'missile', name: 'Falcon 1 Missile', tag: 'AEROSPACE · SYSTEM ASSEMBLY', blurb: 'An ogive nose, guidance bay, warhead section, four fins and a rocket motor, rebuilt from the exploded drawing. Decompose it and the twelve numbered items fall into the drawing’s layout.', build: (lite) => buildMissile({lite})},
-  {id: 'airframe', name: 'Light Aircraft', tag: 'AEROSPACE · AIRFRAME', blurb: 'The finished aircraft, and the skeleton under its skin: fuselage frames and stringers, wing ribs with lightening holes, and spars. Decompose it to peel the skin away.', build: (lite) => buildAirframe({lite})},
-  {id: 'wingbox', name: 'Wing Box', tag: 'STRUCTURES · SECTION VIEW', blurb: 'A wing box in section: seven ribs with lightening holes, three spars, and the skins and stringers that close it into a torsion box.', build: (lite) => buildWingBox({lite})},
-  {id: 'bracket', name: 'Mounting Bracket', tag: 'SHEET METAL · SOLID EDGE', apartLabel: 'Unfold to flat pattern', backLabel: 'Fold', blurb: 'A 3 mm sheet-metal bracket with a 70 mm bore, four fixing holes, two mounting ears and two gussets: 196.87 mm wide and 88 mm high, modelled from its drawing. “Decompose” here means unfold it to the flat blank it was cut from.', build: (lite) => buildSheet(BRACKET, {lite})},
-  {id: 'complex', name: 'Complex Bracket', tag: 'SHEET METAL · SOLID EDGE', apartLabel: 'Unfold to flat pattern', backLabel: 'Fold', blurb: 'A 400 × 200 mm face plate in 2 mm sheet with a 210 mm slot, a left flange and a box-section right foot. Unfold it to see the single flat blank that makes it.', build: (lite) => buildSheet(COMPLEX, {lite})},
-  {id: 'cover', name: 'Louvred Sheet Cover', tag: 'SHEET METAL · SOLID EDGE', apartLabel: 'Unfold to flat pattern', backLabel: 'Fold', blurb: 'A 119 × 94 mm cover with eight louvre slots, 46 mm side walls, 8 mm bolt holes in its foot flanges and an angled hem. One cut, five bends.', build: (lite) => buildSheet(COVER, {lite})},
+  {id: 'missile', ref: 'missile', refExplode: true, refName: 'Falcon 1 – Missile Assembly Exploded Drawing', name: 'Falcon 1 Missile', tag: 'AEROSPACE · SYSTEM ASSEMBLY', blurb: 'An ogive nose, guidance bay, warhead section, four fins and a rocket motor, rebuilt from the exploded drawing. Decompose it and the twelve numbered items fall into the drawing’s layout.', build: (lite) => buildMissile({lite})},
+  {id: 'airframe', ref: 'airframe', refName: 'Aircraft body and internal structure', name: 'Light Aircraft', tag: 'AEROSPACE · AIRFRAME', blurb: 'The finished aircraft, and the skeleton under its skin: fuselage frames and stringers, wing ribs with lightening holes, and spars. Decompose it to peel the skin away.', build: (lite) => buildAirframe({lite})},
+  {id: 'wingbox', ref: 'wingbox', refName: 'Internal structure, section view', name: 'Wing Box', tag: 'STRUCTURES · SECTION VIEW', blurb: 'A wing box in section: seven ribs with lightening holes, three spars, and the skins and stringers that close it into a torsion box.', build: (lite) => buildWingBox({lite})},
+  {id: 'bracket', ref: 'bracket', refName: 'Bracket.dft (Solid Edge)', name: 'Mounting Bracket', tag: 'SHEET METAL · SOLID EDGE', apartLabel: 'Unfold to flat pattern', backLabel: 'Fold', blurb: 'A 3 mm sheet-metal bracket with a 70 mm bore, four fixing holes, two mounting ears and two gussets: 196.87 mm wide and 88 mm high, modelled from its drawing. “Decompose” here means unfold it to the flat blank it was cut from.', build: (lite) => buildSheet(BRACKET, {lite})},
+  {id: 'complex', ref: 'complex', refName: 'Complex Bracket (Solid Edge draft)', name: 'Complex Bracket', tag: 'SHEET METAL · SOLID EDGE', apartLabel: 'Unfold to flat pattern', backLabel: 'Fold', blurb: 'A 400 × 200 mm face plate in 2 mm sheet with a 210 mm slot, a left flange and a box-section right foot. Unfold it to see the single flat blank that makes it.', build: (lite) => buildSheet(COMPLEX, {lite})},
+  {id: 'cover', ref: 'cover', refName: 'Sheet Cover.dft (Solid Edge)', name: 'Louvred Sheet Cover', tag: 'SHEET METAL · SOLID EDGE', apartLabel: 'Unfold to flat pattern', backLabel: 'Fold', blurb: 'A 119 × 94 mm cover with eight louvre slots, 46 mm side walls, 8 mm bolt holes in its foot flanges and an angled hem. One cut, five bends.', build: (lite) => buildSheet(COVER, {lite})},
   {id: 'pump', name: 'Centrifugal Pump', tag: 'TURBOMACHINERY', link: 'pump.html', linkText: 'Open the pump page', blurb: 'The irrigation pump: impeller, volute, shaft, seal, bearing bracket and motor. The page it comes from has the curves, velocity triangles and NPSH.',
     build: (lite) => { const m = buildPump(PUMP_DESIGN, {lite}); return withExplode(m, (u, dt) => m.update(dt, 5 * (1 - u), 0.7, u)); }},
   {id: 'engine', name: 'V8 Crank Assembly', tag: 'COMBUSTION', link: 'engine.html', linkText: 'Open the engine page', blurb: 'A twin-turbo V8: crankshaft, eight pistons and connecting rods, block, heads and sump, turning with the cylinders firing.',
@@ -101,19 +101,32 @@ function ensureViewer(node) {
 }
 function enter(node) {
   if (S.mode !== 'globe') return;
-  S.node = node; S.view = ensureViewer(node); S.mode = 'in'; S.t = 0; S.sel = null; S.u = explodeState(0.9); S.bp = false; setBlueprint(false);
+  S.node = node; S.view = ensureViewer(node); S.mode = 'in'; S.t = 0; S.sel = null; S.u = explodeState(0.9); S.bp = false; setBlueprint(false); document.body.classList.remove('paper-on'); $('b-bp').textContent = 'Drawing view';
   node.holder.getWorldPosition(startPos); node.pivot.getWorldQuaternion(startQuat); S.startScale = node.miniScale;
   S.view.fit.visible = true; node.model.root.visible = false;
   buildBom(); $('g-title').querySelector('h1').textContent = node.item.name; $('g-title').querySelector('.eyebrow').textContent = node.item.tag; $('g-blurb').textContent = node.item.blurb;
   const lk = $('g-link'); if (node.item.link) { lk.href = node.item.link; lk.textContent = node.item.linkText + ' →'; lk.hidden = false; } else lk.hidden = true;
-  $('b-apart').textContent = node.item.apartLabel || 'Decompose to reference'; $('b-apart').setAttribute('aria-pressed', 'false'); $('b-bp').setAttribute('aria-pressed', 'false'); $('card').classList.remove('on');
+  $('b-apart').textContent = node.item.apartLabel || 'Decompose to reference'; $('b-apart').setAttribute('aria-pressed', 'false'); $('b-bp').setAttribute('aria-pressed', 'false'); $('b-bp').title = node.item.ref ? 'Show the design as a line drawing, then as your exact drawing' : 'Show the design as a line drawing'; $('card').classList.remove('on');
   st.want.az = 0.7; st.want.el = 0.3; st.want.dist = 17; st.want.t.set(0, 0, 0); st.resetManual();
   document.body.classList.add('viewing');
 }
-function leave() { if (S.mode !== 'viewer') return; S.mode = 'out'; S.t = 0; S.u.to(0); $('card').classList.remove('on'); document.body.classList.remove('viewing'); S.sel = null; setBlueprint(false); }
+function leave() { if (S.mode !== 'viewer') return; document.body.classList.remove('paper-on'); clearTimeout(paperT); S.mode = 'out'; S.t = 0; S.u.to(0); $('card').classList.remove('on'); document.body.classList.remove('viewing'); S.sel = null; setBlueprint(false); }
 $('b-back').onclick = leave;
 $('b-apart').onclick = (e) => { const on = S.u.toggle() > 0.5; e.target.textContent = on ? (S.node?.item.backLabel || 'Reassemble') : (S.node?.item.apartLabel || 'Decompose to reference'); e.target.setAttribute('aria-pressed', on); if (!on) $('card').classList.remove('on'); };
-$('b-bp').onclick = (e) => { S.bp = !S.bp; e.target.setAttribute('aria-pressed', S.bp); setBlueprint(S.bp); };
+/* Drawing view: the model turns into hidden-line edges, then dissolves into the exact drawing it was built from, when there is one */
+let paperT = 0;
+function showPaper(on) {
+  clearTimeout(paperT); const it = S.node && S.node.item; if (!it || !it.ref) return false;
+  if (on) { $('paper-img').src = `./Syd%20Website%20Assets/Showcase/refs/${it.ref}.png`; $('paper-cap').textContent = 'Your drawing · ' + it.refName; if (it.refExplode && S.u.t < 0.5) { S.u.to(1); $('b-apart').textContent = it.backLabel || 'Reassemble'; $('b-apart').setAttribute('aria-pressed', 'true'); }
+    paperT = setTimeout(() => document.body.classList.add('paper-on'), it.refExplode ? 1800 : 900); }
+  else { document.body.classList.remove('paper-on'); }
+  return true;
+}
+$('b-bp').onclick = (e) => {
+  S.bp = !S.bp; e.target.setAttribute('aria-pressed', S.bp); e.target.textContent = S.bp ? (S.node?.item.ref ? 'Back to 3D' : 'Shaded view') : 'Drawing view';
+  if (S.bp) setBlueprint(true); const had = showPaper(S.bp);
+  if (!S.bp) { clearTimeout(paperT); const delay = had ? 900 : 0; paperT = setTimeout(() => setBlueprint(false), delay); }
+};
 addEventListener('keydown', (e) => { if (e.key === 'Escape') { if ($('card').classList.contains('on')) $('card').classList.remove('on'); else leave(); } });
 $('card').querySelector('.x').onclick = () => $('card').classList.remove('on');
 

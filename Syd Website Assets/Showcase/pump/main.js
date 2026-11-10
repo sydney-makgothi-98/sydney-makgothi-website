@@ -5,6 +5,7 @@ import {chart, label, dot, vline, COL, MONO, fmt} from '../chart.js';
 import {graphs, partLabels, partCard, explodeState, fit} from '../stageui.js';
 import {buildPump} from '../models/pump.js';
 import * as P from './physics.js';
+import * as MT from './materials.js';
 
 const $ = (id) => document.getElementById(id);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -90,7 +91,49 @@ function drawBL(c) {
   const chord = bl.L, tc = params.t / chord, ix = w - 150, iy = 40, iw = 120; ctx.beginPath(); for (let i = 0; i <= 40; i++) { const xc = i / 40; ctx.lineTo(ix + xc * iw, iy - P.nacaT(xc, Math.min(0.2, tc * 1.0)) * iw * 3.2); } for (let i = 40; i >= 0; i--) { const xc = i / 40; ctx.lineTo(ix + xc * iw, iy + P.nacaT(xc, Math.min(0.2, tc * 1.0)) * iw * 3.2); } ctx.closePath(); ctx.fillStyle = 'rgba(224,169,90,0.5)'; ctx.fill(); ctx.strokeStyle = '#e0a95a'; ctx.stroke();
   label(ctx, `blade section, t/c = ${tc.toFixed(3)} (drawn ×3)`, ix + iw / 2, iy + 22, COL.muted, 'center', 9);
 }
-const gr = graphs({hq: drawHQ, eff: drawEff, tri: drawTri, npsh: drawNPSH, bl: drawBL});
+/* ------------------------------------------------------------------- materials and sizing (the report half) ---- */
+const M = {idx: 'plate', screen: true, w: Object.fromEntries(MT.CRITERIA.map(([k, , v]) => [k, v]))};
+const lg = (v) => Math.log10(v), pw = (v) => Math.pow(10, v);
+function drawAsh(c) {
+  const {ctx, w, h} = fit(c), kind = MT.INDICES[M.idx], list = MT.MATERIALS, best = list.reduce((a, b) => (MT.merit(b, M.idx) > MT.merit(a, M.idx) ? b : a));
+  const xr = [lg(1000), lg(10000)], yr = [lg(5), lg(300)], Cc = lg(best.E) - kind.slope * lg(best.rho);
+  const {X, Y} = chart(ctx, {x: 50, y: 12, w: w - 64, h: h - 46}, {xr, yr, xl: 'density ρ, kg/m³', yl: "Young's modulus E, GPa", xticks: [lg(1000), lg(2000), lg(5000), lg(10000)], yticks: [lg(10), lg(30), lg(100), lg(300)], xfmt: (v) => Math.round(pw(v)), yfmt: (v) => Math.round(pw(v)),
+    under: [(X, Y) => { ctx.fillStyle = 'rgba(52,211,153,0.08)'; ctx.beginPath(); ctx.moveTo(X(xr[0]), Y(Cc + kind.slope * xr[0])); ctx.lineTo(X(xr[1]), Y(Cc + kind.slope * xr[1])); ctx.lineTo(X(xr[1]), Y(yr[1])); ctx.lineTo(X(xr[0]), Y(yr[1])); ctx.closePath(); ctx.fill(); }],
+    series: [{pts: [[xr[0], Cc + kind.slope * xr[0]], [xr[1], Cc + kind.slope * xr[1]]], color: COL.green, width: 1.8, dash: [6, 4]}]});
+  const placed = []; for (const m of list) { const x = X(lg(m.rho)), y = Y(lg(m.E)); let ly = y - 1; if (placed.some((q) => Math.abs(q[0] - x) < 70 && Math.abs(q[1] - ly) < 11)) ly += 12; placed.push([x, ly]); dot(ctx, x, y, m.color, m === best ? 7 : 5); label(ctx, m.short, x + 9, ly, m === best ? '#fff' : COL.muted, 'left', 9.5, m === best ? '600' : ''); }
+  label(ctx, `guideline: constant ${kind.tex}  (slope ${kind.slope})`, 56, 20, COL.green, 'left', 9.5); label(ctx, `best for a ${kind.name}: ${best.short}`, 56, 34, '#fff', 'left', 9.5, '600');
+}
+function drawSS(c) {
+  const {ctx, w, h} = fit(c), list = MT.MATERIALS;
+  const {X, Y} = chart(ctx, {x: 50, y: 12, w: w - 64, h: h - 46}, {xr: [0, 1], yr: [0, 1000], xl: 'strain, %', yl: 'stress, MPa', nx: 5, ny: 5, series: list.map((m) => ({pts: MT.curve(m, 1), color: m.color, width: 2}))});
+  list.forEach((m, i) => { const col = i < 4 ? 0 : 1, row = i % 4, x = 62 + col * 128, y = 22 + row * 14; ctx.fillStyle = m.color; ctx.fillRect(x, y - 3, 14, 3); label(ctx, `${m.short}  E=${m.E}`, x + 19, y - 1, COL.muted, 'left', 9); });
+  label(ctx, 'slope of each straight part = Young’s modulus E', w - 18, h - 56, COL.muted, 'right', 9.5);
+}
+function drawMat(c) {
+  const {ctx, w, h} = fit(c), rk = MT.ranking(M.w, M.screen), n = rk.length, rowH = (h - 20) / n, x0 = 118, max = w - x0 - 56;
+  rk.forEach((r, i) => { const y = 8 + i * rowH + rowH / 2; label(ctx, r.m.short, x0 - 10, y, i === 0 ? '#fff' : COL.muted, 'right', 10.5, i === 0 ? '600' : ''); ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(x0, y - rowH * 0.3, max, rowH * 0.6); ctx.fillStyle = r.m.color; ctx.globalAlpha = r.out ? 0.22 : i === 0 ? 1 : 0.7; ctx.fillRect(x0, y - rowH * 0.3, max * r.score / 100, rowH * 0.6); ctx.globalAlpha = 1; label(ctx, r.out ? `${r.score.toFixed(0)}  screened out: ${r.m.cav <= 1 ? 'cavitation' : 'corrosion'} score 1` : r.score.toFixed(0), x0 + max * r.score / 100 + 8, y, r.out ? COL.red : i === 0 ? '#fff' : COL.muted, 'left', 10.5, '600'); });
+}
+function drawBlz(c) {
+  const {ctx, w, h} = fit(c), op = r_(), s2 = Math.PI * params.D2 * Math.sin(params.beta2 * Math.PI / 180) / params.z - params.t, pts = [];
+  for (let Q = 0.001; Q <= QMAX; Q += 0.0004) { const bl = P.boundaryLayer(Q, params), last = bl.pts[bl.pts.length - 1]; pts.push([ls(Q), 2 * last.dstar / s2 * 100]); }
+  const top = Math.max(15, Math.ceil(Math.max(...pts.map((q) => q[1])) / 5) * 5);
+  const {X, Y} = chart(ctx, {x: 50, y: 12, w: w - 64, h: h - 46}, {xr: [0, QMAX * 1000], yr: [0, top], xl: 'flow Q, L/s', yl: 'blockage by boundary layers, % of passage', nx: 6, ny: 4, series: [{pts, color: COL.cyan, width: 2.6}]});
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = COL.red; ctx.beginPath(); ctx.moveTo(X(0), Y(10)); ctx.lineTo(X(QMAX * 1000), Y(10)); ctx.stroke(); ctx.setLineDash([]); label(ctx, 'rule of thumb: keep under about 10 %', X(QMAX * 1000) - 6, Y(10) - 9, COL.red, 'right', 9.5);
+  if (op) { const bl = P.boundaryLayer(op.Q, params), v = 2 * bl.pts[bl.pts.length - 1].dstar / s2 * 100; dot(ctx, X(ls(op.Q)), Y(v), '#fff', 5); label(ctx, `${v.toFixed(1)} % at the duty point`, X(ls(op.Q)) + 9, Y(v) - 10, '#fff', 'left', 10, '600'); }
+}
+function matReadouts() {
+  const set = (id, v) => { const e = $(id); if (e) e.textContent = v; }, rk = MT.ranking(M.w, M.screen), top = rk[0], g = g_(), op = r_();
+  set('m-win', top.m.name); set('m-winsc', `${top.score.toFixed(0)} / 100`); set('m-second', rk[1].m.name);
+  for (const [k] of MT.CRITERIA) { const o = $('m-w-' + k + '-v'); if (o) o.textContent = `${Math.round(M.w[k] / (Object.values(M.w).reduce((a, b) => a + b, 0) || 1) * 100)} %`; }
+  set('m-cent', `${MT.centrifugalMPa(top.m, g.u2).toFixed(2)} MPa`);
+  if (op) { const dp = 998 * 9.80665 * op.H, bs = MT.bladeStressMPa(dp, params.b2, params.t); set('m-bend', `${bs.toFixed(1)} MPa`); set('m-fos', `${(top.m.sy / bs).toFixed(0)}×`); }
+  const bl = P.boundaryLayer(op ? op.Q : 0.01, params), Cf = bl.ReL < 5e5 ? 1.328 / Math.sqrt(bl.ReL) : 0.074 / Math.pow(bl.ReL, 0.2), ut = bl.wmean * Math.sqrt(Cf / 2), s2 = Math.PI * params.D2 * Math.sin(params.beta2 * Math.PI / 180) / params.z - params.t, last = bl.pts[bl.pts.length - 1];
+  set('b-cf', Cf.toFixed(4)); set('b-ut', `${ut.toFixed(2)} m/s`); set('b-kallow', `${(5 * P.NU / ut * 1e6).toFixed(0)} µm`); set('b-delta', `${(last.delta * 1000).toFixed(2)} mm`); set('b-dstar', `${(last.dstar * 1000).toFixed(2)} mm`); set('b-s2', `${(s2 * 1000).toFixed(1)} mm`); set('b-blk', `${(2 * last.dstar / s2 * 100).toFixed(1)} %`);
+}
+for (const [k] of MT.CRITERIA) { const el = $('m-w-' + k); if (el) { el.value = M.w[k] * 100; el.oninput = () => { M.w[k] = +el.value / 100; matReadouts(); gr.draw(); }; } }
+{ const sc = $('m-screen'); if (sc) { sc.checked = true; sc.onchange = () => { M.screen = sc.checked; matReadouts(); gr.draw(); }; } }
+for (const k of Object.keys(MT.INDICES)) { const b = $('m-idx-' + k); if (b) b.onclick = () => { M.idx = k; for (const j of Object.keys(MT.INDICES)) $('m-idx-' + j).setAttribute('aria-pressed', j === k); gr.draw(); }; }
+const gr = graphs({hq: drawHQ, eff: drawEff, tri: drawTri, npsh: drawNPSH, bl: drawBL, ash: drawAsh, ss: drawSS, mat: drawMat, blz: drawBlz});
 
 /* ----------------------------------------------------------------------------------------------- controls ---- */
 function hud() {
@@ -103,7 +146,7 @@ function hud() {
   set('t-aff', `×${(params.N / 2900).toFixed(2)} speed → flow ×${(params.N / 2900).toFixed(2)}, head ×${((params.N / 2900) ** 2).toFixed(2)}, power ×${((params.N / 2900) ** 3).toFixed(2)} (against 2 900 rpm)`);
 }
 let rebuildT;
-function changed(geom) { hud(); gr.draw(); if (geom) { clearTimeout(rebuildT); rebuildT = setTimeout(() => rebuild(), 90); } }
+function changed(geom) { hud(); matReadouts(); gr.draw(); if (geom) { clearTimeout(rebuildT); rebuildT = setTimeout(() => rebuild(), 90); } }
 const bind = (id, key, fmtv, geom) => { const el = $(id), out = $(id + '-v'); const upd = () => { params[key] = +el.value; out.textContent = fmtv(+el.value); }; el.oninput = () => { upd(); changed(geom); }; el.value = params[key] * (key === 'D2' ? 1000 : 1); upd(); };
 bind('s-n', 'N', (v) => v + ' rpm', false); bind('s-b2', 'beta2', (v) => v + '°', true); bind('s-valve', 'valve', (v) => v.toFixed(1) + '×', false); bind('s-lift', 'lift', (v) => v.toFixed(1) + ' m', false);
 { const el = $('s-d2'), out = $('s-d2-v'); const upd = () => { params.D2 = +el.value / 1000; out.textContent = el.value + ' mm'; }; el.oninput = () => { upd(); changed(true); }; el.value = params.D2 * 1000; upd(); }
@@ -128,5 +171,5 @@ st.loop((dt, now) => {
   labels.update(pump.parts, u, S.sel && S.sel.id);
   $('hud-u').textContent = u > 0.02 ? `exploded ${Math.round(u * 100)}%` : 'assembled';
 });
-changed(false); gr.draw();
+matReadouts(); changed(false); gr.draw();
 window.__PUMP = {params, P, st, ex, select, rebuild, S, get pump() { return pump; }, gr};
