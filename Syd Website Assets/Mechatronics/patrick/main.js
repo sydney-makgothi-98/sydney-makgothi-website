@@ -659,7 +659,7 @@ new IntersectionObserver((es) => { stageVisible = es[0].isIntersecting; }, {thre
 function loop(now) {
   const dt = Math.min((now - last) / 1000, 0.1); last = now; frameN++;
   if (!document.hidden) {
-    if (stageVisible || true) { frame(reduce && !tour.running ? 0 : dt); (useComposer ? composer.render() : renderer.render(scene, camera)); }
+    if (stageVisible) { frame(reduce && !tour.running ? 0 : dt); (useComposer ? composer.render() : renderer.render(scene, camera)); }
     chartTick++;
     if (chartTick % 2 === 0) drawAllCharts(false, now);
     // quality: step down if the page can't hold ~45 fps

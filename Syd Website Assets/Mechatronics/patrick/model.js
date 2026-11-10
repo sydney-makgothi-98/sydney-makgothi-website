@@ -49,8 +49,9 @@ export const mu = (s, peak) => peak * Math.sin(1.5 * Math.atan(10 * s));
 export function com(theta, payload) {
   const ax = R.pivot[0] + 0.6 * R.armLen * Math.cos(theta);
   const tx = R.pivot[0] + R.armLen * Math.cos(theta) + 0.5 * R.gripLen;
-  const m = R.mBase + R.mArm + (payload ? R.mEgg : 0);
-  const x = (R.mBase * R.xBase + R.mArm * ax + (payload ? R.mEgg * tx : 0)) / m;
+  const pm = payload === true ? R.mEgg : (payload || 0);                       // payload: true (the egg) or a mass in kg
+  const m = R.mBase + R.mArm + pm;
+  const x = (R.mBase * R.xBase + R.mArm * ax + pm * tx) / m;
   return {m, x, drive: clamp((R.casterX - x) / R.casterX, 0.05, 1)};
 }
 
@@ -128,17 +129,21 @@ export function maxRangeOf(wall) {
 
 /* ------------------------------------------------------------ drive tests -------------------------------------- */
 /** One side of the robot (a wheel and half the mass) for dt, returns the new {w, v, F, slip}. */
-function sideStep(st, V, shorted, N, peak, dt, mass) {
+export function sideStep(st, V, shorted, N, peak, dt, mass) {
   const rEff = R.wheelR + (st.bands ? R.bandT : 0);
-  const slipDen = Math.max(Math.abs(st.w * rEff), Math.abs(st.v), 0.02);
-  const s = (st.w * rEff - st.v) / slipDen;
-  const F = N * mu(s, peak);
-  let tau;
-  if (shorted) tau = -MOTOR.etaG * MOTOR.ke * MOTOR.ke * st.w / MOTOR.Rm - Math.sign(st.w) * MOTOR.tauF * (Math.abs(st.w) > 0.05 ? 1 : 0);
-  else tau = motor(V, st.w).tau;
-  const roll = 0.03 * N * Math.sign(st.v) * (Math.abs(st.v) > 0.003 ? 1 : st.v / 0.003);
-  st.w += (tau - F * rEff) / MOTOR.J * dt;
-  st.v += (F - roll) / mass * dt;
+  // The tyre's grip changes very fast with slip at low speed, so one 1 ms step is too coarse (the wheel would chatter): take four.
+  const n = 4, h = dt / n;
+  let s = 0, F = 0, tau = 0;
+  for (let k = 0; k < n; k++) {
+    const slipDen = Math.max(Math.abs(st.w * rEff), Math.abs(st.v), 0.02);
+    s = (st.w * rEff - st.v) / slipDen;
+    F = N * mu(s, peak);
+    if (shorted) tau = -MOTOR.etaG * MOTOR.ke * MOTOR.ke * st.w / MOTOR.Rm - Math.sign(st.w) * MOTOR.tauF * (Math.abs(st.w) > 0.05 ? 1 : 0);
+    else tau = motor(V, st.w).tau;
+    const roll = 0.03 * N * (Math.abs(st.v) > 0.003 ? Math.sign(st.v) : st.v / 0.003);
+    st.w += (tau - F * rEff) / MOTOR.J * h;
+    st.v += (F - roll) / mass * h;
+  }
   st.slip = s; st.F = F; st.tau = tau; st.Pm = shorted ? 0 : Math.max(0, tau * st.w);
   const m = shorted ? {I: 0, Pel: 0} : motor(V, st.w);
   st.I = shorted ? 0 : m.I; st.Pel = shorted ? 0 : m.Pel; st.rEff = rEff;
@@ -193,12 +198,12 @@ function rayBox(ox, oz, dx, dz, b) {
   return t0;
 }
 /** What the sensor reads: the nearest surface in a narrow cone ahead (cone of five rays), metres. */
-export function sonarRead(x, z, yaw, extra = []) {
+export function sonarRead(x, z, yaw, extra = [], defaults = true) {
   const ox = x + Math.cos(yaw) * R.sensorX, oz = z + Math.sin(yaw) * R.sensorX;
   let best = SOUND.maxRange, what = 'none';
   for (let i = -2; i <= 2; i++) {
     const a = yaw + i * 6 * D2R, dx = Math.cos(a), dz = Math.sin(a);
-    for (const [nm, b] of [['crate', WORLD.crate], ['tray', WORLD.tray], ...extra]) {
+    for (const [nm, b] of [...(defaults ? [['crate', WORLD.crate], ['tray', WORLD.tray]] : []), ...extra]) {
       const t = rayBox(ox, oz, dx, dz, b); if (t < best) { best = t; what = nm; }
     }
     if (dx > 1e-6) { const t = (WORLD.wall.x - ox) / dx; if (t > 0 && t < best) { best = t; what = 'wall'; } }
