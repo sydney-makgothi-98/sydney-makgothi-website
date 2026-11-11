@@ -249,6 +249,36 @@ gray.thumbnail((1600, 99999))                              # and cap the width
 
 Each picture sits in a `<figure>` with a caption written for it, and is wrapped in a link to the full-size file, because the arrow tables are far too small to read at column width. The text next to each figure was written to match the picture and its file name: the stone-tool plate opens the research article, the terminology diagram defines the words the article uses, and the Ashby chart explains how the wing's material was chosen. Where a caption describes a diagram that came from somewhere else (the laminate schematic is generic, not this wing's layup), it says so.
 
+## Scrolling Through a Menu
+
+The selection wheel on the home page is a menu of five categories, each with sub tabs. It is a long section, `4500` pixels tall at first, with a screen-sized panel that stays stuck to the top of the window (`position: sticky`) while you scroll past. The first version ignored the scroll position and only changed when you clicked. The better version makes **scrolling the input**.
+
+The idea is to turn the menu into a flat list of **stops**: first the category, then each of its sub tabs, then the next category, and so on. There are 20 stops, built in three lines from the same data that draws the menu:
+
+@code portfolio.html 1027-1030
+
+Each stop owns 230 pixels of scrolling, and the section's height is set from the number of stops (`STOPS.length * STOP_PX + window.innerHeight`), so adding a sub tab to the data makes the page longer by itself. A scroll listener turns "how far have we scrolled into the section" into a stop number with one division, and `applyStop` opens that category and highlights that sub tab:
+
+@code portfolio.html 1218-1229
+
+:::why Stops from the data, and one division
+**What it is.** The scroll position, divided by 230 and rounded down, is the index of the current stop.
+
+**Why it is done this way.** The alternative is a pile of "if scrolled between 900 and 1130, show Structural" rules, each typed by hand and each wrong the moment a tab is added.
+
+**Why it matters.** The menu, the scroll length and the highlighting all come from the one list. Clicking a category scrolls to its first stop (`stopScrollPos`), so clicking and scrolling always agree.
+
+**What happens if you do not.** The scroll and the click disagree about where you are, and the page flickers between them.
+:::
+
+The old selection function was found to be doing nothing, a good lesson in itself. It looked up the menu items once, near the top of the script, *before the items had been created*, so its list was empty for ever. The new code asks for the items when it needs them.
+
+## Video in Place of a Still
+
+Each category now shows a short video instead of an image. The picture on the right of the menu is a `<video muted loop playsinline autoplay>`, and the chosen category's file replaces its `src` when the category changes (only then: moving between sub tabs of the same category leaves the video playing). The old still image stays as the video's **poster**, so something is on screen while the file loads.
+
+The five clips came straight from an editor at about 120 MB in total, which is far too much for a menu. They were squeezed with the program described in the book *Building Nova - Compressor*: 119.1 MB became 11.0 MB, a 91 percent saving, using its "Web loop" preset (720 pixels, no sound, CRF 28). Because a page that is slow to load is a page people leave, **always compress video before it goes on a website.** The untouched originals were kept in a folder *outside* the project, so they never travel with the site.
+
 ## Telling the Truth on a Page That Looks Finished
 
 These pages have a lot of numbers and some of them are not measurements. A short rule kept the book and the site honest:
@@ -289,6 +319,7 @@ The jet truck page does this in a paragraph headed "What is and is not real here
 5. What did the black-and-white pages reuse, and why?
 6. How does a CSS grid put a canvas above a video, with the same width, and what makes the dividing line?
 7. What two things make "Back to Portfolio" return to the selection screen with the right category open?
+8. How does one division turn the scroll position into the menu's current item?
 :::
 
 :::answers
@@ -301,4 +332,5 @@ The jet truck page does this in a paragraph headed "What is and is not real here
 5. The chart-drawing code. Only the palette object was swapped, so a fix to a chart fixes both kinds of page.
 6. The container is a grid with one column and two rows (`grid-template-rows: auto auto`); the canvas is the first child, so it is in row 1, and the video is the second, so it is in row 2. Both use the same `aspect-ratio`, and the line is a `border-top` on the video's row.
 7. The link ends in a fragment (`#expertise-wheel`) that scrolls to the selection section, and the click that opened the sub page saved the category's number in session storage, which the portfolio reads on load.
+8. The menu is a flat list of stops (category, then each sub tab); the scroll distance into the section divided by the pixels per stop (230), rounded down, is the index of the stop.
 :::
