@@ -121,3 +121,6 @@ body.fmt .sec .katex-display { text-align: center; }
 .cover .ph { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; color: var(--text-faint); background: repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--accent) 5%, transparent) 14px 28px); } .cover.missing .ph { display: flex; } .cover.missing video { display: none; }
 .cover .cv-in { position: relative; z-index: 2; max-width: 680px; } .cover h1 { font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: clamp(2.2rem, 6vw, 4.2rem); line-height: 1.02; margin: 0.4rem 0 1rem; } .cover h1 span { color: var(--accent); }
 .cover p { color: var(--text-muted); max-width: 56ch; } .cover .cue { display: inline-block; margin-top: 1.4rem; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.18em; color: var(--accent); text-decoration: none; }
+
+body.fmt .equation .katex-display { overflow: visible; }
+body.fmt .equation { scrollbar-width: none; } body.fmt .equation::-webkit-scrollbar { display: none; }
