@@ -65,7 +65,68 @@
 
     <main class="article">
         <section class="sec">
-            <span class="tag">01 &middot; ABSOLUTE MOTION</span>
+            <span class="tag">01 &middot; THE BRIEF</span>
+            <h2>One litre of cylinder, one megawatt of engine</h2>
+            <p>The target is the engine of the Koenigsegg One:1: a twin-turbocharged 5.0-litre V8, named for its one megawatt of power for one tonne of car. The manufacturer's published figures (5 065 cm&sup3; from a 92 mm bore and 95.25 mm stroke, a 9.0:1 compression ratio, 1 360 hp at 7 500 rpm, 1 371 N&middot;m at 6 000 rpm, an 8 250 rpm limiter) are the starting constraints. Everything else, the rod length, the boost, the masses, is a design choice, and this page is the machinery for making those choices: change a dimension and see the pressure, the loads and the torque change with it.</p>
+            <table class="spec"><tbody>
+                <tr><td>Displacement</td><td><b id="e-disp"></b></td></tr>
+                <tr><td>Stroke / bore</td><td><b id="e-sb"></b>: a slightly long stroke, which favours torque and burn efficiency</td></tr>
+                <tr><td>Rod ratio</td><td><b id="e-lam"></b>: typically 0.28 to 0.33 in high-performance engines</td></tr>
+                <tr><td>Mean piston speed</td><td><b id="e-sp"></b>: above about 25 m/s ring and bearing life suffers</td></tr>
+                <tr><td>Peak pressure</td><td><b id="e-pmax"></b></td></tr>
+                <tr><td>Output</td><td><b id="e-pow"></b>; published 1 000 kW at 7 500 rpm</td></tr>
+                <tr><td>Torque</td><td><b id="e-tq6"></b>; published 1 371 N&middot;m</td></tr>
+                <tr><td>Loads</td><td><b id="e-fin"></b></td></tr>
+                <tr><td>Torque ripple</td><td><b id="e-ripple"></b> (the flywheel's job)</td></tr>
+                <tr><td>Efficiency</td><td><b id="e-eta"></b></td></tr>
+                <tr><td>Fuel use</td><td><b id="e-bsfc"></b> at the current speed (brake specific)</td></tr>
+            </tbody></table>
+        </section>
+
+        <section class="sec">
+            <span class="tag">02 &middot; THERMODYNAMIC CYCLE</span>
+            <h2>The Otto cycle, and why the real engine falls short of it</h2>
+            <p>An engine converts the chemical energy of fuel into work by taking a charge of air and fuel round a cycle: compress it, burn it, let it expand against the piston, throw it away. The simplest model that captures the physics is the <b>air-standard Otto cycle</b>, in which a fixed mass of ideal gas goes through four processes:</p>
+            <ul>
+                <li><b>1 to 2, isentropic compression</b> from bottom dead centre to top dead centre: no heat, so p V<sup>&gamma;</sup> is constant and T<sub>2</sub> = T<sub>1</sub> r<sub>c</sub><sup>&gamma;&minus;1</sup>, where r<sub>c</sub> = V<sub>max</sub>/V<sub>min</sub>.</li>
+                <li><b>2 to 3, heat added at constant volume</b>: the burn is taken as instantaneous at TDC, Q<sub>in</sub> = m c<sub>v</sub>(T<sub>3</sub> &minus; T<sub>2</sub>).</li>
+                <li><b>3 to 4, isentropic expansion</b>: the power stroke, T<sub>4</sub> = T<sub>3</sub>/r<sub>c</sub><sup>&gamma;&minus;1</sup>.</li>
+                <li><b>4 to 1, heat rejected at constant volume</b> as the exhaust opens, Q<sub>out</sub> = m c<sub>v</sub>(T<sub>4</sub> &minus; T<sub>1</sub>).</li>
+            </ul>
+            <p>The thermal efficiency is the work out over the heat in, and because the two isentropes share the same temperature ratio, everything cancels but the compression ratio:</p>
+            <div class="equation">$$\eta=\frac{Q_{in}-Q_{out}}{Q_{in}}=1-\frac{T_4-T_1}{T_3-T_2}=1-\frac{T_1}{T_2}=1-r_c^{\,1-\gamma}$$</div>
+            <p>Raising the compression ratio raises the efficiency, with diminishing returns, as the curves below show. The ratio is capped by <b>knock</b>, the spontaneous detonation of the unburned charge ahead of the flame, which depends on the pressure and temperature at the end of compression: a boosted engine already arrives at TDC with a hot, dense charge, so a turbocharged engine such as this one runs a modest 9.0:1 and uses the boost, not the ratio, to make its power. Real efficiency is also lower than the ideal because &gamma; falls from 1.4 for cold air to nearer 1.3 for hot burnt gas (the lower curves), because the burn takes time and is not at constant volume, and because heat is lost to the walls.</p>
+            <div class="panel"><div class="panel-head"><div class="t">Efficiency against compression ratio</div><div class="s">the dots follow the sliders in the stage</div></div><div style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="eta" style="min-height:300px;display:block"><figcaption style="display:none">Efficiency against compression ratio</figcaption><canvas aria-label="Ideal Otto efficiency against compression ratio for three values of gamma, with this engine's ideal and indicated efficiency"></canvas></figure></div></div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">03 &middot; TRANSIENT ANALYSIS</span>
+            <h2>Deriving the pressure trace, step by step</h2>
+            <p>The ideal cycle gives a number. To size a cylinder, a piston and a block, the pressure is needed at every crank angle, because that is what loads the parts. The tool for that is the <b>first law applied to the cylinder contents as a closed system</b> between inlet valve closing and exhaust valve opening, advanced in small crank-angle steps. The derivation takes five steps.</p>
+            <p><b>Step 1, energy balance.</b> The internal energy U of the charge changes by the heat released by combustion, less the heat lost to the walls, less the work done on the piston:</p>
+            <div class="equation">$$dU=\delta Q_b-\delta Q_w-p\,dV,\qquad U=m\,c_v\,T$$</div>
+            <p><b>Step 2, the gas law.</b> With p V = m R T and c<sub>v</sub> = R/(&gamma;&minus;1), the internal energy is U = pV/(&gamma;&minus;1). Differentiating that and substituting into step 1 gives
+
+            $$\frac{p\,dV+V\,dp}{\gamma-1}=\delta Q-p\,dV\quad\Longrightarrow\quad \frac{dp}{d\theta}=\frac{\gamma-1}{V}\frac{dQ}{d\theta}-\gamma\,\frac{p}{V}\frac{dV}{d\theta},\qquad \delta Q=\delta Q_b-\delta Q_w$$</p>
+            <p>This is the whole model in one line. The first term is the pressure rise from burning fuel. The second is the cylinder volume changing as the piston moves: it is negative on compression, so it raises the pressure, and positive on expansion, so it lowers it.</p>
+            <p><b>Step 3, the heat release.</b> Fuel does not burn all at once. A Wiebe function describes the burned mass fraction, an S-shaped curve that starts slowly, accelerates through the middle of the flame and tails off:</p>
+            <div class="equation">$$x_b(\theta)=1-\exp\!\left[-a\left(\frac{\theta-\theta_0}{\Delta\theta}\right)^{m+1}\right],\qquad \frac{dQ_b}{d\theta}=Q_{tot}\,\frac{dx_b}{d\theta}$$</div>
+            <p>where &theta;<sub>0</sub> is the spark timing, &Delta;&theta; the burn duration, and a and m shape the curve. The total heat Q<sub>tot</sub> is the fuel mass times its heating value times a combustion efficiency, and the fuel mass is the charge mass divided by the air-fuel ratio plus one.</p>
+            <p><b>Step 4, the volume.</b> V(&theta;) is the clearance volume plus the piston area times its travel, and the travel is the slider-crank displacement derived in the next section. This is the link between the mechanism and the thermodynamics: change the rod length and the pressure trace changes with it.</p>
+            <p><b>Step 5, march.</b> Start at bottom dead centre with the intake pressure and temperature, step in half-degree increments, update p from step 2 and the work as W = &sum; p &Delta;V, and read off the indicated mean effective pressure imep = W/V<sub>d</sub>. Friction is then subtracted with the Chen&ndash;Flynn correlation to give brake torque.</p>
+            <div class="panel"><div class="panel-head"><div class="t">The burn: mass fraction against crank angle</div><div class="s">MFB10, MFB50, MFB90: where 10, 50 and 90 % of the fuel has burned</div></div><div style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="wiebe" style="min-height:300px;display:block"><figcaption style="display:none">Mass fraction burned</figcaption><canvas aria-label="Wiebe mass fraction burned against crank angle with MFB10, MFB50 and MFB90 marked"></canvas></figure></div></div>
+            <table class="spec"><tbody>
+                <tr><td>Heat released per cylinder per cycle</td><td><b id="w-q"></b></td></tr>
+                <tr><td>Charge trapped</td><td><b id="w-m"></b></td></tr>
+                <tr><td>Half the fuel is burned at (MFB50)</td><td><b id="w-ca50"></b>: about 8 to 14° is the efficient window</td></tr>
+                <tr><td>Burn duration</td><td><b id="w-dur"></b></td></tr>
+                <tr><td>Work from the pressure trace</td><td><b id="w-w"></b></td></tr>
+            </tbody></table>
+            <p>Charts 01 and 02 in the stage show the result: the pressure over the volume, and against the crank angle with the heat-release rate beneath it. A single zone with uniform temperature, a fixed &gamma; ramp and a lumped 10 % heat loss is the simplest honest model. It trades away flame propagation, the end-gas that causes knock and the temperature gradients across the chamber, which a multi-zone or CFD model would resolve.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">04 &middot; ABSOLUTE MOTION</span>
             <h2>The piston and connecting rod as a linkage</h2>
             <p>To find what the piston and rod must withstand, the crank, rod and piston are modelled as a linkage of three moving bodies: a crank turning about the fixed point O, a connecting rod joining the crank pin A to the piston pin B, and a piston that can only slide along the cylinder axis. The method is <b>absolute motion analysis</b>: write the position of each moving point in a fixed frame at O, and differentiate. No relative-velocity diagrams are needed, and the result is exact.</p>
             <p><b>Position.</b> Put y along the cylinder axis. The pin A goes round a circle of radius r, so r<sub>A</sub> = r(sin&theta;, cos&theta;), measured from the crank angle &theta; from top dead centre. The rod of length l joins A to B, so B is at r<sub>B</sub> = r<sub>A</sub> + r<sub>B/A</sub> with r<sub>B/A</sub> = l(&minus;sin&psi;, &minus;cos&psi;) where &psi; is the rod angle. The piston cannot leave the axis, so the x component of r<sub>B</sub> is zero:</p>
@@ -100,67 +161,6 @@
                 <tr><td>Acceleration is zero at</td><td><b id="k-zero"></b> from TDC</td></tr>
             </tbody></table>
             <p>The inertia force varies with the square of speed, so the last 10 % of engine speed adds about 20 % to the load. That is why the redline is where the rods and bearings run out of margin, and why the pistons and rods are made of the lightest material that is strong enough.</p>
-        </section>
-
-        <section class="sec">
-            <span class="tag">02 &middot; THE BRIEF</span>
-            <h2>One litre of cylinder, one megawatt of engine</h2>
-            <p>The target is the engine of the Koenigsegg One:1: a twin-turbocharged 5.0-litre V8, named for its one megawatt of power for one tonne of car. The manufacturer's published figures (5 065 cm&sup3; from a 92 mm bore and 95.25 mm stroke, a 9.0:1 compression ratio, 1 360 hp at 7 500 rpm, 1 371 N&middot;m at 6 000 rpm, an 8 250 rpm limiter) are the starting constraints. Everything else, the rod length, the boost, the masses, is a design choice, and this page is the machinery for making those choices: change a dimension and see the pressure, the loads and the torque change with it.</p>
-            <table class="spec"><tbody>
-                <tr><td>Displacement</td><td><b id="e-disp"></b></td></tr>
-                <tr><td>Stroke / bore</td><td><b id="e-sb"></b>: a slightly long stroke, which favours torque and burn efficiency</td></tr>
-                <tr><td>Rod ratio</td><td><b id="e-lam"></b>: typically 0.28 to 0.33 in high-performance engines</td></tr>
-                <tr><td>Mean piston speed</td><td><b id="e-sp"></b>: above about 25 m/s ring and bearing life suffers</td></tr>
-                <tr><td>Peak pressure</td><td><b id="e-pmax"></b></td></tr>
-                <tr><td>Output</td><td><b id="e-pow"></b>; published 1 000 kW at 7 500 rpm</td></tr>
-                <tr><td>Torque</td><td><b id="e-tq6"></b>; published 1 371 N&middot;m</td></tr>
-                <tr><td>Loads</td><td><b id="e-fin"></b></td></tr>
-                <tr><td>Torque ripple</td><td><b id="e-ripple"></b> (the flywheel's job)</td></tr>
-                <tr><td>Efficiency</td><td><b id="e-eta"></b></td></tr>
-                <tr><td>Fuel use</td><td><b id="e-bsfc"></b> at the current speed (brake specific)</td></tr>
-            </tbody></table>
-        </section>
-
-        <section class="sec">
-            <span class="tag">03 &middot; THERMODYNAMIC CYCLE</span>
-            <h2>The Otto cycle, and why the real engine falls short of it</h2>
-            <p>An engine converts the chemical energy of fuel into work by taking a charge of air and fuel round a cycle: compress it, burn it, let it expand against the piston, throw it away. The simplest model that captures the physics is the <b>air-standard Otto cycle</b>, in which a fixed mass of ideal gas goes through four processes:</p>
-            <ul>
-                <li><b>1 to 2, isentropic compression</b> from bottom dead centre to top dead centre: no heat, so p V<sup>&gamma;</sup> is constant and T<sub>2</sub> = T<sub>1</sub> r<sub>c</sub><sup>&gamma;&minus;1</sup>, where r<sub>c</sub> = V<sub>max</sub>/V<sub>min</sub>.</li>
-                <li><b>2 to 3, heat added at constant volume</b>: the burn is taken as instantaneous at TDC, Q<sub>in</sub> = m c<sub>v</sub>(T<sub>3</sub> &minus; T<sub>2</sub>).</li>
-                <li><b>3 to 4, isentropic expansion</b>: the power stroke, T<sub>4</sub> = T<sub>3</sub>/r<sub>c</sub><sup>&gamma;&minus;1</sup>.</li>
-                <li><b>4 to 1, heat rejected at constant volume</b> as the exhaust opens, Q<sub>out</sub> = m c<sub>v</sub>(T<sub>4</sub> &minus; T<sub>1</sub>).</li>
-            </ul>
-            <p>The thermal efficiency is the work out over the heat in, and because the two isentropes share the same temperature ratio, everything cancels but the compression ratio:</p>
-            <div class="equation">$$\eta=\frac{Q_{in}-Q_{out}}{Q_{in}}=1-\frac{T_4-T_1}{T_3-T_2}=1-\frac{T_1}{T_2}=1-r_c^{\,1-\gamma}$$</div>
-            <p>Raising the compression ratio raises the efficiency, with diminishing returns, as the curves below show. The ratio is capped by <b>knock</b>, the spontaneous detonation of the unburned charge ahead of the flame, which depends on the pressure and temperature at the end of compression: a boosted engine already arrives at TDC with a hot, dense charge, so a turbocharged engine such as this one runs a modest 9.0:1 and uses the boost, not the ratio, to make its power. Real efficiency is also lower than the ideal because &gamma; falls from 1.4 for cold air to nearer 1.3 for hot burnt gas (the lower curves), because the burn takes time and is not at constant volume, and because heat is lost to the walls.</p>
-            <div class="panel"><div class="panel-head"><div class="t">Efficiency against compression ratio</div><div class="s">the dots follow the sliders in the stage</div></div><div style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="eta" style="min-height:300px;display:block"><figcaption style="display:none">Efficiency against compression ratio</figcaption><canvas aria-label="Ideal Otto efficiency against compression ratio for three values of gamma, with this engine's ideal and indicated efficiency"></canvas></figure></div></div>
-        </section>
-
-        <section class="sec">
-            <span class="tag">04 &middot; TRANSIENT ANALYSIS</span>
-            <h2>Deriving the pressure trace, step by step</h2>
-            <p>The ideal cycle gives a number. To size a cylinder, a piston and a block, the pressure is needed at every crank angle, because that is what loads the parts. The tool for that is the <b>first law applied to the cylinder contents as a closed system</b> between inlet valve closing and exhaust valve opening, advanced in small crank-angle steps. The derivation takes five steps.</p>
-            <p><b>Step 1, energy balance.</b> The internal energy U of the charge changes by the heat released by combustion, less the heat lost to the walls, less the work done on the piston:</p>
-            <div class="equation">$$dU=\delta Q_b-\delta Q_w-p\,dV,\qquad U=m\,c_v\,T$$</div>
-            <p><b>Step 2, the gas law.</b> With p V = m R T and c<sub>v</sub> = R/(&gamma;&minus;1), the internal energy is U = pV/(&gamma;&minus;1). Differentiating that and substituting into step 1 gives
-
-            $$\frac{p\,dV+V\,dp}{\gamma-1}=\delta Q-p\,dV\quad\Longrightarrow\quad \frac{dp}{d\theta}=\frac{\gamma-1}{V}\frac{dQ}{d\theta}-\gamma\,\frac{p}{V}\frac{dV}{d\theta},\qquad \delta Q=\delta Q_b-\delta Q_w$$</p>
-            <p>This is the whole model in one line. The first term is the pressure rise from burning fuel. The second is the cylinder volume changing as the piston moves: it is negative on compression, so it raises the pressure, and positive on expansion, so it lowers it.</p>
-            <p><b>Step 3, the heat release.</b> Fuel does not burn all at once. A Wiebe function describes the burned mass fraction, an S-shaped curve that starts slowly, accelerates through the middle of the flame and tails off:</p>
-            <div class="equation">$$x_b(\theta)=1-\exp\!\left[-a\left(\frac{\theta-\theta_0}{\Delta\theta}\right)^{m+1}\right],\qquad \frac{dQ_b}{d\theta}=Q_{tot}\,\frac{dx_b}{d\theta}$$</div>
-            <p>where &theta;<sub>0</sub> is the spark timing, &Delta;&theta; the burn duration, and a and m shape the curve. The total heat Q<sub>tot</sub> is the fuel mass times its heating value times a combustion efficiency, and the fuel mass is the charge mass divided by the air-fuel ratio plus one.</p>
-            <p><b>Step 4, the volume.</b> V(&theta;) is the clearance volume plus the piston area times its travel, and the travel is the slider-crank displacement derived in the next section. This is the link between the mechanism and the thermodynamics: change the rod length and the pressure trace changes with it.</p>
-            <p><b>Step 5, march.</b> Start at bottom dead centre with the intake pressure and temperature, step in half-degree increments, update p from step 2 and the work as W = &sum; p &Delta;V, and read off the indicated mean effective pressure imep = W/V<sub>d</sub>. Friction is then subtracted with the Chen&ndash;Flynn correlation to give brake torque.</p>
-            <div class="panel"><div class="panel-head"><div class="t">The burn: mass fraction against crank angle</div><div class="s">MFB10, MFB50, MFB90: where 10, 50 and 90 % of the fuel has burned</div></div><div style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="wiebe" style="min-height:300px;display:block"><figcaption style="display:none">Mass fraction burned</figcaption><canvas aria-label="Wiebe mass fraction burned against crank angle with MFB10, MFB50 and MFB90 marked"></canvas></figure></div></div>
-            <table class="spec"><tbody>
-                <tr><td>Heat released per cylinder per cycle</td><td><b id="w-q"></b></td></tr>
-                <tr><td>Charge trapped</td><td><b id="w-m"></b></td></tr>
-                <tr><td>Half the fuel is burned at (MFB50)</td><td><b id="w-ca50"></b>: about 8 to 14° is the efficient window</td></tr>
-                <tr><td>Burn duration</td><td><b id="w-dur"></b></td></tr>
-                <tr><td>Work from the pressure trace</td><td><b id="w-w"></b></td></tr>
-            </tbody></table>
-            <p>Charts 01 and 02 in the stage show the result: the pressure over the volume, and against the crank angle with the heat-release rate beneath it. A single zone with uniform temperature, a fixed &gamma; ramp and a lumped 10 % heat loss is the simplest honest model. It trades away flame propagation, the end-gas that causes knock and the temperature gradients across the chamber, which a multi-zone or CFD model would resolve.</p>
         </section>
 
         <section class="sec">
