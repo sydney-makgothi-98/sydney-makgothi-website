@@ -8,10 +8,10 @@ import * as R from './physics.js';
 const $ = (id) => document.getElementById(id);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const p = {...R.DEFAULTS};
-const S = {amp: 40, zoom: 0, zoomT: 0, sel: null, r: null, ex: null};
+const S = {amp: 40, zoom: 0, zoomT: 0, cut: 0, cutT: 0, sel: null, r: null, ex: null};
 const ex = explodeState();
 let ready = false;
-const st = createStage({canvas: $('gl'), tint: '#34d399', dist: 30, el: 0.3, az: 0.75, distRange: [5, 70], onTier: () => { if (ready) rebuild(); }});
+const st = createStage({canvas: $('gl'), tint: '#34d399', dist: 1950, el: 0.14, az: 0.55, near: 0.3, far: 9000, distRange: [8, 4200], onTier: () => { if (ready) rebuild(); }});
 let bld = null, labels = null;
 const card = partCard($('card'), () => { S.sel = null; });
 function solve() { S.r = R.ritz(p); S.ex = R.exactUniform(p); }
@@ -61,22 +61,24 @@ const bind = (id, get, set, f) => { const el = $(id), out = $(id + '-v'); el.val
 bind('s-q', () => p.q / 1000, (v) => { p.q = v * 1000; }, (v) => `${v.toFixed(1)} kN/m`); bind('s-k', () => Math.log10(p.k), (v) => { p.k = Math.pow(10, v); }, (v) => `${(Math.pow(10, v) / 1e6).toFixed(2)} MN/m²`);
 bind('s-ei', () => p.EI / 1e7, (v) => { p.EI = v * 1e7; }, (v) => `${(v * 10).toFixed(0)} MN·m²`); bind('s-p', () => p.P / 1000, (v) => { p.P = v * 1000; }, (v) => `${v.toFixed(0)} kN`);
 bind('s-n', () => p.N, (v) => { p.N = v; }, (v) => `${v} terms`); bind('s-amp', () => S.amp, (v) => { S.amp = v; }, (v) => `×${v}`);
+$('b-cut').onclick = (e) => { S.cutT = S.cutT > 0.5 ? 0 : 1; e.target.textContent = S.cutT ? 'Close the cutaway' : 'Cutaway'; e.target.setAttribute('aria-pressed', !!S.cutT); };
 $('b-apart').onclick = (e) => { const on = ex.toggle() > 0.5; e.target.textContent = on ? 'Reassemble' : 'Disassemble'; e.target.setAttribute('aria-pressed', on); };
-$('b-zoom').onclick = (e) => { S.zoomT = S.zoomT > 0.5 ? 0 : 1; e.target.textContent = S.zoomT ? 'Zoom out' : 'Zoom into the floor'; e.target.setAttribute('aria-pressed', !!S.zoomT); if (S.zoomT) { st.want.az = 0.5; st.want.el = 0.22; st.resetManual(); } };
-$('b-reset').onclick = () => { Object.assign(p, R.DEFAULTS); S.amp = 40; for (const id of ['s-q', 's-k', 's-ei', 's-p', 's-n', 's-amp']) $(id)._sync(); changed(); };
-$('gl').setAttribute('aria-label', 'Interactive 3D building. Drag to orbit, press Disassemble to separate the storeys, and Zoom into the floor to see the test floor bending on its springs.');
+$('b-zoom').onclick = (e) => { S.zoomT = S.zoomT > 0.5 ? 0 : 1; S.cutT = S.zoomT ? 1 : S.cutT; $('b-cut').textContent = S.cutT ? 'Close the cutaway' : 'Cutaway'; $('b-cut').setAttribute('aria-pressed', !!S.cutT); e.target.textContent = S.zoomT ? 'Zoom out' : 'Zoom into the floor'; e.target.setAttribute('aria-pressed', !!S.zoomT); if (S.zoomT) { st.want.az = 0.22; st.want.el = 0.2; st.resetManual(); } };
+$('b-reset').onclick = () => { Object.assign(p, R.DEFAULTS); S.amp = 40; S.cutT = 0; S.zoomT = 0; ex.to(0); $('b-cut').textContent = 'Cutaway'; $('b-zoom').textContent = 'Zoom into the floor'; for (const id of ['s-q', 's-k', 's-ei', 's-p', 's-n', 's-amp']) $(id)._sync(); changed(); };
+$('gl').setAttribute('aria-label', 'Interactive 3D model of the Burj Khalifa. Drag to orbit, press Cutaway to open the tower down the middle, Disassemble to separate its bands, and Zoom into the floor to see the test floor bending on its springs.');
 
 /* ------------------------------------------------------------------------------------------------ loop ---- */
 st.onResize = () => gr.draw();
 st.loop((dt, now) => {
-  const u = ex.step(dt, reduce); S.zoom += (S.zoomT - S.zoom) * Math.min(1, dt * (reduce ? 50 : 2.2)); const zk = smooth(S.zoom);
+  const u = ex.step(dt, reduce); S.zoom += (S.zoomT - S.zoom) * Math.min(1, dt * (reduce ? 50 : 1.6)); S.cut += (S.cutT - S.cut) * Math.min(1, dt * (reduce ? 50 : 1.8)); const zk = smooth(S.zoom);
   const load = reduce ? 1 : Math.min(1, 0.15 + 0.85 * S.zoom);                       // the load comes on as the view zooms in, so the floor is seen to settle under it
-  bld.update(u, S.zoom, (x) => S.r.w(x) * load, S.amp, p.P, p.xp, p.q, 1);
-  const ty = bld.yTest + 0.2 + 2.6 * 2 * u, cy = 6 + 4 * u;
-  st.want.t.lerp(new V3(0, cy * (1 - zk) + (ty - 0.6) * zk, 0), 0.1); st.want.dist = (30 + 14 * u) * (1 - zk) + 11 * zk;
-  st.camStep(dt, now, {drift: reduce || S.zoomT ? 0 : 0.2, az0: 0.75});
+  bld.update(u, S.zoom, (x) => S.r.w(x) * load, S.amp, p.P, p.xp, p.q, 1, S.cut);
+  const bay = bld.test.group.position, ox = 0, oy = 360 + 110 * u;
+  st.want.t.lerp(new V3(bay.x * zk + ox * (1 - zk), bay.y * zk + oy * (1 - zk), bay.z * zk), 0.1); st.want.dist = (1950 + 1750 * u) * (1 - 0.3 * smooth(S.cut)) * (1 - zk) + 26 * zk;
+  st.camera.near = Math.max(0.3, st.rig.dist * 0.04); st.camera.updateProjectionMatrix();
+  st.camStep(dt, now, {drift: reduce || S.zoomT ? 0 : 0.25, az0: 0.55});
   labels.update(bld.parts, u * (1 - zk), S.sel && S.sel.id);
-  $('hud-u').textContent = zk > 0.5 ? 'floor 2 on its idealised springs' : u > 0.02 ? `exploded ${Math.round(u * 100)}%` : 'assembled';
+  $('hud-u').textContent = zk > 0.5 ? 'one floor bay on its idealised springs' : S.cutT > 0.5 ? 'cutaway' : u > 0.02 ? `exploded ${Math.round(u * 100)}%` : 'assembled';
 });
 readouts(); gr.draw();
 window.__EN = {p, R, S, st, ex, gr};

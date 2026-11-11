@@ -16,42 +16,26 @@
     <script defer src="./Syd%20Website%20Assets/Showcase/aero/aero.js"></script>
     <style>
         :root { --accent: #f472b6; }
-        .stage { background: #0a1230; }
+        .stage { background: linear-gradient(180deg, rgba(6,8,24,0.6), rgba(6,8,24,0.4) 45%, rgba(6,8,24,0.78)), url('./Syd%20Website%20Assets/Aeroelasticity%20Page/Stage%20Background.png') center / cover no-repeat, #0a1230; }
+        .s-hud { top: 160px; }
         .ctl.lbl { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; } .s-bottom input[type=range] { width: clamp(70px, 7.4vw, 112px); } .ctl.lbl output { min-width: 5.2em; }
         .grid2 canvas { height: 280px; } .s-col { width: min(26vw, 380px); }
         table.cmp { border-collapse: collapse; font-family: var(--mono); font-size: 0.74rem; margin: 0.8rem 0; width: 100%; max-width: 74ch; } .cmp th, .cmp td { padding: 0.45rem 0.8rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--text-muted); } .cmp th:first-child, .cmp td:first-child { text-align: left; } .cmp th { color: var(--accent); font-weight: 600; }
     </style>
 </head>
-<body>
+<body class="fmt">
     <nav class="topnav">
         <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
         <div class="nav-status"><span>SECTION</span> 02 &mdash; STRUCTURAL &middot; AEROELASTICITY</div>
     </nav>
     <a class="sib" href="energy-methods.html" aria-label="Also: energy methods"><small>ALSO</small><span>ENERGY METHODS</span></a>
 
-    <section class="stage" id="stage" aria-label="Dive test with flutter graphs">
-        <div class="viewport"><canvas id="gl" role="img"></canvas></div>
-        <div class="s-title"><div class="eyebrow">02 &mdash; AEROELASTICITY &middot; DIVE TEST</div><h1>Diving to the limit</h1><p>Press Dive. The aircraft speeds up, the wing section shakes in slow motion, and the test points plot towards the speed where the wing would flutter.</p></div>
-        <div class="s-hud" id="hud"></div>
-        <div class="s-col left"><figure class="g" data-g="damp" style="--fl:1"><figcaption><b>01</b> Damping against speed</figcaption><canvas aria-label="Damping ratio of the two wing modes against airspeed, measured points, model and extrapolation"></canvas></figure></div>
-        <div class="s-col right"><figure class="g" data-g="freq" style="--fl:1"><figcaption><b>02</b> Frequency against speed</figcaption><canvas aria-label="Frequency of the two wing modes against airspeed"></canvas></figure></div>
-        <div class="hint" id="hud-u">ready</div>
-        <div class="s-bottom">
-            <div class="grp"><button class="btn primary" id="b-run">Dive</button><button class="btn" id="b-reset">Reset</button><button class="btn" id="b-def">Defaults</button><button class="btn mobile-only" id="b-design" aria-expanded="false">Wing &#9662;</button></div>
-            <div class="sep"></div>
-            <div class="grp sliders">
-                <label class="ctl lbl">speed <input type="range" id="s-v" min="100" max="400" step="1"><output id="s-v-v"></output></label>
-                <label class="ctl lbl">torsion <input type="range" id="s-fa" min="5" max="11" step="0.1"><output id="s-fa-v"></output></label>
-                <label class="ctl lbl">cg aft <input type="range" id="s-xa" min="0" max="0.3" step="0.01"><output id="s-xa-v"></output></label>
-                <label class="ctl lbl">air <input type="range" id="s-rho" min="0.4" max="1.2" step="0.05"><output id="s-rho-v"></output></label>
-                <label class="ctl lbl">V_D <input type="range" id="s-vd" min="150" max="330" step="5"><output id="s-vd-v"></output></label>
-                <label class="ctl lbl">playback <input type="range" id="s-sp" min="0.25" max="4" step="0.25"><output id="s-sp-v"></output></label>
-            </div>
-        </div>
-        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
-    </section>
-
-    <main class="article">
+    <header class="cover" id="cover">
+        <video autoplay muted loop playsinline preload="auto" aria-hidden="true"><source src="./Syd%20Website%20Assets/Aeroelasticity/Cover%20Video.mp4" type="video/mp4"></video>
+        <div class="ph">Cover video goes here: Syd Website Assets/Aeroelasticity/Cover Video.mp4</div>
+        <div class="cv-in"><span class="eyebrow">02 &mdash; AEROELASTICITY &middot; FLUTTER AND DIVERGENCE</span><h1>Diving to <span>the limit.</span></h1><p>How an airliner is shown to be free of flutter and divergence: a two-degree-of-freedom wing model, and the flight-test graphs that trace out as the aircraft dives towards its limit speed.</p><a class="cue" href="#stage">&darr; OPEN THE DIVE TEST</a></div>
+    </header>
+    <main class="article" style="padding-bottom:3rem">
         <section class="sec">
             <span class="tag">01 &middot; CONTEXT</span>
             <h2>A wing is a spring, and air can feed it energy</h2>
@@ -76,17 +60,31 @@
             <div class="panel"><div class="panel-head"><div class="t">Effective torsional stiffness</div><div class="s">the dot follows the current speed</div></div><div class="grid2" style="padding:0 0.6rem 0.6rem;position:relative;z-index:1;display:block"><figure class="g" data-g="div" style="min-height:290px;display:block"><figcaption style="display:none">Divergence</figcaption><canvas aria-label="Effective torsional stiffness against airspeed, reaching zero at the divergence speed"></canvas></figure></div></div>
         </section>
 
+    </main>
+
+    <section class="stage" id="stage" aria-label="Dive test with flutter graphs">
+        <div class="viewport"><canvas id="gl" role="img"></canvas></div>
+        <div class="s-title"><div class="eyebrow">02 &mdash; AEROELASTICITY &middot; DIVE TEST</div><h1>Diving to the limit</h1><p>The dive runs by itself: the airspeed climbs, the wing section shakes in slow motion, and the test points plot towards the speed where the wing would flutter.</p></div>
+        <div class="s-hud" id="hud"></div>
+        <div class="s-col left"><figure class="g" data-g="damp" style="--fl:1"><figcaption><b>01</b> Damping against speed</figcaption><canvas aria-label="Damping ratio of the two wing modes against airspeed, measured points, model and extrapolation"></canvas></figure></div>
+        <div class="s-col right"><figure class="g" data-g="freq" style="--fl:1"><figcaption><b>02</b> Frequency against speed</figcaption><canvas aria-label="Frequency of the two wing modes against airspeed"></canvas></figure></div>
+        <div class="hint" id="hud-u">ready</div>
+        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
+    </section>
+
+
+    <main class="article" style="padding-top:3rem">
         <section class="sec">
             <span class="tag">03 &middot; THE DIVE TEST</span>
             <h2>Reading the two graphs</h2>
-            <p>In the stage above, each coloured dot is what a flight test would record at one test speed: the frequency and damping of the two modes, found by exciting the wing and watching the response decay, with some scatter because real measurements are never clean. The faint dashed curves are the model's prediction, which a real test would be compared against but would not know in advance for the aircraft itself.</p>
+            <p>In the stage, each coloured dot is what a flight test would record at one test speed: the frequency and damping of the two modes, found by exciting the wing and watching the response decay, with some scatter because real measurements are never clean. The faint dashed curves are the model's prediction, which a real test would be compared against but would not know in advance for the aircraft itself.</p>
             <ul>
                 <li><b>Frequencies approach each other.</b> The plunge-like mode (blue) rises with speed and the pitch-like mode (orange) falls, until they come together. That coalescence is the signature of coupled-mode flutter.</li>
                 <li><b>Damping gives the warning.</b> The pitch-like mode loses damping as the speed rises and trends towards zero. The amber line is a straight-line fit to the last few points, and where it meets zero is the predicted flutter speed. The test is flown upward in steps of speed, and the flight is stopped or the next step withheld when the trend is too steep.</li>
                 <li><b>The margin.</b> The flutter speed must lie beyond 1.15 V<sub>D</sub>. The result below says whether it does with the current wing.</li>
             </ul>
             <div class="stats" style="margin-top:1rem"><div class="stat"><div class="k">Flutter speed</div><div class="v" id="x-vf"></div><div class="sub">from the model</div></div><div class="stat"><div class="k">Required</div><div class="v" id="x-need"></div><div class="sub">1.15 V<sub>D</sub></div></div><div class="stat"><div class="k">Clearance</div><div class="v" id="x-ver"></div></div><div class="stat"><div class="k">Margin over V<sub>D</sub></div><div class="v" id="x-marg"></div></div><div class="stat"><div class="k">Predicted from the test points</div><div class="v" id="x-pred" style="font-size:1.1rem"></div></div><div class="stat"><div class="k">Divergence speed</div><div class="v" id="x-div"></div><div class="sub">closed form</div></div></div>
-            <p>Try it. Lower the torsion frequency to about 7 Hz, or move the centre of gravity aft, and the flutter speed falls inside the dive envelope: the clearance turns to FAIL and the wing section in the stage starts to grow in amplitude and the status label changes to flutter. Raise the torsion frequency and the margin returns. Stiffening the wing, mass-balancing it, or reducing V<sub>D</sub> are the three levers, and in a real programme each costs weight, range or performance.</p>
+            <p>Run the dive and watch the dots arrive. With the reference wing the pitch-like damping reaches zero at about 298 m/s, only just beyond the required 288 m/s, so it clears with little to spare. A wing with a lower torsion frequency or a centre of gravity further aft would flutter inside the margin: the clearance would read FAIL and the wing section would start to grow in amplitude. Stiffening the wing, mass-balancing it, or reducing V<sub>D</sub> are the three levers, and in a real programme each costs weight, range or performance.</p>
             <p><b>Limits of the model.</b> A real wing has many modes, not two. Its aerodynamics are unsteady and depend on Mach number, computed with methods such as the doublet-lattice method and checked by the p-k solution of the flutter equations. The stiffness and mass come from a finite-element model validated by a ground vibration test. The two-degree-of-freedom model here keeps only the physics that sets the trend, which is why its numbers should be read as illustrative.</p>
             <div class="more"><a href="energy-methods.html">Energy methods &rarr;</a><a href="parachute.html">Parachute design &rarr;</a><a href="portfolio.html">Portfolio</a></div>
         </section>
@@ -98,5 +96,6 @@
             var b = document.getElementById('b-design'), bar = document.querySelector('.s-bottom'); if (b) b.addEventListener('click', function () { var o = bar.classList.toggle('open'); b.setAttribute('aria-expanded', o); });
         });
     </script>
+    <script>(function(){var c=document.getElementById('cover'),v=c.querySelector('video'),s=v.querySelector('source');function miss(){c.classList.add('missing');}s.addEventListener('error',miss);v.addEventListener('error',miss);v.play&&v.play().catch(function(){});})();</script>
 </body>
 </html>

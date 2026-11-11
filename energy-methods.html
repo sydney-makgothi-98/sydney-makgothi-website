@@ -16,7 +16,7 @@
     <script defer src="./Syd%20Website%20Assets/Showcase/energy/energy.js"></script>
     <style>
         :root { --accent: #34d399; }
-        .stage { background: radial-gradient(55% 60% at 50% 48%, #0f3a33 0%, #0a1c30 52%, #060818 100%); }
+        .stage { background: linear-gradient(180deg, #0a2a52 0%, #123c6e 45%, #1c4f7e 100%); }
         .ctl.lbl { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; } .s-bottom input[type=range] { width: clamp(80px, 9vw, 130px); } .ctl.lbl output { min-width: 5.4em; }
         table.km { border-collapse: collapse; font-family: var(--mono); font-size: 0.72rem; margin: 0.8rem 0 0.4rem; } .km th, .km td { padding: 0.3rem 0.8rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--text-muted); } .km th { color: var(--accent); font-weight: 600; }
         .grid2 canvas { height: 280px; }
@@ -29,34 +29,26 @@
     </nav>
     <a class="sib" href="aeroelasticity.html" aria-label="Next: aeroelasticity"><small>NEXT</small><span>AEROELASTICITY</span></a>
 
-    <section class="stage" id="stage" aria-label="Building teardown and floor deflection">
-        <div class="viewport"><canvas id="gl" role="img"></canvas><div class="labels" id="labels"></div></div>
-        <div class="s-title"><div class="eyebrow">02 &mdash; ENERGY METHODS &middot; RAYLEIGH&ndash;RITZ</div><h1>The floor under load</h1><p>Take the building apart, then zoom into the floor and watch it bend on its springs. The curves are the Ritz solution, live.</p></div>
-        <div class="s-hud" id="hud"></div>
-        <div class="s-col left"><figure class="g" data-g="disp" style="--fl:1"><figcaption><b>01</b> Floor displacement</figcaption><canvas aria-label="Displacement of the floor along its span, Ritz against exact"></canvas></figure></div>
-        <div class="s-col right"><figure class="g" data-g="mom" style="--fl:1"><figcaption><b>02</b> Bending moment and spring reaction</figcaption><canvas aria-label="Bending moment and spring reaction along the span"></canvas></figure></div>
-        <div class="hint" id="hud-u">assembled</div>
-        <div class="partcard" id="card"><button class="x" aria-label="Close">&times;</button><div class="k"></div><h3></h3><p></p></div>
-        <div class="s-bottom">
-            <div class="grp"><button class="btn primary" id="b-apart" aria-pressed="false">Disassemble</button><button class="btn" id="b-zoom" aria-pressed="false">Zoom into the floor</button><button class="btn" id="b-reset">Reset</button><button class="btn mobile-only" id="b-design" aria-expanded="false">Loads &#9662;</button></div>
-            <div class="sep"></div>
-            <div class="grp sliders">
-                <label class="ctl lbl">load q <input type="range" id="s-q" min="2" max="40" step="0.5"><output id="s-q-v"></output></label>
-                <label class="ctl lbl">springs k <input type="range" id="s-k" min="5" max="7.5" step="0.05"><output id="s-k-v"></output></label>
-                <label class="ctl lbl">EI <input type="range" id="s-ei" min="0.2" max="6" step="0.1"><output id="s-ei-v"></output></label>
-                <label class="ctl lbl">machine <input type="range" id="s-p" min="0" max="150" step="5"><output id="s-p-v"></output></label>
-                <label class="ctl lbl">terms N <input type="range" id="s-n" min="1" max="8" step="1"><output id="s-n-v"></output></label>
-                <label class="ctl lbl">exaggerate <input type="range" id="s-amp" min="1" max="120" step="1"><output id="s-amp-v"></output></label>
-            </div>
-        </div>
-        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
-    </section>
-
-    <main class="article">
+    <header class="cover" id="cover">
+        <video autoplay muted loop playsinline preload="auto" aria-hidden="true"><source src="./Syd%20Website%20Assets/Energy%20Methods/Energy%20Methods%20Cover.mp4" type="video/mp4"></video>
+        <div class="ph">Cover video goes here: Syd Website Assets/Energy Methods/Energy Methods Cover.mp4</div>
+        <div class="cv-in"><span class="eyebrow">02 &mdash; ENERGY METHODS &middot; RAYLEIGH&ndash;RITZ</span><h1>A floor, <span>a bed of springs.</span></h1><p>How the energy of a bending floor can be minimised to find its shape, worked on one floor of the tallest building in the world. Below, cut the tower open and zoom into the floor as it deflects.</p><a class="cue" href="#stage">&darr; OPEN THE TOWER</a></div>
+    </header>
+    <main class="article" style="padding-bottom:3rem">
         <section class="sec">
-            <span class="tag">01 &middot; CONTEXT</span>
-            <h2>A floor, idealised as a beam on springs</h2>
-            <p>A floor in a building looks like a slab resting on columns and walls, but its stiffness is not concentrated at those points: the supporting structure below it deflects too, and the load path is continuous. A useful idealisation, and the one used here, treats a strip of the floor as a <b>platform supported by an infinite number of linear springs</b> spread continuously from one end to the other. Each spring pushes back in proportion to how far the floor above it has moved down. The platform is a beam of flexural rigidity <b>EI</b> and span <b>L</b>, held at its two ends, and loaded by the dead load of the floor (and, optionally, a heavy machine).</p>
+            <span class="tag">01 &middot; THE BRIEF</span>
+            <h2>One floor of the world's tallest building</h2>
+            <p>The structure under study is the <b>Burj Khalifa</b> in Dubai: 828 m tall with 163 floors, designed by Skidmore, Owings &amp; Merrill. Its plan is a Y: three wings round a hexagonal reinforced concrete core, each wing stepping back in turn up the tower. The wings buttress one another and the core, which is why it is called a buttressed core, and the set-backs break up the wind so that it cannot organise itself into vortices along the full height. The weight of everything above runs down to a reinforced concrete raft 3.7 m thick, carried on several hundred bored piles. This page takes one ordinary floor of one wing and asks the question that every floor of every building has to answer: how much does it bend?</p>
+            <p>A floor looks like a slab resting on columns and walls, but its stiffness is not concentrated at those points: the supporting structure below it deflects too, and the load path is continuous. A useful idealisation treats a strip of the floor as a <b>platform supported by an infinite number of linear springs</b> spread continuously from one end to the other. Each spring pushes back in proportion to how far the floor above it has moved down. The platform is a beam of flexural rigidity <b>EI</b> and span <b>L</b>, held at its two ends, and loaded by the dead load of the floor (and, optionally, a heavy machine). The plan dimensions of the tower in the model are estimated from photographs, and the floor values are a representative office floor chosen for the demonstration: they are not Burj Khalifa design data.</p>
+            <table class="spec"><tbody>
+                <tr><td>Tower</td><td><b>828 m</b>, 163 floors, Y-shaped plan on a hexagonal core</td></tr>
+                <tr><td>Foundation</td><td>A 3.7 m raft on bored piles: the ground is the bed of springs</td></tr>
+                <tr><td>Floor strip</td><td>6 m span between its supports, 1 m wide, EI = 20 MN&middot;m&sup2; (set by the sliders)</td></tr>
+                <tr><td>Mid-span deflection</td><td><b id="x-mid"></b>, which is <b id="x-ratio"></b> of the span</td></tr>
+                <tr><td>Bending energy U<sub>b</sub></td><td><b id="x-ub"></b></td></tr>
+                <tr><td>Spring energy U<sub>s</sub></td><td><b id="x-us"></b></td></tr>
+                <tr><td>Work of the loads, W / 2</td><td><b id="x-w"></b>, equal to U<sub>b</sub> + U<sub>s</sub></td></tr>
+            </tbody></table>
             <p>The goal is the displacement <b>w(x)</b> of the floor, from which the bending moments, the spring reactions and the serviceability (is the floor too bendy?) follow. The beam-on-springs equation could be solved directly, and for this one loading it has an exact answer. The reason to use an <b>energy method</b> instead is generality: the same procedure works for loads, supports and stiffness distributions that have no closed-form solution, and it turns a differential equation into a small matrix problem.</p>
             <p><b>Normalising the length.</b> To make the polynomials simple and the matrices pure numbers, the span is scaled to run from 0 to 1: <span style="font-family:var(--mono)">&xi; = x / L</span>. Every integral over the floor then runs from &xi; = 0 to 1, and L appears only as a factor in front.</p>
         </section>
@@ -79,19 +71,40 @@
             <p>Here is the system for the current sliders (units: MN/m for K, kN for F, so a is in metres):</p>
             <table class="km" id="kmat"></table>
             <p id="coeffs" style="font-family:var(--mono);font-size:0.78rem"></p>
+            <div class="panel"><div class="panel-head"><div class="t">Convergence with the number of terms</div><div class="s">the dot is the current N</div></div><div class="grid2" style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="conv" style="min-height:290px;display:block"><figcaption style="display:none">Convergence</figcaption><canvas aria-label="Maximum error of the Ritz series against the number of terms"></canvas></figure><div style="padding:0.4rem 0.8rem;font-size:0.82rem;color:var(--text-muted)"><p><b>Total spring reaction</b>: <span id="x-spring"></span><br><b>End supports</b>: <span id="x-ends"></span><br><b>Total load</b>: <span id="x-load"></span><br><b>Total potential energy &Pi;</b>: <span id="x-pi"></span></p><p>Equilibrium checks itself: the springs carry only part of the load and the two end supports carry the rest. And at the solution the strain energy is exactly half the work of the loads, as the theory says it must be for a linear system.</p></div></div></div>
         </section>
 
+    </main>
+
+    <section class="stage" id="stage" aria-label="Burj Khalifa cutaway and floor deflection">
+        <div class="viewport"><canvas id="gl" role="img"></canvas><div class="labels" id="labels"></div></div>
+        <div class="s-title"><div class="eyebrow">02 &mdash; ENERGY METHODS &middot; RAYLEIGH&ndash;RITZ</div><h1>The floor under load</h1><p>A solid Burj Khalifa. Cut it open, take it apart, then zoom into one floor bay and watch it bend on its springs. The curves are the Ritz solution, live.</p></div>
+        <div class="s-hud" id="hud"></div>
+        <div class="s-col left"><figure class="g" data-g="disp" style="--fl:1"><figcaption><b>01</b> Floor displacement</figcaption><canvas aria-label="Displacement of the floor along its span, Ritz against exact"></canvas></figure></div>
+        <div class="s-col right"><figure class="g" data-g="mom" style="--fl:1"><figcaption><b>02</b> Bending moment and spring reaction</figcaption><canvas aria-label="Bending moment and spring reaction along the span"></canvas></figure></div>
+        <div class="hint" id="hud-u">assembled</div>
+        <div class="partcard" id="card"><button class="x" aria-label="Close">&times;</button><div class="k"></div><h3></h3><p></p></div>
+        <div class="s-bottom">
+            <div class="grp"><button class="btn primary" id="b-cut" aria-pressed="false">Cutaway</button><button class="btn" id="b-apart" aria-pressed="false">Disassemble</button><button class="btn" id="b-zoom" aria-pressed="false">Zoom into the floor</button><button class="btn" id="b-reset">Reset</button><button class="btn mobile-only" id="b-design" aria-expanded="false">Loads &#9662;</button></div>
+            <div class="sep"></div>
+            <div class="grp sliders">
+                <label class="ctl lbl">load q <input type="range" id="s-q" min="2" max="40" step="0.5"><output id="s-q-v"></output></label>
+                <label class="ctl lbl">springs k <input type="range" id="s-k" min="5" max="7.5" step="0.05"><output id="s-k-v"></output></label>
+                <label class="ctl lbl">EI <input type="range" id="s-ei" min="0.2" max="6" step="0.1"><output id="s-ei-v"></output></label>
+                <label class="ctl lbl">machine <input type="range" id="s-p" min="0" max="150" step="5"><output id="s-p-v"></output></label>
+                <label class="ctl lbl">terms N <input type="range" id="s-n" min="1" max="8" step="1"><output id="s-n-v"></output></label>
+                <label class="ctl lbl">exaggerate <input type="range" id="s-amp" min="1" max="120" step="1"><output id="s-amp-v"></output></label>
+            </div>
+        </div>
+        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
+    </section>
+
+
+    <main class="article" style="padding-top:3rem">
         <section class="sec">
             <span class="tag">03 &middot; RESULTS</span>
             <h2>The displacement of the floor</h2>
-            <p>Chart 01 in the stage above plots the solution. Drag the sliders and it recomputes at once: the displacement shrinks as the springs stiffen (the load goes straight down into the supports) and as EI rises (the beam spreads it to the ends), and the point load pulls the deflection towards where the machine sits. The dotted curve is the exact answer for the uniform load, a Navier series, and the coloured dashed curves are one- and three-term Ritz solutions: even a single parabola-like term lands within ten percent, three within a third of a percent.</p>
-            <div class="stat-row" style="display:grid;gap:0.7rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:1rem 0">
-                <div class="stat"><div class="k">Mid-span deflection</div><div class="v" id="x-mid"></div><div class="sub" id="x-ratio"></div></div>
-                <div class="stat"><div class="k">Bending energy U<sub>b</sub></div><div class="v" id="x-ub"></div></div>
-                <div class="stat"><div class="k">Spring energy U<sub>s</sub></div><div class="v" id="x-us"></div></div>
-                <div class="stat"><div class="k">Work of loads, W / 2</div><div class="v" id="x-w"></div><div class="sub">equals U<sub>b</sub> + U<sub>s</sub></div></div>
-            </div>
-            <div class="panel"><div class="panel-head"><div class="t">Convergence with the number of terms</div><div class="s">the dot is the current N</div></div><div class="grid2" style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="conv" style="min-height:290px;display:block"><figcaption style="display:none">Convergence</figcaption><canvas aria-label="Maximum error of the Ritz series against the number of terms"></canvas></figure><div style="padding:0.4rem 0.8rem;font-size:0.82rem;color:var(--text-muted)"><p><b>Total spring reaction</b>: <span id="x-spring"></span><br><b>End supports</b>: <span id="x-ends"></span><br><b>Total load</b>: <span id="x-load"></span><br><b>Total potential energy &Pi;</b>: <span id="x-pi"></span></p><p>Equilibrium checks itself: the springs carry only part of the load and the two end supports carry the rest. And at the solution the strain energy is exactly half the work of the loads, as the theory says it must be for a linear system.</p></div></div></div>
+            <p>Chart 01 in the stage plots the solution. Drag the sliders and it recomputes at once: the displacement shrinks as the springs stiffen (the load goes straight down into the supports) and as EI rises (the beam spreads it to the ends), and the point load pulls the deflection towards where the machine sits. The dotted curve is the exact answer for the uniform load, a Navier series, and the coloured dashed curves are one- and three-term Ritz solutions: even a single parabola-like term lands within ten percent, three within a third of a percent.</p>
         </section>
 
         <section class="sec">
@@ -110,5 +123,6 @@
             var b = document.getElementById('b-design'), bar = document.querySelector('.s-bottom'); if (b) b.addEventListener('click', function () { var o = bar.classList.toggle('open'); b.setAttribute('aria-expanded', o); });
         });
     </script>
+    <script>(function(){var c=document.getElementById('cover'),v=c.querySelector('video'),s=v.querySelector('source');function miss(){c.classList.add('missing');}s.addEventListener('error',miss);v.addEventListener('error',miss);v.play&&v.play().catch(function(){});})();</script>
 </body>
 </html>
