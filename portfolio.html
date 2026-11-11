@@ -635,6 +635,17 @@
             background: rgba(0, 113, 227, 0.4);
             border-color: rgba(96, 165, 250, 0.8);
         }
+    
+        /* the selection screen must never run under the fixed navbar: reserve the bar's height at the top (and room for the scroll hint at the bottom), and let the spacing shrink with the screen height so that the longest list (Propulsion open, four sub-items) still fits */
+        .wheel-ui { padding-top: 5.5rem; padding-bottom: 1.5rem; box-sizing: border-box; align-items: flex-start; } .game-menu-left { margin-block: auto; } .game-menu-right { align-self: center; }   /* margin-block: auto centres the column when there is room and pins it below the navbar when there is not */
+        .game-menu-left { max-height: 100%; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; } .game-menu-left::-webkit-scrollbar { display: none; }
+        .menu-title-container { margin-bottom: clamp(0.8rem, 2.4vh, 4rem); }
+        .menu-subtitle { margin-bottom: clamp(0.3rem, 1vh, 1rem); }
+        .game-title { font-size: clamp(2.2rem, 5.6vh, 4rem); }
+        .game-menu-options { gap: clamp(0.4rem, 1.2vh, 1.5rem); margin-bottom: clamp(0.8rem, 2vh, 3rem); }
+        .menu-option { padding: clamp(0.45rem, 1.1vh, 1rem) 1.5rem; }
+        .menu-subitem { padding: clamp(0.4rem, 1vh, 0.75rem) 1rem; }
+        .menu-option.expanded + .menu-suboptions { gap: clamp(0.3rem, 0.6vh, 0.5rem); }
     </style>
 </head>
 <body class="bg-black">

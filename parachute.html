@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:,">
     <title>Parachute Design for the Shockwave Jet Truck | Gopolang Makgothi</title>
-    <meta name="description" content="Project 3: a three-stage parachute system to stop the Shockwave jet truck from 376 mph. Run the stop, change the canopies and compare a one-equation model with the reported test results.">
+    <meta name="description" content="Project 3: a three-stage parachute system to stop the Shockwave jet truck from 376 mph. A one-equation model of the stop, with live telemetry, compared with the reported test results.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Playfair+Display:wght@800&family=Newsreader:ital,wght@0,400;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/showcase.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
@@ -16,7 +16,10 @@
     <script defer src="./Syd%20Website%20Assets/Showcase/parachute/parachute.js"></script>
     <style>
         :root { --accent: #fb923c; }
-        .stage { background: linear-gradient(180deg, #08102a, #14213f); }
+        .tele-cover { align-items: flex-end; min-height: 100vh; } .tele { position: relative; z-index: 2; width: 100%; max-width: 980px; } .tele-stage { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.7rem; text-shadow: 0 1px 12px rgba(0,0,0,0.8); }
+        .tele-row { display: flex; flex-wrap: wrap; gap: 1.2rem clamp(1.5rem, 5vw, 4rem); } .tele-row > div { display: flex; align-items: baseline; gap: 0.5rem; } .tv { font-family: var(--display); font-weight: 700; font-size: clamp(2.2rem, 6vw, 4.4rem); line-height: 1; font-variant-numeric: tabular-nums; min-width: 2.6ch; text-shadow: 0 2px 24px rgba(0,0,0,0.75); } .tk { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); text-shadow: 0 1px 10px rgba(0,0,0,0.8); }
+        .jetwrap { padding: 0 0.6rem 0.8rem; position: relative; z-index: 1; } #jet { display: block; width: 100%; aspect-ratio: 1000 / 640; max-height: 86vh; border-radius: 10px; background: #08080f; }
+        .tele-cover .s-col { z-index: 3; bottom: 205px; } .tele-cover .s-col .g { background: rgba(5, 8, 20, 0.42); backdrop-filter: blur(3px); border-radius: 10px; padding: 0.35rem 0.4rem 0.2rem; } .tele-cover .s-col figcaption { text-shadow: 0 1px 8px rgba(0,0,0,0.8); }
         .ctl.lbl { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; } .s-bottom input[type=range] { width: clamp(76px, 8vw, 120px); } .ctl.lbl output { min-width: 5.4em; }
         table.cmp { border-collapse: collapse; font-family: var(--mono); font-size: 0.74rem; margin: 0.8rem 0; width: 100%; max-width: 74ch; } .cmp th, .cmp td { padding: 0.45rem 0.8rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--text-muted); } .cmp th:first-child, .cmp td:first-child { text-align: left; } .cmp th { color: var(--accent); font-weight: 600; }
         .grid2 canvas { height: 280px; } .s-col.left { width: min(26vw, 380px); }
@@ -29,28 +32,23 @@
     </nav>
     <a class="sib" href="engine.html" aria-label="Next: combustion analysis"><small>ALSO</small><span>COMBUSTION</span></a>
 
-    <section class="stage" id="stage" aria-label="Parachute braking simulation">
-        <div class="viewport"><canvas id="gl" role="img"></canvas></div>
-        <div class="s-title"><div class="eyebrow">03 &mdash; PROJECT 3 &middot; RECOVERY SYSTEMS</div><h1>Stopping a jet truck</h1><p>Three stages, one equation. Press Run to release the drogue at 376 mph and change the canopies to see what the numbers do.</p></div>
-        <div class="s-hud" id="hud"></div>
+    <header class="cover tele-cover" id="cover">
+        <video autoplay muted loop playsinline preload="auto" aria-hidden="true"><source src="./Shockwave%20Jet%20Truck/Shockwave.mp4" type="video/mp4"></video>
+        <div class="ph">Cover video goes here: Shockwave Jet Truck/Shockwave.mp4</div>
         <div class="s-col left"><figure class="g" data-g="speed" style="--fl:1"><figcaption><b>01</b> Speed and stages</figcaption><canvas aria-label="Truck speed against time, shaded by braking stage"></canvas></figure><figure class="g" data-g="g" style="--fl:1"><figcaption><b>02</b> Deceleration against the 3.5 g limit</figcaption><canvas aria-label="Deceleration in g against time"></canvas></figure></div>
-        <div class="hint" id="hud-u">ready</div>
-        <div class="s-bottom">
-            <div class="grp"><button class="btn primary" id="b-run">Run</button><button class="btn" id="b-reset">Rewind</button><button class="btn" id="b-reef" aria-pressed="true">Reefing: on</button><button class="btn" id="b-def">Defaults</button><button class="btn mobile-only" id="b-design" aria-expanded="false">Design &#9662;</button></div>
-            <div class="sep"></div>
-            <div class="grp sliders">
-                <label class="ctl lbl">drogue <input type="range" id="s-dd" min="5" max="12" step="0.5"><output id="s-dd-v"></output></label>
-                <label class="ctl lbl">primary <input type="range" id="s-dm" min="12" max="26" step="1"><output id="s-dm-v"></output></label>
-                <label class="ctl lbl">start <input type="range" id="s-v0" min="250" max="400" step="5"><output id="s-v0-v"></output></label>
-                <label class="ctl lbl">brakes <input type="range" id="s-br" min="0.2" max="1.2" step="0.05"><output id="s-br-v"></output></label>
-                <label class="ctl lbl">air <input type="range" id="s-rho" min="0.8" max="1.225" step="0.025"><output id="s-rho-v"></output></label>
-                <label class="ctl lbl">playback <input type="range" id="s-sp" min="0.25" max="4" step="0.25"><output id="s-sp-v"></output></label>
+        <div class="s-col right"><figure class="g" data-g="force" style="--fl:1"><figcaption><b>03</b> Retarding force</figcaption><canvas aria-label="Retarding force against time"></canvas></figure><figure class="g" data-g="dist" style="--fl:1"><figcaption><b>04</b> Distance travelled</figcaption><canvas aria-label="Distance travelled against time"></canvas></figure></div>
+        <div class="tele" role="status" aria-label="Live telemetry of the simulated stop">
+            <div class="tele-stage" id="hud-u">stage 1</div>
+            <div class="tele-row">
+                <div><span class="tv" id="t-mph">0</span><span class="tk">mph</span></div>
+                <div><span class="tv" id="t-g">0.00</span><span class="tk">g</span></div>
+                <div><span class="tv" id="t-ft">0</span><span class="tk">ft</span></div>
+                <div><span class="tv" id="t-s">0.0</span><span class="tk">s</span></div>
             </div>
         </div>
-        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
-    </section>
+    </header>
 
-    <main class="article">
+    <main class="article" style="padding-top:3rem">
         <section class="sec">
             <span class="tag">01 &middot; THE PROBLEM</span>
             <h2>Stopping 3,175 kg that arrives at 168 m/s</h2>
@@ -59,28 +57,43 @@
         </section>
 
         <section class="sec">
-            <span class="tag">02 &middot; THREE STAGES</span>
+            <span class="tag">02 &middot; THE ENGINE</span>
+            <h2>A 1940s turbojet, three of them on one truck</h2>
+            <p>What pushes the Shockwave is three Pratt &amp; Whitney J34-48 turbojets, each making about 3,000 lbf of thrust. The J34 family dates from the late 1940s and is a <b>single-shaft, axial-flow turbojet</b>: air comes in through the inlet, an axial compressor squeezes it, fuel is burned in the combustor, and the hot gas first drives the turbine, which is on the same shaft as the compressor and powers it, and then leaves through the nozzle as a fast jet. The surplus momentum is the thrust. Nothing in it is complicated, and that is the point: it is a machine that makes its own compressed air, so it can run on little more than fuel.</p>
+            <ul>
+                <li><b>Inlet.</b> Collects the air and slows it a little, so that the compressor sees a smooth, steady stream.</li>
+                <li><b>Compressor.</b> Rows of rotating and fixed blades pass the air along a narrowing annulus, raising its pressure and temperature stage by stage.</li>
+                <li><b>Combustor.</b> Fuel is sprayed in and burned in the compressed air. This is where almost all the heat is added, and where the gas becomes hottest.</li>
+                <li><b>Turbine.</b> Takes just enough energy out of the gas to drive the compressor. What is left is thrust.</li>
+                <li><b>Nozzle.</b> Narrows to turn the remaining pressure into speed.</li>
+            </ul>
+            <p><b>Why the start matters.</b> A turbojet cannot start itself. Below about a sixth of its full speed the compressor pumps too little air for the turbine to keep it turning, so a starter has to spin the rotor first. Only then are fuel and the igniter switched on. The flame must take hold without the exhaust temperature running over its limit (a &ldquo;hot start&rdquo;), and the starter stays engaged until the turbine can carry the compressor alone. After that the engine accelerates, through idle, to full power. The animation shows that sequence for one engine.</p>
+            <div class="panel"><div class="panel-head"><div class="t">Start-up of one engine</div><div class="s">the gas is coloured from blue (cold) to red (hot)</div></div><div class="jetwrap"><canvas id="jet" role="img" aria-label="Animated cutaway of a turbojet starting: the starter spins the compressor, fuel and ignition light the combustor, the engine accelerates to idle and then to full power, with thrust, rotor speed, exhaust temperature and pressure ratio shown."></canvas></div></div>
+            <p style="color:var(--text-faint);font-size:0.82rem"><b>What is and is not real here.</b> The layout of the engine (inlet, axial compressor, combustor, turbine, nozzle) follows how a single-shaft turbojet of this kind works. The start schedule, the temperatures, the 3,000 lbf at full power (the figure used above for one engine) and the pressure ratio are illustrative: a plausible sequence drawn to show the stages, not measurements from the truck&rsquo;s engines and not a computational fluid dynamics solution. The speeds in the animation are drawn at real time.</p>
+        </section>
+
+        <section class="sec">
+            <span class="tag">03 &middot; THREE STAGES</span>
             <h2>Drogue, reefed primary, brakes</h2>
             <ul>
                 <li><b>Stage 1, drogue.</b> An 8 ft Kevlar drogue is released at 350+ mph. Its job is to cut speed to roughly 250 mph at 1.5 to 2.0 g and to keep the truck straight. Kevlar is used because it tolerates the heat and the opening shock at that speed.</li>
                 <li><b>Stage 2, primary.</b> At about 250 mph an 18 ft reinforced-nylon canopy takes over, targeting 80 mph at 2.5 to 3.0 g. It does not open at once. <b>Dual-stage reefing</b> holds the canopy partly closed by a line around its skirt: 40 % open for the first 2 seconds, 70 % for the next 3, fully open after 5 seconds. Without it the sudden jump in drag would be far more than the truck or the lines could take.</li>
                 <li><b>Stage 3, brakes.</b> Below 80 mph the mechanical brakes finish the stop at under 2.0 g, with the canopy still pulling.</li>
             </ul>
-            <p>Turn <b>Reefing</b> off in the stage above and press Run. The primary opens in a single bang and the g trace jumps: the reefing schedule is the difference between a controlled stop and a spike, which is exactly why it was designed.</p>
+            <p>The reefing schedule is the difference between a controlled stop and a spike. Opened in a single bang, the primary would produce one violent jump in the g trace; held partly closed and let out in two steps, it produces the smooth rise seen in the deceleration chart further down. That is exactly why it was designed.</p>
         </section>
 
         <section class="sec">
-            <span class="tag">03 &middot; THE MODEL</span>
+            <span class="tag">04 &middot; THE MODEL</span>
             <h2>One equation drives the simulation</h2>
             <p>While the canopies are out, the truck is a point mass slowed by aerodynamic drag, rolling resistance and, later, the brakes:</p>
             <div class="equation">$$m\,\frac{dv}{dt}=-\Big[\tfrac12\rho\,v^{2}\,(C_dA)(t)\;+\;F_{\text{brake}}\;+\;\mu_r\,m\,g\Big]$$</div>
             <p>The drag area <b>C<sub>d</sub>A</b> is the whole design. A canopy of diameter <i>d</i> has area &pi;d&sup2;/4 and a drag coefficient C<sub>d</sub>; the simulation ramps C<sub>d</sub>A smoothly from zero as each canopy inflates, multiplies the primary by its reefing fraction in the first 5 seconds, and releases the brakes when the speed falls through 80 mph. Because the force goes with v&sup2;, drag is strongest right at release and fades as the truck slows, which is why a parachute removes speed quickly at first and then needs the brakes to finish.</p>
             <p>The blog describes computational fluid dynamics in ANSYS Fluent to examine canopy shape and wake. This page does not reproduce that CFD. It uses the one-equation model above, with drag coefficients assumed and tuned so that the drogue stage gives the 1.5 to 2.0 g the blog quotes. Treat it as a way to see how the design choices trade against each other, not as a replacement for the tests.</p>
-            <div class="panel"><div class="panel-head"><div class="t">The model's run</div><div class="s">change the sliders in the stage and these update</div></div><div class="grid2" style="padding:0 0.6rem 0.6rem;position:relative;z-index:1"><figure class="g" data-g="force" style="min-height:290px;display:block"><figcaption style="display:none">Retarding force</figcaption><canvas aria-label="Retarding force against time"></canvas></figure><figure class="g" data-g="dist" style="min-height:290px;display:block"><figcaption style="display:none">Distance travelled</figcaption><canvas aria-label="Distance travelled against time"></canvas></figure></div></div>
         </section>
 
         <section class="sec">
-            <span class="tag">04 &middot; MODEL AGAINST REPORT</span>
+            <span class="tag">05 &middot; MODEL AGAINST REPORT</span>
             <h2>Where the model agrees with the tests, and where it does not</h2>
             <table class="cmp"><tr><th></th><th>Reported (blog)</th><th>This model</th></tr>
                 <tr><td>Time to stop</td><td>24.7 s from 370 mph</td><td id="c-time"></td></tr>
@@ -92,7 +105,7 @@
         </section>
 
         <section class="sec">
-            <span class="tag">05 &middot; MATERIALS AND SAFETY</span>
+            <span class="tag">06 &middot; MATERIALS AND SAFETY</span>
             <h2>What it is made of, and what keeps it safe</h2>
             <p>The drogue is <b>Kevlar 49</b> for strength and heat resistance. The primary canopy is <b>type IV ripstop nylon</b>, light and tear-resistant, with <b>Spectra</b> suspension lines for strength per weight and a <b>stainless reefing cable</b> that does not stretch. Attachment points use <b>titanium</b> hardware. The blog reports a system mass of 187 lb, and testing of more than 50 deployments in which every one worked.</p>
             <p>Safety comes from the staging itself. The drogue steadies the truck before the primary opens, reefing limits the opening load on the canopy and the driver, and the mechanical brakes are a second, independent means of stopping. The reported results are a 3.2 g peak, 2.1 g sustained, and a stop within the 30 second objective.</p>
@@ -101,11 +114,12 @@
         </section>
     </main>
     <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html">Back to portfolio</a></footer>
+    <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }], throwOnError: false });
-            var b = document.getElementById('b-design'), bar = document.querySelector('.s-bottom'); if (b) b.addEventListener('click', function () { var o = bar.classList.toggle('open'); b.setAttribute('aria-expanded', o); });
         });
     </script>
+    <script>(function(){var c=document.getElementById('cover'),v=c.querySelector('video'),s=v.querySelector('source');function miss(){c.classList.add('missing');}s.addEventListener('error',miss);v.addEventListener('error',miss);v.play&&v.play().catch(function(){});})();</script>
 </body>
 </html>

@@ -1,0 +1,76 @@
+/* Magazine pages: black ink on white paper, nothing else. Playfair Display for headlines, Newsreader for the text, Inter in small capitals for the furniture
+   (kickers, captions, labels). Two justified columns on a wide screen with a rule between them, a drop cap to open, pull quotes and figures that span both
+   columns. Headings, figures, equations and tables take the full measure. */
+:root { --ink: #000; --paper: #fff; --grey: #5a5a5a; --hair: #cfcfcf; --serif-d: 'Playfair Display', 'Didot', 'Bodoni MT', Georgia, serif; --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif; --sans: 'Inter', 'Helvetica Neue', Arial, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body.mag { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: clamp(1.02rem, 0.98rem + 0.25vw, 1.16rem); line-height: 1.62; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.mag a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.mag ::selection { background: #000; color: #fff; }
+
+/* masthead */
+.mnav { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.9rem clamp(1rem, 4vw, 2.5rem); border-bottom: 1px solid var(--ink); background: var(--paper); font-family: var(--sans); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+.mnav a { text-decoration: none; } .mnav a:hover { text-decoration: underline; } .mnav .sec-name { color: var(--grey); }
+
+/* the opening spread: white on black */
+.hero { background: var(--ink); color: var(--paper); padding: clamp(3rem, 8vw, 6.5rem) clamp(1rem, 4vw, 2.5rem) clamp(2rem, 5vw, 3.5rem); position: relative; overflow: hidden; }
+.hero-in { max-width: 1180px; margin: 0 auto; }
+.kicker { font-family: var(--sans); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; display: flex; align-items: center; gap: 1rem; }
+.kicker::after { content: ''; height: 1px; background: currentColor; flex: 1; opacity: 0.6; }
+.hero h1 { font-family: var(--serif-d); font-weight: 900; font-size: clamp(3.4rem, 12.5vw, 10.5rem); line-height: 0.9; letter-spacing: -0.03em; margin: clamp(1.2rem, 3vw, 2.2rem) 0 clamp(1.4rem, 3vw, 2.4rem); text-wrap: balance; }
+.hero h1 em { font-style: italic; font-weight: 400; letter-spacing: -0.02em; }
+.deck { font-family: var(--serif); font-style: italic; font-size: clamp(1.25rem, 2.4vw, 1.85rem); line-height: 1.32; max-width: 34ch; margin: 0; font-weight: 400; }
+.byline { margin-top: clamp(1.6rem, 4vw, 2.8rem); border-top: 3px double var(--paper); padding-top: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.4rem 2.2rem; font-family: var(--sans); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+.byline span { opacity: 0.8; } .byline b { font-weight: 700; opacity: 1; }
+
+/* the story */
+.story { max-width: 1180px; margin: 0 auto; padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 2.5rem) clamp(3rem, 6vw, 5rem); }
+.cols { column-count: 2; column-gap: 3.4rem; column-rule: 1px solid var(--ink); text-align: justify; hyphens: auto; -webkit-hyphens: auto; orphans: 3; widows: 3; }
+.cols p { margin: 0; } .cols p + p { text-indent: 1.5em; }
+.cols p.flush, .cols p.after-break { text-indent: 0; }
+.cols .dropcap::first-letter { font-family: var(--serif-d); font-weight: 900; font-size: 5.3em; line-height: 0.78; float: left; padding: 0.07em 0.1em 0 0; }
+.cols b, .cols strong { font-weight: 600; }
+.cols h2, .cols .full, .cols figure, .cols .eq, .cols table, .cols .nums, .cols blockquote, .cols .rule-break { column-span: all; }
+.cols h2 { font-family: var(--serif-d); font-weight: 900; font-size: clamp(2rem, 4.6vw, 3.4rem); line-height: 1.02; letter-spacing: -0.015em; margin: clamp(2.2rem, 5vw, 3.6rem) 0 1.1rem; padding-top: 0.9rem; border-top: 6px solid var(--ink); text-align: left; text-wrap: balance; hyphens: manual; }
+.cols h2:first-child { margin-top: 0; }
+.cols h2 .no { display: block; font-family: var(--sans); font-weight: 600; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.7rem; }
+.cols h3 { font-family: var(--sans); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.22em; text-transform: uppercase; margin: 1.4rem 0 0.5rem; text-align: left; break-after: avoid; text-indent: 0; }
+.cols ul { margin: 0 0 1em; padding: 0; list-style: none; } .cols li { padding: 0.55rem 0; border-top: 1px solid var(--hair); text-indent: 0; break-inside: avoid; } .cols li:last-child { border-bottom: 1px solid var(--hair); }
+.cols li b { font-family: var(--sans); font-size: 0.78em; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+
+/* pull quote */
+.cols blockquote { margin: clamp(1.6rem, 4vw, 2.6rem) 0; padding: 1.2rem 0 1.3rem; border-top: 8px solid var(--ink); border-bottom: 1px solid var(--ink); font-family: var(--serif-d); font-style: italic; font-weight: 700; font-size: clamp(1.7rem, 4.2vw, 3.1rem); line-height: 1.1; letter-spacing: -0.01em; text-align: left; text-wrap: balance; hyphens: manual; }
+.cols blockquote cite { display: block; margin-top: 0.9rem; font-family: var(--sans); font-style: normal; font-weight: 600; font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; }
+
+/* figures */
+.cols figure { margin: clamp(1.6rem, 4vw, 2.6rem) 0; padding: 0; }
+.cols figure .plate { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 1rem 0.2rem 0.4rem; }
+.cols figure canvas { display: block; width: 100%; height: clamp(250px, 34vw, 380px); }
+.cols figcaption { font-family: var(--sans); font-size: 0.72rem; line-height: 1.5; letter-spacing: 0.02em; margin-top: 0.7rem; max-width: 80ch; text-align: left; text-indent: 0; }
+.cols figcaption b { font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin-right: 0.7rem; }
+
+/* equations */
+.cols .eq { margin: 1.4rem 0; padding: 1.1rem 0.5rem; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); text-align: center; font-size: 1.12rem; overflow-x: auto; scrollbar-width: none; } .cols .eq::-webkit-scrollbar { display: none; }
+.cols .eq .katex-display { margin: 0.2rem 0; }
+
+/* tables */
+.cols table { width: 100%; border-collapse: collapse; margin: 1.6rem 0; font-family: var(--sans); font-size: 0.82rem; border-top: 3px solid var(--ink); border-bottom: 3px solid var(--ink); text-align: left; text-indent: 0; }
+.cols th { font-size: 0.64rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; text-align: right; padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--ink); } .cols th:first-child, .cols td:first-child { text-align: left; }
+.cols td { padding: 0.5rem 0.7rem; text-align: right; border-bottom: 1px solid var(--hair); font-variant-numeric: tabular-nums; } .cols tr:last-child td { border-bottom: 0; }
+.cols td b { font-weight: 700; } .cols caption { caption-side: bottom; font-size: 0.7rem; text-align: left; padding-top: 0.6rem; color: var(--grey); }
+
+/* by the numbers */
+.cols .nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 1.8rem 0; border-top: 6px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.cols .nums > div { padding: 1rem 1rem 1rem 0; border-right: 1px solid var(--hair); padding-left: 1rem; } .cols .nums > div:first-child { padding-left: 0; } .cols .nums > div:last-child { border-right: 0; }
+.nums .v { font-family: var(--serif-d); font-weight: 900; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1; letter-spacing: -0.02em; display: block; }
+.nums .v small { font-size: 0.4em; font-weight: 700; letter-spacing: 0; margin-left: 0.15em; }
+.nums .k { display: block; margin-top: 0.5rem; font-family: var(--sans); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.4; }
+
+.cols .ornament { column-span: all; text-align: center; font-family: var(--serif-d); letter-spacing: 1em; margin: 2rem 0 1rem; font-size: 0.9rem; }
+.cols .fine { font-family: var(--sans); font-size: 0.7rem; line-height: 1.55; color: var(--grey); text-indent: 0 !important; }
+.more-links { column-span: all; display: flex; flex-wrap: wrap; gap: 0.6rem 1.6rem; margin-top: 2rem; padding-top: 1rem; border-top: 3px double var(--ink); font-family: var(--sans); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+.more-links a { text-decoration: none; border-bottom: 1px solid var(--ink); padding-bottom: 2px; } .more-links a:hover { background: var(--ink); color: var(--paper); }
+.mfoot { background: var(--ink); color: var(--paper); padding: 1.6rem clamp(1rem, 4vw, 2.5rem); font-family: var(--sans); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem; } .mfoot a { color: inherit; }
+
+@media (max-width: 880px) { .cols { column-count: 1; text-align: left; hyphens: manual; } .cols p + p { text-indent: 0; margin-top: 0.9em; } .cols .nums > div { border-right: 0; border-bottom: 1px solid var(--hair); padding-left: 0; } .cols table { display: block; overflow-x: auto; } }
+@media print { .mnav, .more-links { display: none; } }

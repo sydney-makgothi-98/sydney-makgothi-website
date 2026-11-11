@@ -1,5 +1,11 @@
 // Borderless chart kit for the showcase pages (same look as the drone page): two axes, faint grid, series, labels. Pure drawing.
 export const COL = {accent: '#a78bfa', blue: '#60a5fa', pink: '#e879f9', amber: '#fbbf24', green: '#34d399', red: '#f87171', cyan: '#22d3ee', orange: '#fb923c', faint: '#5f668f', muted: '#9aa0c3', text: '#e6e8f5'};
+/** Grid, axis and dot colours. The default is for the dark pages; paper() switches them (and COL) to black ink on white for the magazine pages. */
+export const THEME = {grid: 'rgba(255,255,255,0.04)', gridZero: 'rgba(255,255,255,0.16)', axis: 'rgba(255,255,255,0.16)', dotEdge: 'rgba(8,12,30,0.8)', vline: 'rgba(255,255,255,0.35)'};
+export function paper() {
+  Object.assign(THEME, {grid: 'rgba(0,0,0,0.09)', gridZero: 'rgba(0,0,0,0.55)', axis: '#000', dotEdge: '#fff', vline: 'rgba(0,0,0,0.5)'});
+  Object.assign(COL, {accent: '#000', blue: '#000', pink: '#555', amber: '#777', green: '#000', red: '#000', cyan: '#333', orange: '#666', faint: '#555', muted: '#222', text: '#000'});
+}
 export const MONO = '"JetBrains Mono", monospace';
 export const fmt = (v, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : '-').replace('-', '−');
 export function fit(canvas) {
@@ -21,10 +27,10 @@ export function chart(ctx, r, o) {
   ctx.save(); ctx.font = `10px ${MONO}`; ctx.lineWidth = 1;
   const tx = o.xticks || niceTicks(x0, x1, o.nx || 5), ty = o.yticks || niceTicks(y0, y1, o.ny || 4);
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  tx.forEach((v) => { ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.beginPath(); ctx.moveTo(X(v), r.y); ctx.lineTo(X(v), r.y + r.h); ctx.stroke(); ctx.fillStyle = COL.faint; ctx.fillText(o.xfmt ? o.xfmt(v) : tick(v), X(v), r.y + r.h + 5); });
+  tx.forEach((v) => { ctx.strokeStyle = THEME.grid; ctx.beginPath(); ctx.moveTo(X(v), r.y); ctx.lineTo(X(v), r.y + r.h); ctx.stroke(); ctx.fillStyle = COL.faint; ctx.fillText(o.xfmt ? o.xfmt(v) : tick(v), X(v), r.y + r.h + 5); });
   ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-  ty.forEach((v) => { ctx.strokeStyle = v === 0 ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.04)'; ctx.beginPath(); ctx.moveTo(r.x, Y(v)); ctx.lineTo(r.x + r.w, Y(v)); ctx.stroke(); ctx.fillStyle = COL.faint; ctx.fillText(o.yfmt ? o.yfmt(v) : tick(v), r.x - 6, Y(v)); });
-  ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.h); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.stroke();
+  ty.forEach((v) => { ctx.strokeStyle = v === 0 ? THEME.gridZero : THEME.grid; ctx.beginPath(); ctx.moveTo(r.x, Y(v)); ctx.lineTo(r.x + r.w, Y(v)); ctx.stroke(); ctx.fillStyle = COL.faint; ctx.fillText(o.yfmt ? o.yfmt(v) : tick(v), r.x - 6, Y(v)); });
+  ctx.strokeStyle = THEME.axis; ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.h); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.stroke();
   if (o.xl) label(ctx, o.xl, r.x + r.w / 2, r.y + r.h + 24, COL.muted, 'center');
   if (o.yl) { ctx.save(); ctx.translate(r.x - 40, r.y + r.h / 2); ctx.rotate(-Math.PI / 2); label(ctx, o.yl, 0, 0, COL.muted, 'center'); ctx.restore(); }
   ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
@@ -39,8 +45,8 @@ export function chart(ctx, r, o) {
   (o.over || []).forEach((fn) => fn(X, Y));
   ctx.restore(); return {X, Y};
 }
-export const dot = (ctx, x, y, color, r = 4.5) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = 'rgba(8,12,30,0.8)'; ctx.lineWidth = 1.5; ctx.stroke(); };
-export const vline = (ctx, X, x, y0, y1, color = 'rgba(255,255,255,0.35)') => { ctx.setLineDash([3, 4]); ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(x), y0); ctx.lineTo(X(x), y1); ctx.stroke(); ctx.setLineDash([]); };
+export const dot = (ctx, x, y, color, r = 4.5) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = THEME.dotEdge; ctx.lineWidth = 1.5; ctx.stroke(); };
+export const vline = (ctx, X, x, y0, y1, color = THEME.vline) => { ctx.setLineDash([3, 4]); ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(x), y0); ctx.lineTo(X(x), y1); ctx.stroke(); ctx.setLineDash([]); };
 export const span = (arrs, pad = 0.12, min = 1e-9) => {
   let lo = Infinity, hi = -Infinity;
   arrs.forEach((a) => a.forEach((v) => { if (Number.isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }));

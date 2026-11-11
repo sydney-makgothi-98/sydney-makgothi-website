@@ -43,6 +43,7 @@ export function buildBuilding(p, {lite = false} = {}) {
   const M = {
     glass: mat('#ffffff', {map: facadeTexture(), roughness: 0.22, metalness: 0.55, envMapIntensity: 0.9, clippingPlanes: CP}),
     inner: new THREE.MeshStandardMaterial({color: '#1d2c47', emissive: '#0a1730', roughness: 0.85, side: THREE.BackSide, clippingPlanes: CP}),
+    roof: mat('#aab4c8', {roughness: 0.55, metalness: 0.45, envMapIntensity: 0.7, clippingPlanes: CP}),
     plate: mat('#d5dae6', {roughness: 0.8, metalness: 0.05, clippingPlanes: CP}),
     gold: mat('#d3a94c', {roughness: 0.32, metalness: 0.85, envMapIntensity: 1, clippingPlanes: CP}),
     steel: mat('#cfd6e2', {roughness: 0.3, metalness: 0.9, envMapIntensity: 1}),
@@ -76,17 +77,23 @@ export function buildBuilding(p, {lite = false} = {}) {
         if (kind === 'box') { geo = new THREE.BoxGeometry(g.len - inset, hh, g.wid - inset); ru = Math.max(g.len, g.wid) / 3.2; geo.rotateY(-Math.atan2(g.dz, g.dx)); geo.translate(g.x, 0, g.z); }
         else if (kind === 'cone') { geo = new THREE.CylinderGeometry(g.rt, g.rb, hh, seg); ru = 6 * g.rb / 3.2; geo.translate(g.x, 0, g.z); }
         else { const r = g.r - inset; geo = new THREE.CylinderGeometry(r, r, hh, kind === 'hex' ? 6 : seg); if (kind === 'hex') geo.rotateY(Math.PI / 6); ru = (kind === 'hex' ? 6 * g.r : 2 * Math.PI * g.r) / 3.2; geo.translate(g.x, 0, g.z); }
+        if (o.mat !== M.steel) {   // no bottom cap: a down-facing cap sits on the up-facing cap of the step below and the dark inner shell fought it for the pixel (the hatched strobing)
+          const ix = geo.index.array, keep = kind === 'box' ? Array.from(ix).filter((_, i) => i < geo.groups[3].start || i >= geo.groups[3].start + geo.groups[3].count) : Array.from(ix).slice(0, ix.length - geo.parameters.radialSegments * 3);
+          geo.setIndex(keep); geo.clearGroups();   // two materials: the facade on the walls, a plain roof on the top cap (the facade texture on the roofs was the hatched strobing)
+          if (kind === 'box') [0, 0, 1, 0, 0].forEach((m, i) => geo.addGroup(i * 6, 6, m)); else { const n = geo.parameters.radialSegments; geo.addGroup(0, n * 6, 0); geo.addGroup(n * 6, n * 3, 1); }
+        }
         const uv = geo.attributes.uv, rv = Math.max(1, hh / FH); for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * Math.max(1, ru), uv.getY(i) * rv);
         return geo;
       };
-      const shell = make(h, 0); shell.translate(0, mid, 0);
-      add(q, shell, o.mat || M.glass);
+      const low = (o.pid || 0) * 0.1, shell = make(h - low, 0); shell.translate(0, mid - low / 2, 0);   // each solid's roof a few centimetres lower than the next one's, so overlapping roofs never share a plane
+      add(q, shell, o.mat || [M.glass, M.roof]);
       if (!o.mat) { const back = new THREE.Mesh(shell, M.inner); back.userData.part = b.id; q.group.add(back); }
       if (o.plates === false || o.mat) continue;
       const levels = []; for (let y = Math.ceil((a + 0.4 - 2) / PLATE) * PLATE + 2; y < e - 0.3; y += PLATE) levels.push(y);
       if (!levels.length) continue;
       const inst = new THREE.InstancedMesh(make(0.45, 0.5), M.plate, levels.length), m4 = new THREE.Matrix4();
-      levels.forEach((y, i) => { m4.makeTranslation(0, y, 0); inst.setMatrixAt(i, m4); }); inst.userData.part = b.id; q.group.add(inst);
+      const dy = (o.pid || 0) * 0.04;   // a few centimetres of offset per solid, so that overlapping floor plates never share a plane (that was the strobing)
+      levels.forEach((y, i) => { m4.makeTranslation(0, y + dy, 0); inst.setMatrixAt(i, m4); }); inst.userData.part = b.id; q.group.add(inst);
     }
   }
   // the hexagonal core steps in as it rises
@@ -96,8 +103,8 @@ export function buildBuilding(p, {lite = false} = {}) {
     const sh = w.H / STEPS;
     for (let j = 0; j < STEPS; j++) {
       const d = D0 - DD * j, r = R0 - DR * j, wh = WH0 - DWH * j, ya = sh * j, yb = sh * (j + 1);
-      solid('box', {x: w.dir[0] * d / 2, z: w.dir[1] * d / 2, len: d, wid: 2 * wh, dx: w.dir[0], dz: w.dir[1]}, ya, yb);
-      solid('cyl', {x: w.dir[0] * d, z: w.dir[1] * d, r}, ya, yb);
+      solid('box', {x: w.dir[0] * d / 2, z: w.dir[1] * d / 2, len: d, wid: 2 * wh, dx: w.dir[0], dz: w.dir[1]}, ya, yb, {pid: 1 + WINGS.indexOf(w)});
+      solid('cyl', {x: w.dir[0] * d, z: w.dir[1] * d, r}, ya, yb, {pid: 4 + WINGS.indexOf(w)});
       if (j < STEPS - 1) solid('cyl', {x: w.dir[0] * d, z: w.dir[1] * d, r: r + 0.35}, yb - 3.5, yb, {mat: M.gold});   // the gold band at each set-back
     }
   }

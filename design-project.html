@@ -4,109 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:,">
-    <title>Senior Design Project: The 1% Problem | Gopolang Makgothi</title>
-    <meta name="description" content="Senior design project: how to make the all-electric Rolls-Royce Spirit of Innovation 1 % faster over 3 km. Race the record, change the wing and see the power balance, the requirements and the cost of every route.">
+    <title>The One Percent Problem | Gopolang Makgothi</title>
+    <meta name="description" content="A senior design project in magazine form: how to make the fastest all-electric aircraft in the world one percent faster, and why the answer is a smaller wing.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-    <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/showcase.css">
+    <link rel="stylesheet" href="./Syd%20Website%20Assets/Showcase/magazine.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script defer src="./Syd%20Website%20Assets/Showcase/design/design.js"></script>
-    <style>
-        :root { --accent: #22d3ee; }
-        .stage { background: #0a1230; }
-        .ctl.lbl { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; } .s-bottom input[type=range] { width: clamp(70px, 7.4vw, 112px); } .ctl.lbl output { min-width: 5.4em; }
-        .grid2 canvas { height: 280px; } .s-col { width: min(26vw, 380px); }
-        table.cmp { border-collapse: collapse; font-family: var(--mono); font-size: 0.74rem; margin: 0.8rem 0; width: 100%; max-width: 74ch; } .cmp th, .cmp td { padding: 0.45rem 0.8rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--text-muted); } .cmp th:first-child, .cmp td:first-child { text-align: left; } .cmp th { color: var(--accent); font-weight: 600; }
-    </style>
 </head>
-<body>
-    <nav class="topnav">
-        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
-        <div class="nav-status"><span>SECTION</span> 05 &mdash; SENIOR PROJECTS &middot; DESIGN</div>
+<body class="mag">
+    <nav class="mnav">
+        <a href="portfolio.html">&larr; Portfolio</a>
+        <span class="sec-name">Senior Projects &middot; Design</span>
+        <a href="research-project.html">Also: Has the Bow Really Evolved? &rarr;</a>
     </nav>
-    <a class="sib" href="research-project.html" aria-label="Also: research project"><small>ALSO</small><span>RESEARCH PROJECT</span></a>
 
-    <section class="stage" id="stage" aria-label="Record run and design explorer">
-        <div class="viewport"><canvas id="gl" role="img"></canvas></div>
-        <div class="s-title"><div class="eyebrow">05 &mdash; SENIOR DESIGN PROJECT</div><h1>The 1 % problem</h1><p>Make the fastest electric aircraft in the world 1 % faster. Change the wing, run the 3 km course and see what a percent is worth.</p></div>
-        <div class="s-hud" id="hud"></div>
-        <div class="s-col left"><figure class="g" data-g="power" style="--fl:1.25"><figcaption><b>01</b> Power balance</figcaption><canvas aria-label="Power available and required against airspeed"></canvas></figure><figure class="g" data-g="bars" style="--fl:1"><figcaption><b>02</b> Time over 3 km</figcaption><canvas aria-label="Time over 3 km for the baseline and the design"></canvas></figure></div>
-        <div class="s-col right"><figure class="g" data-g="plan" style="--fl:1"><figcaption><b>03</b> Wing planform</figcaption><canvas aria-label="Wing planform, baseline against this design"></canvas></figure></div>
-        <div class="hint" id="hud-u">ready</div>
-        <div class="s-bottom">
-            <div class="grp"><button class="btn primary" id="b-run">Run the record</button><button class="btn" id="b-reset">Rewind</button><button class="btn" id="b-concept">Report's wing</button><button class="btn" id="b-base">As flown</button><button class="btn mobile-only" id="b-design" aria-expanded="false">Design &#9662;</button></div>
-            <div class="sep"></div>
-            <div class="grp sliders">
-                <label class="ctl lbl">root chord <input type="range" id="s-cr" min="0.9" max="1.4" step="0.01"><output id="s-cr-v"></output></label>
-                <label class="ctl lbl">taper <input type="range" id="s-lam" min="0.35" max="0.9" step="0.01"><output id="s-lam-v"></output></label>
-                <label class="ctl lbl">modules <input type="range" id="s-mod" min="0" max="3" step="1"><output id="s-mod-v"></output></label>
-                <label class="ctl lbl">drag clean-up <input type="range" id="s-cut" min="0" max="10" step="0.5"><output id="s-cut-v"></output></label>
-                <label class="ctl lbl">power <input type="range" id="s-hp" min="500" max="600" step="1"><output id="s-hp-v"></output></label>
-            </div>
+    <header class="hero">
+        <div class="hero-in">
+            <div class="kicker">Senior Design Project &middot; Electric Flight</div>
+            <h1>The <em>one percent</em> problem</h1>
+            <p class="deck">The Spirit of Innovation is the fastest all-electric aircraft in the world. The brief was to make it go one percent faster, as cheaply as possible.</p>
+            <div class="byline"><span>By <b>Gopolang Makgothi</b></span><span>From the senior design report</span><span>2025</span></div>
         </div>
-        <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
-    </section>
+    </header>
 
-    <main class="article">
-        <section class="sec">
-            <span class="tag">01 &middot; THE CHALLENGE</span>
-            <h2>The fastest electric aeroplane, and a 1 % target</h2>
-            <p>The Rolls-Royce Spirit of Innovation is the fastest all-electric aircraft in the world. It is a modified Sharp Nemesis NXT racing airframe with three YASA 750R electric motors, a 400 kW power output, and about 6,000 cells in a 750 V battery of 216 kg storing 90 kWh, flying at a take-off mass of about 1,250 kg. The report this page comes from takes its 3 km record speed as <b>155.28 m/s</b> (559 km/h) and asks one question: <b>what is the cheapest way to beat it by 1 %</b>, which is 156.83 m/s or 564.6 km/h, so that the next record is held by this design?</p>
-            <p>The question has a nice shape. A 1 % target is small enough that a modification of the existing aircraft should beat a new design on cost, but not so small that it is free. The honest first step is a model that says which variables move the top speed and by how much, and that is what the explorer in the stage above does. Press <b>Run the record</b> to see what the answer looks like: two aircraft, one 3 km course.</p>
-        </section>
+    <main class="story">
+        <article class="cols">
+            <p class="dropcap">The Rolls-Royce Spirit of Innovation is a modified Sharp Nemesis NXT racing airframe with three YASA 750R electric motors, a 400 kW power output, and about 6,000 cells in a 750 V battery of 216 kg that stores 90 kWh. It flies at a take-off mass of about 1,250 kg, and it holds the speed record for electric aircraft. The report this article comes from takes its 3 km record speed as <b>155.28 m/s</b>, which is 559 km/h, and asks one question: <b>what is the cheapest way to beat it by 1 %</b>, to 156.83 m/s or 564.6 km/h, so that the next record is held by this design?</p>
+            <p>The question has a nice shape. A 1 % target is small enough that a modification of the existing aircraft should beat a new design on cost, but not so small that it is free. The honest first step is a model that says which variables move the top speed, and by how much.</p>
 
-        <section class="sec">
-            <span class="tag">02 &middot; THE MODEL</span>
-            <h2>Power available against power required</h2>
-            <p>In level flight at top speed the thrust power the propeller delivers equals the power the drag absorbs, and the top speed is where the two curves cross. The drag is the sum of the parasite drag of the whole aircraft and the induced drag of the wing, which depends on the weight W and the wing:</p>
-            <div class="equation">$$\eta P_{shaft}=D\,V,\qquad D=\tfrac12\rho V^{2}S\,C_{D0}+\frac{2\,W^{2}}{\rho V^{2}S\,\pi\,e\,AR}$$</div>
-            <p>The aircraft is flown at about 3,000 m (9,048 ft) in ISA conditions, so the air density is 0.909 kg/m&sup3;. The report estimated the parasite drag coefficient by a component drag build-up, C<sub>D0</sub> = 0.01832, took the wing efficiency as 0.75 and the aspect ratio as 8.2 (span 7.3 m, area 6.5 m&sup2;). Checked against the published speeds, the build-up predicts 158.4 m/s for the Spirit of Innovation (2.1 % high) and 91.1 m/s for the competing Extra 330LE (4.2 % low), which is close enough to use as a baseline for a 1 % question, because every comparison below is a ratio against that same baseline.</p>
-            <p>The overall drivetrain efficiency is not published, so the explorer takes it as the single number that makes the baseline reproduce the report's 158.4 m/s (about 0.58). It then gives the same sensitivities the report found:</p>
+            <blockquote>What is the cheapest way to beat the record by one percent?<cite>The brief</cite></blockquote>
+
+            <h2><span class="no">Part one</span>Power available against power required</h2>
+            <p class="flush">In level flight at top speed the thrust power the propeller delivers equals the power the drag absorbs, and the top speed is where the two curves cross. The drag is the sum of the parasite drag of the whole aircraft and the induced drag of the wing, which depends on the weight W and the wing.</p>
+            <div class="eq">$$\eta P_{shaft}=D\,V,\qquad D=\tfrac12\rho V^{2}S\,C_{D0}+\frac{2\,W^{2}}{\rho V^{2}S\,\pi\,e\,AR}$$</div>
+            <p class="after-break">The aircraft is flown at about 3,000 m (9,048 ft) in ISA conditions, so the air density is 0.909 kg/m&sup3;. The report estimated the parasite drag coefficient by a component drag build-up, C<sub>D0</sub> = 0.01832, took the wing efficiency as 0.75 and the aspect ratio as 8.2 (span 7.3 m, area 6.5 m&sup2;). Checked against the published speeds, the build-up predicts 158.4 m/s for the Spirit of Innovation (2.1 % high) and 91.1 m/s for the competing Extra 330LE (4.2 % low). That is close enough to use as a baseline for a 1 % question, because every comparison that follows is a ratio against the same baseline.</p>
+            <p>The overall drivetrain efficiency is not published, so the model here takes it as the single number that makes the baseline reproduce the report&rsquo;s 158.4 m/s, about 0.58. It then gives the sensitivities the report found.</p>
+
+            <figure>
+                <div class="plate"><canvas data-fig="power" role="img" aria-label="Power available and power required against airspeed for the chosen wing, with the unmodified aircraft dashed"></canvas></div>
+                <figcaption><b>Fig. 1</b>Power available and power required against airspeed for the report&rsquo;s wing. The top speed is where they cross. The dashed line is the power required by the aircraft as flown: the smaller wing lowers it, and the crossing moves to the right.</figcaption>
+            </figure>
+
             <ul>
-                <li><b>Drag.</b> At top speed the drag is mostly parasite, so power required rises roughly with the cube of speed and a 1 % speed gain needs about 3 % less drag or 3 % more thrust power. The report's own figure is 3.81 %.</li>
+                <li><b>Drag.</b> At top speed the drag is mostly parasite, so the power required rises roughly with the cube of speed, and a 1 % speed gain needs about 3 % less drag or 3 % more thrust power. The report&rsquo;s own figure is 3.81 %.</li>
                 <li><b>Wing efficiency.</b> Raising the Oswald efficiency from 0.75 to 0.80 by making the lift distribution more elliptical changes the top speed by less than 0.2 %. At this speed the wing is lightly loaded, so induced drag is a small part of the total.</li>
                 <li><b>Wing area.</b> Parasite drag is proportional to the wing area, so a smaller wing is faster: a 3 % reduction in area is worth about 1 % in speed. The wing area is the most direct lever.</li>
             </ul>
-        </section>
 
-        <section class="sec">
-            <span class="tag">03 &middot; THE ROUTES</span>
-            <h2>More power, or less wing</h2>
-            <p>The report works in <b>power per unit wing area</b>, the quantity that sets how fast a given wing can be pushed. The unmodified aircraft has 82.4 hp/m&sup2; and a 1 % faster one needs 84.8, an increase of 2.96 %. A constraint diagram built from the thrust-to-weight equation at zero specific excess power shows the feasible region, and two ways to enter it:</p>
-            <div class="stats" style="margin-top:1rem"><div class="stat"><div class="k">Top speed (model)</div><div class="v" id="x-v"></div></div><div class="stat"><div class="k">Gain over the baseline</div><div class="v" id="x-gain"></div><div class="sub">target 1 %</div></div><div class="stat"><div class="k">Time over 3 km</div><div class="v" id="x-time"></div></div><div class="stat"><div class="k">Faster than the record by</div><div class="v" id="x-dt"></div><div class="sub">that is what 1 % buys</div></div></div>
-            <h3 style="font-family:var(--display);margin:1.4rem 0 0.4rem">Route 1: add power</h3>
-            <p>The motors are built from 18 battery and motor modules which together give 535.35 hp and weigh about 700 kg, so each module is worth 29.6 hp and costs 38.9 kg. One extra module raises the power per unit area by 5.55 %, comfortably past the target. The cost is that it raises the mass by 3.07 %, lengthens the fuselage and moves the centre of gravity, which the report treats as a violation of its requirement to keep the centre of gravity 18 % ahead of the aerodynamic centre: the aircraft is already inherently unstable, and any mass added forward makes it worse. Use the <b>modules</b> slider: the speed goes up, and the checklist below turns red.</p>
-            <p>Raising the propeller efficiency was also tried. The activity-factor method puts the propeller at about 75 % efficiency, and the report finds a gain of 5 % in efficiency worth only 0.35 % in thrust, too little to matter, so changes to the propulsion system were set aside in favour of the wing.</p>
-            <h3 style="font-family:var(--display);margin:1.4rem 0 0.4rem">Route 2: reduce the wing area</h3>
-            <p>At the same 535 hp, a power per area of 84.8 hp/m&sup2; means a wing of 6.3 m&sup2;, a reduction of 3.1 %. The span is held at 7.3 m to keep the ribs, spars and fittings the same, so the area is reduced by changing the chord:</p>
-            <div class="equation">$$S=\frac{(C_r+C_t)\,b}{2},\qquad \lambda=\frac{C_t}{C_r}$$</div>
-            <p>The report generated 15 planforms in MATLAB by varying the taper ratio and root chord at constant span and kept those with an area at or below 6.3 m&sup2;. Delta wings, higher aspect ratios and forward-swept wings were excluded in advance: the delta cannot be trimmed at this speed because it would need about 69 % more lift than the aircraft can produce, forward sweep makes the aircraft unstable in roll (the rolling moment slope with sideslip turns positive), and swept-back wings cost induced drag at low subsonic speed and are a transonic device. <b>Drag the root chord and taper sliders</b> and watch the planform, the area and the speed respond.</p>
-            <p>Taper alone gave the best first change. It keeps the span, the main structure and the control-surface layout, and so it needs the least redesign and recertification. The selected concept has a root chord of about 1.19 m, a taper ratio of 0.45 and no sweep, which gives 6.28 m&sup2;. Of the concepts that reduce the area enough, it was the only one that still satisfied the limit load factor required by the regulations (the wing becomes smaller and more heavily loaded as the area falls), and so the wing requirement fixed span, taper and a minimum area of 6.28 m&sup2;. Press <b>Report's wing</b> to set it.</p>
-        </section>
+            <h2><span class="no">Part two</span>More power, or less wing</h2>
+            <p class="flush">The report works in <b>power per unit wing area</b>, the quantity that sets how fast a given wing can be pushed. The unmodified aircraft has 82.4 hp/m&sup2;, and a 1 % faster one needs 84.8, an increase of 2.96 %. A constraint diagram built from the thrust-to-weight equation at zero specific excess power shows the feasible region, and two ways to enter it.</p>
 
-        <section class="sec">
-            <span class="tag">04 &middot; REQUIREMENTS</span>
-            <h2>The checklist, evaluated live</h2>
-            <p>The user requirement specification turned the 1 % goal into numbers that a design either meets or does not. They are evaluated here for whatever the sliders are set to. The structural and aeroelastic parts of the design (the skin, spars, stringers and ribs of the new wing, and the divergence check) follow in the full report; the limit load factor of 3.61 g and the ultimate factor of 4.72 g are the structural targets those parts are designed against.</p>
-            <table class="cmp"><tr><th>Requirement</th><th>This design</th></tr>
+            <h3>Route one: add power</h3>
+            <p class="flush">The motors are built from 18 battery and motor modules which together give 535.35 hp and weigh about 700 kg, so each module is worth 29.6 hp and costs 38.9 kg. One extra module raises the power per unit area by 5.55 %, comfortably past the target. The price is that it raises the mass by 3.07 %, lengthens the fuselage and moves the centre of gravity. The report treats that as a violation of its requirement to keep the centre of gravity 18 % ahead of the aerodynamic centre: the aircraft is already inherently unstable, and any mass added forward makes it worse.</p>
+            <p>Raising the propeller efficiency was also tried. The activity-factor method puts the propeller at about 75 % efficiency, and the report finds that a gain of 5 % in efficiency is worth only 0.35 % in thrust, too little to matter. Changes to the propulsion system were set aside in favour of the wing.</p>
+
+            <h3>Route two: reduce the wing area</h3>
+            <p class="flush">At the same 535 hp, a power per area of 84.8 hp/m&sup2; means a wing of 6.3 m&sup2;, a reduction of 3.1 %. The span is held at 7.3 m to keep the ribs, spars and fittings the same, so the area is reduced by changing the chord.</p>
+            <div class="eq">$$S=\frac{(C_r+C_t)\,b}{2},\qquad \lambda=\frac{C_t}{C_r}$$</div>
+            <p class="after-break">The report generated 15 planforms in MATLAB by varying the taper ratio and root chord at constant span, and kept those with an area at or below 6.3 m&sup2;. Delta wings, higher aspect ratios and forward-swept wings were excluded in advance. The delta cannot be trimmed at this speed because it would need about 69 % more lift than the aircraft can produce. Forward sweep makes the aircraft unstable in roll, since the rolling moment slope with sideslip turns positive. Swept-back wings cost induced drag at low subsonic speed and are a transonic device.</p>
+
+            <figure>
+                <div class="plate"><canvas data-fig="plan" style="height:clamp(230px, 27vw, 310px)" role="img" aria-label="Wing planform of the chosen design against the aircraft as flown"></canvas></div>
+                <figcaption><b>Fig. 2</b>The wing planform, the chosen design (shaded) against the aircraft as flown (dashed). The span is fixed; the chord at the root and the taper change the area.</figcaption>
+            </figure>
+
+            <p>Taper alone gave the best first change. It keeps the span, the main structure and the control-surface layout, and so needs the least redesign and recertification. The selected concept has a root chord of about 1.19 m, a taper ratio of 0.45 and no sweep, which gives 6.28 m&sup2; in the report (the rounded figures in Fig. 2 give 6.30). Of the concepts that reduce the area enough, it was the only one that still satisfied the limit load factor required by the regulations: the wing becomes smaller and more heavily loaded as the area falls, and so the wing requirement fixed the span, the taper and a minimum area of 6.28 m&sup2;.</p>
+
+            <div class="nums">
+                <div><span class="v" id="x-gain">&nbsp;</span><span class="k">speed gained over the baseline, target 1 %</span></div>
+                <div><span class="v" id="x-v" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">top speed in the model</span></div>
+                <div><span class="v" id="x-time" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">time over 3 km</span></div>
+                <div><span class="v" id="x-dt" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">faster than the record: what 1 % buys</span></div>
+            </div>
+
+            <figure>
+                <div class="plate"><canvas data-fig="bars" style="height:clamp(230px, 28vw, 320px)" role="img" aria-label="Time over 3 km for the baseline and the design"></canvas></div>
+                <figcaption><b>Fig. 3</b>What a percent is worth: time over the 3 km course for the aircraft as flown and for the modified wing. The vertical axis starts at 18.9 s so that the difference can be seen.</figcaption>
+            </figure>
+
+            <h2><span class="no">Part three</span>The checklist</h2>
+            <p class="flush">The user requirement specification turned the 1 % goal into numbers that a design either meets or does not. They are evaluated here for the chosen wing. The structural and aeroelastic parts of the design (the skin, spars, stringers and ribs of the new wing, and the divergence check) follow in the full report; the limit load factor of 3.61 g and the ultimate factor of 4.72 g are the structural targets those parts are designed against.</p>
+            <table>
+                <tr><th>Requirement</th><th>This design</th></tr>
                 <tr><td>Top speed of 564.6 km/h or more over 3 km</td><td id="u-speed"></td></tr>
                 <tr><td>Power per wing area of 84.80 hp/m&sup2; or more</td><td id="u-hpa"></td></tr>
                 <tr><td>Mass at most 1.75 tonnes</td><td id="u-mass"></td></tr>
                 <tr><td>Wing area not below the load-factor limit</td><td id="u-area"></td></tr>
                 <tr><td>Centre of gravity kept 18 % ahead of the aerodynamic centre</td><td id="u-cg"></td></tr>
-                <tr><td><b>Overall</b></td><td id="u-all"></td></tr></table>
-            <p><b>Why modify, not redesign.</b> A cost-to-benefit comparison, with total cost the sum of development, production, operation and certification less any return, shows that for a small gain in speed a new design costs far more than the benefit, and a new design only pays when the gain is large, of the order of 40 %. For 1 %, a modified wing on a proven aircraft is the sensible answer.</p>
-            <div class="more"><a href="research-project.html">Research project &rarr;</a><a href="aeroelasticity.html">Aeroelasticity &rarr;</a><a href="energy-methods.html">Energy methods &rarr;</a><a href="portfolio.html">Portfolio</a></div>
-        </section>
+                <tr><td><b>Overall</b></td><td id="u-all"><b></b></td></tr>
+            </table>
+
+            <h3>Why modify, not redesign</h3>
+            <p class="flush">A cost-to-benefit comparison, with total cost the sum of development, production, operation and certification less any return, shows that for a small gain in speed a new design costs far more than the benefit. A new design only pays when the gain is large, of the order of 40 %. For 1 %, a modified wing on a proven aircraft is the sensible answer.</p>
+
+            <blockquote>For one percent, a modified wing on a proven aircraft is the sensible answer.<cite>From the conclusions</cite></blockquote>
+
+            <div class="ornament">&#9670; &#9670; &#9670;</div>
+            <p class="fine">Source: the author&rsquo;s senior design report on the Spirit of Innovation. The drivetrain efficiency is calibrated in this model so that the baseline reproduces the report&rsquo;s estimated 158.41 m/s; the drag build-up, the 82.4 and 84.8 hp/m&sup2; figures and the selected wing are the report&rsquo;s. The figures here are drawn from a re-implementation of the report&rsquo;s power balance, not from the report&rsquo;s own plots.</p>
+
+            <div class="more-links"><a href="research-project.html">Has the bow really evolved?</a><a href="aeroelasticity.html">Aeroelasticity</a><a href="energy-methods.html">Energy methods</a><a href="portfolio.html">Portfolio</a></div>
+        </article>
     </main>
-    <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html">Back to portfolio</a></footer>
+    <footer class="mfoot"><span>Gopolang Makgothi &middot; Engineering portfolio</span><a href="portfolio.html">Back to portfolio</a></footer>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }], throwOnError: false });
-            var b = document.getElementById('b-design'), bar = document.querySelector('.s-bottom'); if (b) b.addEventListener('click', function () { var o = bar.classList.toggle('open'); b.setAttribute('aria-expanded', o); });
         });
     </script>
 </body>

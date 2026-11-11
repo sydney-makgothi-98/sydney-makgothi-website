@@ -75,7 +75,7 @@ st.loop((dt, now) => {
   bld.update(u, S.zoom, (x) => S.r.w(x) * load, S.amp, p.P, p.xp, p.q, 1, S.cut);
   const bay = bld.test.group.position, ox = 0, oy = 360 + 110 * u;
   st.want.t.lerp(new V3(bay.x * zk + ox * (1 - zk), bay.y * zk + oy * (1 - zk), bay.z * zk), 0.1); st.want.dist = (1950 + 1750 * u) * (1 - 0.3 * smooth(S.cut)) * (1 - zk) + 26 * zk;
-  st.camera.near = Math.max(0.3, st.rig.dist * 0.04); st.camera.updateProjectionMatrix();
+  st.camera.near = Math.max(0.5, st.rig.dist * 0.15); st.camera.updateProjectionMatrix();
   st.camStep(dt, now, {drift: reduce || S.zoomT ? 0 : 0.25, az0: 0.55});
   labels.update(bld.parts, u * (1 - zk), S.sel && S.sel.id);
   $('hud-u').textContent = zk > 0.5 ? 'one floor bay on its idealised springs' : S.cutT > 0.5 ? 'cutaway' : u > 0.02 ? `exploded ${Math.round(u * 100)}%` : 'assembled';
