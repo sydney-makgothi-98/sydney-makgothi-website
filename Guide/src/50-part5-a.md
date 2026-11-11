@@ -25,6 +25,10 @@ The website is a folder of plain files. There is no server code, no database, no
 | `engine.html` | | The combustion page: a twin-turbo V8's crank, piston and rod assembly, with live pressure, kinematics, force and torque curves. |
 | `project-management.html` | | A construction programme as an instrument: draggable Gantt chart, network diagram, S-curve, crew histogram and Monte Carlo risk run. |
 | `cad-gallery.html` | | A globe of CAD designs; each flies in and decomposes into the layout of its drawing (sheet-metal parts unfold to their flat patterns). |
+| `aeroelasticity.html` | | Flutter and divergence: a wing section that flutters as an auto-running dive passes the flutter speed, with the damping and frequency graphs tracing out over a photograph. |
+| `energy-methods.html` | | The Rayleigh-Ritz floor, worked on a solid Burj Khalifa you can cut open, take apart and zoom into (Chapter 43). |
+| `parachute.html` | | The jet truck's parachute: live telemetry and graphs over a cover video, and a fluid-simulation cutaway of the turbojet's start-up (Chapter 43). |
+| `research-project.html`, `design-project.html` | | The two senior projects as black-and-white magazine articles (Chapter 43). |
 | `downloads.html` | 13 367 | Downloads. |
 | `PortfolioHero.jsx` | 17 895 | A React component that no page loads yet (Chapter 40). |
 | `Syd Website Assets/` | | Scripts, images and build tools for each page. |

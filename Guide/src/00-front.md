@@ -30,7 +30,7 @@ The book has five parts, and they build on each other.
 
 #### A living book
 
-This is Edition 0.5. It will change. Whenever the website grows or a better way of explaining something turns up, the book grows with it. The Book Map after this introduction shows what the book contains today.
+This is Edition 0.6. It will change. Whenever the website grows or a better way of explaining something turns up, the book grows with it. The Book Map after this introduction shows what the book contains today.
 
 #### A promise about honesty
 
@@ -96,6 +96,6 @@ The table lists every part of the book and where it stands today.
 | II. The Tech Stack | Nine full courses: HTML, CSS, JavaScript (17 sections, four runnable mini projects), React (every example rendered for real), canvas and SVG, GSAP (timelines checked by GSAP), three.js (numbers checked by three.js), build tools with Git (real builds and a real history), and C++ (18 sections, five mini projects). Each with words, theory, diagrams, worked examples, problem sets with line answers and mini projects. | Written, second edition |
 | III. Six Guided Projects | A landing page, a responsive gallery, an animated story, an interactive physics chart, a 3D model you can take apart, and a C++ cart that brakes before a wall. Each ends with a quiz. | Written, first edition |
 | IV. Advanced Topics | Advanced CSS, JavaScript, React, canvas, GSAP, three.js, accessibility with performance, and C++ (stable simulation, twin testing). | Written, first edition |
-| V. The Guided Build | The real website: its shape, the HTML, CSS and JavaScript of the flight dynamics page, the stability model, the Patrick robot page, the robot's C++ program built from scratch in nine stages, the build pipeline, React and GSAP (honestly), and the Claude skills. | Written, first edition |
+| V. The Guided Build | The real website: its shape, the HTML, CSS and JavaScript of the flight dynamics page, the stability model, the Patrick robot page, the robot's C++ program built from scratch in nine stages, the build pipeline, React and GSAP (honestly), and the Claude skills. The showcase pages chapter: the cover layout, cutting a building in half, ink on paper, and a fluid simulation you can run. | Written, first edition |
 
 "First edition" means the chapter is complete enough to learn from, and will be deepened as the site grows. Parts I and II are now at their second edition. Part IV is the next to be deepened, and Part V will grow as more of the site's pages are read line by line.

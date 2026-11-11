@@ -7,7 +7,7 @@
 // no compressibility, no 3D) and not measured data from the truck's engines. The readouts and the picture come from the same state function, so they agree.
 import {fit} from '../chart.js';
 
-const W = 1000, H = 640, T_END = 36, HOLD = 3;
+const W = 1000, H = 660, T_END = 36, HOLD = 3;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -24,7 +24,7 @@ function rotor(t) {
 }
 const T_FUEL = 7.0, T_LIGHT = 7.8;
 const flame = (t, r) => (t < T_LIGHT ? 0 : clamp(sm(T_LIGHT, T_LIGHT + 0.8, t) * (0.10 + 0.52 * Math.pow(r, 1.1) + 0.30 * Math.exp(-(t - 8.2) / 2.5)), 0, 0.82));
-const state = (t) => { const r = rotor(t), f = flame(t, r); return {r, f, egt: 15 + 1000 * (0.3 * Math.pow(r, 2.2) * 0.7 + f * 0.7), thrust: f > 0 ? 3000 * Math.pow(r, 3.2) : 0, pr: 1 + 3.9 * r * r}; };
+const state = (t) => { const r = rotor(t), f = flame(t, r); return {r, f, egt: 15 + 1000 * (0.3 * Math.pow(r, 2.2) * 0.7 + f * 0.7), thrust: f > 0 ? 3000 * Math.pow(r, 3.2) : 0, pr: 1 + 3.9 * r * r, vex: f > 0 ? 30 + 570 * Math.pow(r, 1.4) : 8 * r}; };
 const PHASES = [[0, 'Cold, still and ready.'], [1, 'The starter spins the compressor.'], [T_FUEL, 'Fuel flows and the igniter fires.'], [T_LIGHT + 0.6, 'Light-off: the flame takes hold, and the exhaust runs briefly hot.'], [14, 'The turbine takes over; the starter drops out.'], [18, 'Acceleration to idle.'], [23, 'Throttle up: the gas path fills with fire.'], [32, 'Full power. Three of these push the truck.']];
 const phase = (t) => PHASES.filter((p) => t >= p[0]).pop()[1];
 const HIST = Array.from({length: T_END * 10 + 1}, (_, i) => { const s = state(i / 10); return {egt: s.egt, r: s.r}; });
@@ -58,14 +58,14 @@ const CS = 3.3, NX = 348, NY = 100, N = NX * NY, DX0 = 40, DY0 = AXIS - NY * CS 
 function makeSim() {
   const u = new Float32Array(N), v = new Float32Array(N), u0 = new Float32Array(N), v0 = new Float32Array(N), p = new Float32Array(N), dv = new Float32Array(N);
   const T = new Float32Array(N).fill(AMB), T0 = new Float32Array(N), cw = new Float32Array(N), aw = new Float32Array(N), uu = new Float32Array(N), vv = new Float32Array(N);
-  const solid = new Uint8Array(N), eng = new Uint8Array(N), gx = new Float32Array(N), rateT = new Float32Array(N), exitJet = new Uint8Array(N), inlet = new Uint8Array(N);
+  const comb = new Uint8Array(N), exitW = new Float32Array(N), Es = new Float32Array(NX), solid = new Uint8Array(N), eng = new Uint8Array(N), gx = new Float32Array(N), rateT = new Float32Array(N), exitJet = new Uint8Array(N), inlet = new Uint8Array(N);
   for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
     const c = j * NX + i, x = DX0 + (i + 0.5) * CS, dy = Math.abs(DY0 + (j + 0.5) * CS - AXIS);
     if (x >= X0 && x <= X1) {
       if (dy < hub(x) || dy > casing(x)) solid[c] = 1;
-      else { eng[c] = 1; gx[c] = x < 140 ? 0.20 : x < 400 ? lerp(0.22, 0.30, (x - 140) / 260) : x < 540 ? lerp(0.45, 0.62, sm(400, 540, x)) : x < 700 ? 0.72 : lerp(0.78, 1.0, sm(700, X1, x)); rateT[c] = x > 410 && x < 560 ? 0.30 : x > X1 - 12 ? 0.35 : 0.07; }
+      else { eng[c] = 1; gx[c] = x < 140 ? 0.16 : x < 400 ? lerp(0.18, 0.26, (x - 140) / 260) : x < 540 ? lerp(0.34, 0.55, sm(400, 540, x)) : x < 700 ? 0.62 : lerp(0.68, 1.0, sm(700, X1, x)); comb[c] = x > 410 && x < 560 ? 1 : 0; rateT[c] = x > 410 && x < 560 ? 0.14 : x > X1 - 12 ? 0.35 : 0.07; }
     } else if (x < X0 && dy < 100) inlet[c] = 1;
-    if (x > X1 && x < X1 + 5 * CS && dy < 36) exitJet[c] = 1;
+    if (x > X1 && x < X1 + 5 * CS && dy < 36) { exitJet[c] = 1; exitW[c] = clamp(1 - Math.pow(dy / 36, 6)); }   // a smooth velocity profile at the exit: a laminar jet starts with a thick, gentle shear layer
   }
   function sample(f, x, y) { x = clamp(x, 0.5, NX - 1.5); y = clamp(y, 0.5, NY - 1.5); const i = x | 0, j = y | 0, s = x - i, t = y - j, c = j * NX + i; return (f[c] * (1 - s) + f[c + 1] * s) * (1 - t) + (f[c + NX] * (1 - s) + f[c + NX + 1] * s) * t; }
   // dst = src carried along the velocity (ve, vf), both in cells per step
@@ -84,20 +84,29 @@ function makeSim() {
   const rnd = () => Math.random() - 0.5;
   /** one step of 1/60 s. Velocities are kept in cells per second between steps and in cells per step inside the solver. */
   function step(st, fT) {
-    const Ub = 95 * Math.pow(st.r, 1.3) * (st.f > 0 ? 1 : 0.4), Uin = Ub * 0.20, dt = 1 / 60;
-    // forcing: the compressor and turbine drive the gas along, the combustor heats it, the nozzle accelerates it; beyond the nozzle the jet is free
+    const Ub = 78 * Math.pow(st.r, 1.3) * (st.f > 0 ? 1 : 0.4), Uin = Ub * 0.16, dt = 1 / 60, Ubn = Ub / 78;
+    // forcing: the compressor and turbine push the gas along. Heating makes it expand and speed up, so the push on each parcel grows with its own temperature:
+    // slow and cold in the inlet, faster as the combustor heats it, fastest in the nozzle. Beyond the nozzle the jet is free.
     for (let c = 0; c < N; c++) {
       if (solid[c]) continue;
-      if (eng[c]) { u[c] += 0.30 * (Ub * gx[c] - u[c]); v[c] *= 0.92; }
-      else if (exitJet[c]) { u[c] += 0.40 * (Ub * 1.02 - u[c]); }
+      if (eng[c]) { u[c] += 0.30 * (Ub * gx[c] * (0.55 + 1.0 * clamp(T[c] / 0.6)) - u[c]); v[c] *= 0.92; }
+      else if (exitJet[c]) { u[c] += 0.40 * (Ub * 1.32 * exitW[c] - u[c]); }
       else if (inlet[c]) { u[c] += 0.30 * (Uin - u[c]); }
     }
-    // a little turbulence at the nozzle lip seeds the shear-layer vortices
-    if (st.f > 0.05) for (let c = 0; c < N; c++) if (exitJet[c]) v[c] += rnd() * 0.20 * Ub * st.f;
-    // vorticity confinement keeps the eddies alive instead of letting the grid smooth them away
+    // a faint seed of disturbance at the nozzle lip: the shear layer starts smooth and only grows its own instabilities if the speed is high enough
+    if (st.f > 0.05) for (let c = 0; c < N; c++) if (exitJet[c]) v[c] += rnd() * 0.012 * Ub;
+    // inside the combustor the burning is turbulent once the engine is working hard, which stirs the gas
+    if (st.f > 0.05) for (let c = 0; c < N; c++) if (eng[c] && comb[c]) v[c] += rnd() * 0.10 * Ub * st.f * Ubn;
+    // vorticity: confinement keeps eddies alive once they have formed; its strength, and the viscosity below, depend on the speed (the Reynolds number)
     for (let j = 1; j < NY - 1; j++) for (let i = 1; i < NX - 1; i++) { const c = j * NX + i; cw[c] = 0.5 * (v[c + 1] - v[c - 1] - u[c + NX] + u[c - NX]); aw[c] = Math.abs(cw[c]); }
-    const eps = 4.5, iX1 = (X1 - 40 - DX0) / CS;
+    const eps = 8 * Ubn * Ubn, iX1 = (X1 - 40 - DX0) / CS;
     for (let j = 2; j < NY - 2; j++) for (let i = 2; i < NX - 2; i++) { const c = j * NX + i; if (solid[c] || i < iX1) continue; const gxv = 0.5 * (aw[c + 1] - aw[c - 1]), gyv = 0.5 * (aw[c + NX] - aw[c - NX]), l = Math.hypot(gxv, gyv) + 1e-5; u[c] += dt * eps * (gyv / l) * cw[c]; v[c] -= dt * eps * (gxv / l) * cw[c]; }
+    // how much sideways motion there is in the core of the jet at each station (smoothed in time): a smooth jet has almost none, a turbulent one a lot: this is what the laminar / transition / turbulent markers are read from
+    for (let i = 0; i < NX; i++) { let sum = 0, n = 0; for (let j = NY / 2 - 9; j < NY / 2 + 9; j++) { const c = j * NX + i; if (!solid[c]) { sum += Math.abs(v[c]); n++; } } Es[i] += 0.04 * ((n ? sum / n : 0) - Es[i]); }
+    // viscosity: thick, syrupy gas at low speed damps every disturbance (laminar); nearly inviscid gas at high speed lets them grow (turbulent)
+    const nu = 0.01 + 0.22 * Math.pow(1 - clamp(Ubn), 1.6);
+    for (let j = 1; j < NY - 1; j++) for (let i = 1; i < NX - 1; i++) { const c = j * NX + i; if (solid[c]) { u0[c] = 0; v0[c] = 0; continue; } const ul = solid[c - 1] ? u[c] : u[c - 1], ur = solid[c + 1] ? u[c] : u[c + 1], ud = solid[c - NX] ? u[c] : u[c - NX], uup = solid[c + NX] ? u[c] : u[c + NX], vl = solid[c - 1] ? v[c] : v[c - 1], vr = solid[c + 1] ? v[c] : v[c + 1], vd = solid[c - NX] ? v[c] : v[c - NX], vu = solid[c + NX] ? v[c] : v[c + NX]; u0[c] = u[c] + nu * (ul + ur + ud + uup - 4 * u[c]); v0[c] = v[c] + nu * (vl + vr + vd + vu - 4 * v[c]); }
+    for (let j = 1; j < NY - 1; j++) for (let i = 1; i < NX - 1; i++) { const c = j * NX + i; u[c] = u0[c]; v[c] = v0[c]; }
     // the heat the gas is driven towards
     for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const c = j * NX + i; if (eng[c]) T[c] += rateT[c] * (temp(DX0 + (i + 0.5) * CS, st.r, fT) - T[c]); else if (exitJet[c]) T[c] += 0.35 * (Math.min(0.78, temp(X1, st.r, fT) * 1.45) - T[c]); }
     // to cells per step, then advect the velocity by itself, hold the inflow, and make it divergence-free
@@ -119,13 +128,22 @@ function makeSim() {
     }
     octx.putImageData(img, 0, 0); return off;
   }
-  function reset() { u.fill(0); v.fill(0); p.fill(0); T.fill(AMB); }
-  return {step, render, reset, T};
+  function reset() { u.fill(0); v.fill(0); p.fill(0); T.fill(AMB); Es.fill(0); }
+  /** the mean axial speed of the gas near the axis in each column, cells per second (the gas speed along the engine) */
+  function axial() { const a = new Float32Array(NX); for (let i = 0; i < NX; i++) { let sum = 0, n = 0; for (let j = NY / 2 - 14; j < NY / 2 + 14; j++) { const c = j * NX + i; if (!solid[c]) { sum += u[c]; n++; } } a[i] = n ? sum / n : 0; } return a; }
+  /** where the jet changes character: x (design units) at which the swirl first exceeds a quiet level (transition) and a busy level (turbulent); null if it never does */
+  function regime(Ub) {
+    const i0 = Math.round((X1 - DX0) / CS) + 10; let xa = null, xb = null;
+    if (Ub > 2) for (let i = i0; i < NX - 3; i++) { const q = Es[i] / Ub; if (xa === null && q > 0.14) xa = DX0 + (i + 0.5) * CS; if (xb === null && q > 0.30) xb = DX0 + (i + 0.5) * CS; }
+    return {xa, xb, Es, iX1: i0};
+  }
+  return {step, render, reset, T, axial, regime};
 }
 
 export function initJet(canvas) {
   if (!canvas) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, sim = makeSim();
+  const axS = new Float32Array(NX); let rgA = null, rgB = null;
   let t = reduce ? 31 : 0, hold = 0, last = 0, visible = true, phaseAng = 0, shaft = 0, running = false;
   const start = () => { if (!running) { running = true; last = 0; requestAnimationFrame(tick); } };
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); }).observe(canvas);
@@ -170,20 +188,32 @@ export function initJet(canvas) {
     if (t >= T_FUEL && t < T_LIGHT + 1.2) { ctx.font = `700 10px ${MONO}`; ctx.fillStyle = '#ffe28a'; ctx.fillText(t < T_LIGHT ? 'FUEL ON' : 'IGNITER FIRES', mx(480), AXIS - 84 * K - 10); }
     if (t > 1 && t < 17) { ctx.font = `500 9px ${MONO}`; ctx.fillStyle = 'rgba(200,220,255,0.8)'; ctx.fillText(t < 14 ? 'STARTER DRIVING' : 'STARTER CUTS OUT', mx(270), AXIS - 84 * K - 10); }
 
+    // the flow regime along the jet, read from the sideways motion in its core, and the gas speed along the whole path
+    { const ax = sim.axial(), Ub = 78 * Math.pow(st.r, 1.3) * (st.f > 0 ? 1 : 0.4), g = sim.regime(Ub), cx = (x) => mx(x), x0 = cx(X1 + 8), x1 = cx(DX0 + NX * CS);
+      for (let i = 0; i < NX; i++) axS[i] += 0.15 * (ax[i] - axS[i]);
+      rgA = g.xa === null ? null : (rgA === null ? cx(g.xa) : rgA + 0.08 * (cx(g.xa) - rgA)); rgB = g.xb === null ? null : (rgB === null ? cx(g.xb) : rgB + 0.08 * (cx(g.xb) - rgB));
+      const a = rgA === null ? x1 : rgA, b = rgB === null ? x1 : Math.max(a, rgB), by = 386, bh = 13;
+      [[x0, a, 'LAMINAR', 'rgba(60,140,255,0.55)'], [a, b, 'TRANSITION', 'rgba(255,225,80,0.55)'], [b, x1, 'TURBULENT', 'rgba(255,90,40,0.6)']].forEach(([xa, xb, name, col]) => { if (xb - xa < 2) return; ctx.fillStyle = col; ctx.fillRect(xa, by, xb - xa, bh); ctx.font = `700 8.5px ${MONO}`; ctx.fillStyle = '#0a0a12'; ctx.textAlign = 'center'; if (xb - xa > 58) ctx.fillText(name, (xa + xb) / 2, by + bh / 2 + 0.5); });
+      ctx.font = `500 8.5px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.5)'; ctx.textAlign = 'left'; ctx.fillText('FLOW REGIME OF THE JET', 40, by + bh / 2 + 0.5);
+      const py = 446, ph = 34, ref = 150; ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(40, py); ctx.lineTo(960, py); ctx.stroke(); ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(40, py - ph); ctx.lineTo(960, py - ph); ctx.stroke(); ctx.setLineDash([]);
+      const gg = ctx.createLinearGradient(40, 0, 960, 0); gg.addColorStop(0, '#2b5bff'); gg.addColorStop(0.45, '#18e0e0'); gg.addColorStop(0.7, '#ffe14d'); gg.addColorStop(1, '#ff6a2a');
+      ctx.beginPath(); for (let i = 1; i < NX - 1; i++) { const x = cx(DX0 + (i + 0.5) * CS), y = py - ph * clamp(axS[i] / ref); i === 1 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.strokeStyle = gg; ctx.lineWidth = 2; ctx.stroke();
+      ctx.font = `500 8.5px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.5)'; ctx.textAlign = 'left'; ctx.fillText('GAS SPEED ALONG THE PATH', 40, py - ph - 6); ctx.textAlign = 'right'; ctx.fillText('600 m/s', 960, py - ph - 6); }
+
     // caption, time, readouts
-    ctx.textAlign = 'left'; ctx.font = `600 11px ${MONO}`; ctx.fillStyle = '#e9e7ff'; ctx.fillText(`T+ ${t.toFixed(2)} s`, 40, 462); ctx.textAlign = 'right'; ctx.fillText('REAL TIME', 960, 462);
-    ctx.textAlign = 'left'; ctx.fillStyle = '#f4f2ff'; ctx.font = `italic 400 24px ${BODY}`; ctx.fillText(phase(t), 40, 492);
-    const R = [['THRUST', Math.round(st.thrust).toLocaleString('en-US'), 'lbf'], ['ROTOR SPEED', (st.r * 100).toFixed(0), '%'], ['EXHAUST GAS', Math.round(st.egt).toLocaleString('en-US'), '°C'], ['PRESSURE RATIO', st.pr.toFixed(1), ':1']];
-    R.forEach(([k, v, u], i) => { const x = 40 + i * 230; ctx.font = `500 9px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.55)'; ctx.fillText(k, x, 526); ctx.font = `700 30px ${SANS}`; ctx.fillStyle = '#fff'; ctx.fillText(v, x, 556); const vw = ctx.measureText(v).width; ctx.font = `500 10px ${SANS}`; ctx.fillStyle = 'rgba(244,242,255,0.6)'; ctx.fillText(u, x + vw + 4, 556); });
+    ctx.textAlign = 'left'; ctx.font = `600 11px ${MONO}`; ctx.fillStyle = '#e9e7ff'; ctx.fillText(`T+ ${t.toFixed(2)} s`, 40, 500); ctx.textAlign = 'right'; ctx.fillText('REAL TIME', 960, 500);
+    ctx.textAlign = 'left'; ctx.fillStyle = '#f4f2ff'; ctx.font = `italic 400 23px ${BODY}`; ctx.fillText(phase(t), 40, 528);
+    const R = [['THRUST', Math.round(st.thrust).toLocaleString('en-US'), 'lbf'], ['ROTOR SPEED', (st.r * 100).toFixed(0), '%'], ['EXHAUST GAS', Math.round(st.egt).toLocaleString('en-US'), '°C'], ['PRESSURE RATIO', st.pr.toFixed(1), ':1'], ['EXHAUST SPEED', Math.round(st.vex), 'm/s']];
+    R.forEach(([k, v, u], i) => { const x = 40 + i * 184; ctx.font = `500 9px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.55)'; ctx.fillText(k, x, 556); ctx.font = `700 28px ${SANS}`; ctx.fillStyle = '#fff'; ctx.fillText(v, x, 584); const vw = ctx.measureText(v).width; ctx.font = `500 10px ${SANS}`; ctx.fillStyle = 'rgba(244,242,255,0.6)'; ctx.fillText(u, x + vw + 4, 584); });
     // strip chart: exhaust gas temperature and rotor speed against time, with the playhead
-    const sx = 40, sw = 920, sy = 584, sh = 26, px = (i) => sx + sw * i / (HIST.length - 1), idx = Math.min(HIST.length - 1, Math.round(t * 10));
+    const sx = 40, sw = 920, sy = 598, sh = 20, px = (i) => sx + sw * i / (HIST.length - 1), idx = Math.min(HIST.length - 1, Math.round(t * 10));
     const lg = ctx.createLinearGradient(sx, 0, sx + sw, 0); lg.addColorStop(0, '#2b5bff'); lg.addColorStop(0.35, '#18e0e0'); lg.addColorStop(0.65, '#ffe14d'); lg.addColorStop(1, '#ff3b1f');
     ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.beginPath(); HIST.forEach((q, i) => { const y = sy + sh - sh * q.egt / 800; i ? ctx.lineTo(px(i), y) : ctx.moveTo(px(i), y); }); ctx.stroke();
     ctx.strokeStyle = lg; ctx.beginPath(); for (let i = 0; i <= idx; i++) { const y = sy + sh - sh * HIST[i].egt / 800; i ? ctx.lineTo(px(i), y) : ctx.moveTo(px(i), y); } ctx.stroke();
     ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.beginPath(); HIST.forEach((q, i) => { const y = sy + sh - sh * q.r; i ? ctx.lineTo(px(i), y) : ctx.moveTo(px(i), y); }); ctx.stroke();
     ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); for (let i = 0; i <= idx; i++) { const y = sy + sh - sh * HIST[i].r; i ? ctx.lineTo(px(i), y) : ctx.moveTo(px(i), y); } ctx.stroke();
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(px(idx), sy + sh - sh * HIST[idx].egt / 800, 3.5, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(px(idx), sy + sh - sh * HIST[idx].r, 3, 0, 7); ctx.fill();
-    ctx.font = `500 8.5px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.5)'; ctx.textAlign = 'left'; ctx.fillText('EXHAUST GAS TEMPERATURE (COLOUR)', sx, sy + sh + 14); ctx.fillText('ROTOR SPEED (WHITE)', sx + 300, sy + sh + 14);
+    ctx.font = `500 8.5px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.5)'; ctx.textAlign = 'left'; ctx.fillText('EXHAUST GAS TEMPERATURE (COLOUR)', sx, sy + sh + 13); ctx.fillText('ROTOR SPEED (WHITE)', sx + 300, sy + sh + 13);
     ctx.restore();
   }
   function tick(now) {
