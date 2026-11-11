@@ -22,13 +22,18 @@
         .s-col { top: 76px; } .s-hud { top: 168px; }
     </style>
 </head>
-<body>
+<body class="fmt">
     <nav class="topnav">
         <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
         <div class="nav-status"><span>SECTION</span> 03 &mdash; PROPULSION &amp; COMBUSTION</div>
     </nav>
     <a class="sib" href="project-management.html" aria-label="Next: project management"><small>NEXT</small><span>PROJECT MANAGEMENT</span></a>
 
+    <header class="cover" id="cover">
+        <video autoplay muted loop playsinline preload="auto" aria-hidden="true"><source src="./Syd%20Website%20Assets/Showcase/engine/Cover%20Video.mp4" type="video/mp4"></video>
+        <div class="ph">Cover video goes here: Syd Website Assets/Showcase/engine/Cover Video.mp4</div>
+        <div class="cv-in"><span class="eyebrow">03 &mdash; COMBUSTION &middot; V8 CRANK ASSEMBLY</span><h1>One megawatt, <span>eight cylinders.</span></h1><p>The crank, piston and connecting-rod assembly of a twin-turbo V8 sized to the Koenigsegg One:1. Below, run it, take it apart and change it while its pressure, force and torque follow.</p><a class="cue" href="#stage">&darr; OPEN THE TEARDOWN</a></div>
+    </header>
     <section class="stage" id="stage" aria-label="V8 engine teardown">
         <div class="viewport"><canvas id="gl" role="img"></canvas><div class="labels" id="labels"></div></div>
         <div class="s-title"><div class="eyebrow">03 &mdash; COMBUSTION ANALYSIS &middot; CRANK ASSEMBLY</div><h1>Twin-turbo V8</h1><p>Crankshaft, pistons and connecting rods, sized for a Koenigsegg One:1. Watch the cylinders fire in step with the curves.</p></div>
@@ -185,5 +190,6 @@
         document.addEventListener('DOMContentLoaded', function () { if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }], throwOnError: false }); });
     </script>
     <script>document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('b-design'),bar=document.querySelector('.s-bottom');if(b)b.addEventListener('click',function(){var o=bar.classList.toggle('open');b.setAttribute('aria-expanded',o);});});</script>
+    <script>(function(){var c=document.getElementById('cover'),v=c.querySelector('video'),s=v.querySelector('source');function miss(){c.classList.add('missing');}s.addEventListener('error',miss);v.addEventListener('error',miss);v.play&&v.play().catch(function(){});})();</script>
 </body>
 </html>

@@ -12,7 +12,7 @@ const p = {...E.DESIGN};
 const S = {sel: null, spin: true, lock: true, theta: 0.6, s: null, tt: null};
 const ex = explodeState();
 let ready = false;
-const st = createStage({canvas: $('gl'), tint: '#fb7185', dist: 27, el: 0.3, az: 0.78, distRange: [6, 64], onTier: () => { if (ready) rebuild(); }});
+const st = createStage({canvas: $('gl'), tint: '#fb7185', dist: 32, el: 0.3, az: 0.78, distRange: [6, 80], onTier: () => { if (ready) rebuild(); }});
 let eng = null, apply = null, labels = null;
 const card = partCard($('card'), () => { S.sel = null; });
 function recompute() { S.s = E.summary(p); S.tt = E.totalTorque(S.s, p); }
@@ -203,7 +203,7 @@ st.loop((dt, now) => {
   const glow = FIRE.map((f) => { const d = wrap720(cc.th - f.E); return Math.abs(d) <= 90 && u < 0.5 ? Math.max(0, c.pts[Math.min(c.pts.length - 1, Math.round((d + 180) / 0.5))].dQ / qmax) * (1 - smooth(u * 2)) : 0; });
   eng.pose(S.theta, uP, glow);
   if (S.sel) { bboxE.setFromObject(S.sel.group); bboxE.getCenter(cen); const sz = bboxE.getSize(new V3()); st.want.t.lerp(cen, 0.12); st.want.dist = clamp(Math.max(sz.x, sz.y, sz.z) * 2.6 + 4, 8, 34); }
-  else { st.want.t.lerp(new V3(0, -0.2 - 1.0 * u, 0), 0.06); if (!st.manual()) st.want.dist = (27 + 12 * ease(u, 0, 1)) * (innerWidth / innerHeight < 0.9 ? 1.4 : 1); }
+  else { st.want.t.lerp(new V3(0, -0.2 - 1.0 * u, 0), 0.06); if (!st.manual()) st.want.dist = (32 + 14 * ease(u, 0, 1)) * (innerWidth / innerHeight < 0.9 ? 1.4 : 1); }
   st.camStep(dt, now, {drift: reduce ? 0 : 0.25, az0: 0.78});
   labels.update(eng.parts, u, S.sel && S.sel.id);
   gT += dt; if (gT > [0.07, 0.1, 0.16, 0.25][st.tier.i] && (spinV > 0.02 || gT > 0.5)) { gT = 0; drawPV($('g-pv')); drawPT($('g-pt')); drawKin($('g-kin')); drawForces($('g-forces')); drawTorque($('g-torque')); if ($('modal').classList.contains('on')) gr.draw(); }
