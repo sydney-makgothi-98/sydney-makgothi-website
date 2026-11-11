@@ -279,6 +279,38 @@ Each category now shows a short video instead of an image. The picture on the ri
 
 The five clips came straight from an editor at about 120 MB in total, which is far too much for a menu. They were squeezed with the program described in the book *Building Nova - Compressor*: 119.1 MB became 11.0 MB, a 91 percent saving, using its "Web loop" preset (720 pixels, no sound, CRF 28). Because a page that is slow to load is a page people leave, **always compress video before it goes on a website.** The untouched originals were kept in a folder *outside* the project, so they never travel with the site.
 
+## Curvature From a Handful of Points
+
+The research article measures how curved each bow limb is. The measurement is simple to describe: photograph the limb from above, lay a grid over it, read off the coordinates of points along its edge, and work out the curvature from the points. Curvature is how quickly the direction of a curve is turning; a circle of radius 0.5 m has a curvature of 1 / 0.5 = **2 per metre** everywhere.
+
+From points the curvature comes out of two central differences, the first and second differences of the coordinates (the same tool the article uses for the smoothness of the draw-force curve):
+
+@code Syd Website Assets/Showcase/research/curvature.js 31-40
+
+The program `Guide/code/js/s19_curvature.js` tests it on a circle of radius 0.5 m, using 17 points, as the limb profile does. The answer should be 2, and it is, until the points are wrong:
+
+```
+true curvature: 2.000 per metre
+from exact points   : mean 2.003  spread 0.0000
+with +/-0.1 mm of reading scatter: mean 2.007  spread 0.127
+with +/-0.3 mm of reading scatter: mean 1.988  spread 0.303
+with +/-1 mm of reading scatter: mean 2.066  spread 0.894
+```
+
+The mean stays near 2, but the *spread* grows quickly with the reading error: a second difference magnifies noise, because it subtracts two nearly equal differences. A tenth of a millimetre of scatter in the points is a 6 percent wobble in the curvature, and one millimetre is 45 percent. That is why the article takes the points at generous spacing, why it compares limbs read in the same way and not individual curvature values, and why it says so.
+
+The animation that draws the grid forming and then the profile of each limb is `curvature.js`'s `drawProfiles(canvas, t)`: a pure function of time `t`, so the page can draw any frame, and the same function serves the playing animation and the finished picture. Its data are *generated* for the article (a smooth limb shape per set, plus a little reading scatter), in the order the report found, and the page says so. If the real coordinates are put in a `limb-profiles.json` file, the page uses them instead, and the curvature code is already the real method.
+
+:::why Draw the animation from one function of time
+**What it is.** `drawProfiles(c, t)` draws the whole picture for any time `t`, from nothing: grid first (the first 2.4 seconds), then the profiles (the next 4.2).
+
+**Why it is done this way.** The alternative is to keep a pile of state (which line is half drawn, which point has appeared) and update it each frame. A pure function of time has no state to get wrong, and a Replay button is just `t = 0`.
+
+**Why it matters.** The finished picture, the first frame and any frame between are the same code, and the same code can be tested by asking for a particular `t`.
+
+**What happens if you do not.** A reader who scrolls away and back, or resizes the window, gets a half-drawn limb.
+:::
+
 ## Telling the Truth on a Page That Looks Finished
 
 These pages have a lot of numbers and some of them are not measurements. A short rule kept the book and the site honest:

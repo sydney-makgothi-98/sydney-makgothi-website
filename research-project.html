@@ -150,10 +150,34 @@
                 <figcaption><b>Fig. 11</b>Efficiency to smoothness, Table 5 of the report. Energy delivered to the arrow per unit of force demanded per millimetre of draw.</figcaption>
             </figure>
 
-            <h2><span class="no">Part four</span>What the limbs say, and what they cannot</h2>
+            <h2><span class="no">Part four</span>Measuring curvature</h2>
+            <p class="flush">The conclusions so far lean on one idea that the draw-force curves cannot test by themselves: that the newer limbs are <b>more curved</b>. A recurve limb is not straight even when the bow is unstrung. It sweeps forward and then curls back at the tip, and that shape is the whole point of the design. Curvature was therefore measured, and it was measured in a way that, to the knowledge of the author and of the supervisor, had not been used on bow limbs before.</p>
+            <p>The method has four steps. First, each limb is laid flat and photographed from above, so that its <b>top view</b> shows the outline of the limb as a curve in a plane. Second, a <b>two-dimensional grid</b> is laid over the picture, and the position of the limb&rsquo;s edge is read at points along its length, giving a pair of coordinates (<i>x</i>, <i>y</i>) for every point. Third, the points are joined to give the limb&rsquo;s <b>profile</b>. Fourth, the curvature at each point is found from the points themselves, using the same family of tool as the smoothness in Part three: <b>numerical derivatives</b>.</p>
+            <p>Curvature is how quickly the direction of a curve is turning. For a curve given by points it is the first and second derivatives of the coordinates that matter, and both can be estimated by central differences between neighbouring points:</p>
+            <div class="eq">$$\kappa_i=\frac{x'_i\,y''_i-y'_i\,x''_i}{\left(x_i'^{\,2}+y_i'^{\,2}\right)^{3/2}},\qquad x'_i\approx\frac{x_{i+1}-x_{i-1}}{2},\quad x''_i\approx x_{i+1}-2x_i+x_{i-1}$$</div>
+            <p>(and the same for <i>y</i>). The formula does not care how the points are spaced, which suits readings taken off a grid by eye. A limb that curves hard has a large value of &kappa; where it turns, and a straight limb has a value near zero. The smallest radius of curvature is simply 1/&kappa;.</p>
+
+            <figure>
+                <div class="plate"><canvas id="profiles-canvas" style="height:clamp(300px, 42vw, 460px)" role="img" aria-label="An animation: a grid forms over the top view of the limbs, then the profile of each of the six limbs is traced point by point"></canvas></div>
+                <figcaption><b>Fig. 12</b>Reading the profiles. The grid forms first, and then the profile of each limb is traced point by point, each point written down as a pair of coordinates. <button class="replay" id="replay" type="button">Replay</button> <b>Illustrative:</b> these profiles are generated for this article, in the order of curvature the report found (the newer limbs curve more), and are not the measured coordinate tables.</figcaption>
+            </figure>
+
+            <p>With the profile as a list of points, the derivatives follow, and with them the curvature along every limb. The comparison plot puts the six limbs on one pair of axes. A limb whose curve lies higher is curved more at that point along its length.</p>
+
+            <figure>
+                <div class="plate"><canvas data-fig="curv" role="img" aria-label="Curvature in one over metres against point number along each of the six limbs, from the riser to the tip"></canvas></div>
+                <figcaption><b>Fig. 13</b>The curvature comparison, found from the points of Fig. 12 by central differences. Heavier strokes are the newer limbs. The small wobble in each line is the effect of reading scatter, which differentiation amplifies; it is the reason the central difference of Part three, and not a cruder one, was used. <b>Illustrative</b>, as for the profiles.</figcaption>
+            </figure>
+
+            <table id="curv-table"><caption>Mean and peak curvature, and how far the tip sits from the straight line, for each limb, worked out from the profiles above.</caption></table>
+
+            <p class="after-break">The ranking that comes out is the point of the exercise. Within every family the newer limb is curved more than the older one, along nearly all of its length and most of all near the tip, where the recurve is. That answers the question left open in the conclusions: the newer limbs do curve more. Whether that curvature <i>explains</i> their efficiency is a separate question, and Part five is careful about it.</p>
+            <p>The technique is cheap: a camera, a grid and a spreadsheet, and it is not destructive. It also needs no special equipment, which means anyone who owns a set of limbs can repeat it. Its weakness is the reading: the curvature is only as good as the points, and a second derivative magnifies every error in them. That is why the points were taken at generous spacing, why the central difference was used, and why the comparison between limbs, with the same method and spacing for each, is far more trustworthy than any single curvature value.</p>
+
+            <h2><span class="no">Part five</span>What the limbs say, and what they cannot</h2>
             <ul>
                 <li><b>The claim was validated, with a caveat.</b> There has been evolution within one generation of limbs, in the MXT and Hoyt families, though the improvement is small, and the NS family regressed in efficiency at long draws.</li>
-                <li><b>A result against intuition.</b> The newer limbs curve more at rest and when drawn, which one would expect to make them better at storing energy and so more efficient. The data does not support that simple link between curvature and efficiency: the geometry changed, but it does not by itself explain the gains.</li>
+                <li><b>A result against intuition.</b> The newer limbs curve more at rest and when drawn (Part four), which one would expect to make them better at storing energy and so more efficient. The data does not support that simple link between curvature and efficiency: the geometry changed, but it does not by itself explain the gains.</li>
                 <li><b>Best for an Olympic recurve archer: the Hoyt Axia.</b> It has the highest efficiency-to-smoothness ratio of the six sets. For an archer who wants smoothness above all, the NS limbs, with the lowest force at full draw.</li>
                 <li><b>Wood against foam.</b> The wooden-core limbs, the Carbon Velos and the Hoyt Axia, were the most efficient at full draw, and the wood core came out 58 % better on efficiency to smoothness. The report does not call this an objective result: the NS limbs also have a wooden core and were outperformed by the foam-core MXT limbs, so the choice of core depends on the archer and their preference.</li>
             </ul>
@@ -164,7 +188,7 @@
             <p class="flush">The geometric variation is the only cause that was tested. Material variation was not, because the test was non-destructive and dissecting a pair of expensive limbs would destroy the laminates round the core. The recommended next step is to extract the <b>stiffness matrices</b> of the old and new limbs in finite-element software and check whether the extra stored energy comes from the newer limbs being stiffer. That is exactly the method of the <a href="energy-methods.html">Energy Methods page</a>: a stiffness matrix built from a displacement series and a strain-energy functional.</p>
 
             <div class="ornament">&#9670; &#9670; &#9670;</div>
-            <p class="fine">Source: the author&rsquo;s senior research report, &ldquo;Evolution of Recurve Bow Limbs&rdquo;, October 2025. Arrow masses, stored energies and the shared force curve in these figures are derived from the report&rsquo;s tables and plots, as explained in the captions.</p>
+            <p class="fine">Author: Mr Gopolang George Sydney [Syd] Makgothi. Under the supervision of Dr Franchesco Pietra, a decorated engineer who has done work on the F22 Raptor.</p>
 
             <div class="more-links"><a href="design-project.html">The 1 % Problem</a><a href="energy-methods.html">Energy methods</a><a href="portfolio.html#expertise-wheel">Portfolio</a></div>
         </article>

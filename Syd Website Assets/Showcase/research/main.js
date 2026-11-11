@@ -2,6 +2,7 @@
 // the three finite-difference formulas worked out live. Nothing here moves: the page is read, not operated.
 import {chart, label, dot, vline, COL, fit, GREY, figures, $} from '../mag.js';
 import * as R from './physics.js';
+import * as K from './curvature.js';
 
 const byId = (id) => R.LIMBS.find((x) => x.id === id), HA = byId('ha');
 // six limbs, six distinguishable pen strokes (ink only): older limbs thinner, newer limbs heavier
@@ -49,9 +50,12 @@ function drawRatio(c) {
   items.forEach(([n, v, col], i) => { const y = 52 + i * 66; label(ctx, n, x0 - 14, y, '#000', 'right', 11.5, '600'); ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fillRect(x0, y - 18, bw, 36); ctx.fillStyle = col; ctx.fillRect(x0, y - 18, bw * v / max, 36); if (col !== '#000') { ctx.strokeStyle = '#000'; ctx.strokeRect(x0 + 0.5, y - 17.5, bw * v / max - 1, 35); } label(ctx, v.toFixed(2), x0 + bw * v / max + 10, y, '#000', 'left', 14, '700'); });
   label(ctx, `efficiency to smoothness, mm per N: the wood core is ${R.EFF_TO_SMOOTH.variation} % better`, x0, 14, '#000', 'left', 10, '600'); label(ctx, 'higher is better', x0, h - 12, '#222', 'left', 9.5);
 }
-figures({dfc: drawDFC, effd: drawEffD, bars: drawBars, diff: drawDiff, ratio: drawRatio});
+figures({dfc: drawDFC, effd: drawEffD, bars: drawBars, diff: drawDiff, ratio: drawRatio, curv: K.drawCurvature});
+const anim = K.animateProfiles($('profiles-canvas'), $('replay'));
 
 // the three finite-difference formulas against the exact slope, for three step sizes
 const mean = (pts) => pts.reduce((s, q) => s + Math.abs(q[1] - R.smoothnessExact(HA, q[0])), 0) / pts.length * 1000;
 const tb = $('err-table'); if (tb) tb.innerHTML = '<tr><th>Step h</th><th>Forward</th><th>Backward</th><th>Central</th></tr>' + [0.5, 1, 2].map((hh) => `<tr><td>${hh} in</td>` + ['forward', 'backward', 'central'].map((m) => `<td>${mean(R.smoothness(HA, m, hh, 0)).toFixed(1)}</td>`).join('') + '</tr>').join('');
-window.__RS = {R};
+// the curvature table, worked out from the same points the animation draws
+const ct = $('curv-table'); if (ct) { const older = {ns: 1, mxt10: 1, cv: 1}; ct.innerHTML = '<tr><th>Limb</th><th>Mean curvature, 1/m</th><th>Peak curvature, 1/m</th><th>Tip offset, cm</th></tr>' + K.stats().map((q) => `<tr><td>${K.NAMES[q.id]} (${older[q.id] ? 'older' : 'newer'})</td><td>${q.mean.toFixed(2)}</td><td>${q.peak.toFixed(2)}</td><td>${(q.tip[1] * 100).toFixed(1)}</td></tr>`).join(''); }
+window.__RS = {R, K, anim};

@@ -85,3 +85,5 @@ body.mag { margin: 0; background: var(--paper); color: var(--ink); font-family: 
 .cols figure.tallpair .plate img { max-height: 520px; }
 .cols figure img { filter: grayscale(1); }
 @media (max-width: 880px) { .cols figure .pairgrid { grid-template-columns: 1fr; } }
+
+.cols figcaption .replay { font: 600 0.62rem var(--sans); letter-spacing: 0.16em; text-transform: uppercase; background: #000; color: #fff; border: 0; padding: 0.25rem 0.7rem; margin: 0 0.4rem; cursor: pointer; } .cols figcaption .replay:hover { background: #fff; color: #000; outline: 1px solid #000; }
