@@ -37,7 +37,7 @@
             <p>The senior design project began from a single observation: the record has stood since 2021, and a record that stands for years is a sign that nothing is catching it. The Fédération Aéronautique Internationale (FAI) says a new record must beat the old by <b>1 %</b>. Taking the speed to beat as <b>155.28 m/s</b> (559 km/h), that is <b>156.83 m/s</b>, or 564.6 km/h. The question was how to get the Spirit of Innovation there, cheaply, without making it unstable, unsafe or illegal to certify.</p>
 
             <figure>
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-rr-spirit.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-rr-spirit.png" alt="The Rolls-Royce Spirit of Innovation parked on a concrete apron, in a silver and blue livery" loading="lazy"></a></div>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-rr-spirit.jpg" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-rr-spirit.jpg" alt="The Rolls-Royce Spirit of Innovation parked on a concrete apron, in a silver and blue livery" loading="lazy"></a></div>
                 <figcaption><b>Fig. 1</b>The Rolls-Royce Spirit of Innovation, the aircraft this project sets out to improve.</figcaption>
             </figure>
 
@@ -49,7 +49,7 @@
             <p class="flush">Before changing anything, the report asked what the Spirit of Innovation had already done right. Its only real competitor in the electric class is the Extra 330LE, a single-seat aerobatic monoplane with a 260 kW motor, which held the record from 2016 to 2021 with a published top speed of 343 km/h (95 m/s). The two aircraft were compared on powerplant, propeller, drag and wing, using thrust and drag curves, an activity-factor propeller model, a component drag build-up and Vortex Lattice models in Tornado for MATLAB.</p>
 
             <figure>
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-extra-330le.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-extra-330le.png" alt="The Extra 330LE electric aerobatic aircraft in a hangar" loading="lazy"></a></div>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-extra-330le.jpg" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-extra-330le.jpg" alt="The Extra 330LE electric aerobatic aircraft in a hangar" loading="lazy"></a></div>
                 <figcaption><b>Fig. 2</b>The competitor: the Extra 330LE, with a 260 kW motor and fixed, external landing gear.</figcaption>
             </figure>
 
@@ -179,48 +179,65 @@
                 <figcaption><b>Fig. 12</b>The fully assembled frame: the fuselage rings and the ribs and spars of the wings and tail, drawn without the skin, so the load path from wing to fuselage can be followed.</figcaption>
             </figure>
 
-            <figure class="narrow">
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-structure-method.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-structure-method.png" alt="A flow chart of the structural design method, from the modified wing to the skin, spars, stringers and ribs and a final validation" loading="lazy"></a></div>
-                <figcaption><b>Fig. 13</b>The structural design method: a component at a time, each checked before the next.</figcaption>
-            </figure>
-
             <h3>The skin</h3>
             <p class="flush">Three skin materials were compared on stiffness for the weight and the smoothness of the surface, since a rough skin costs drag. The merit used was Young&rsquo;s modulus over density over average surface roughness, with data from the Granta database. Carbon-fibre reinforced polymer won by a wide margin.</p>
 
             <figure>
                 <div class="plate"><canvas data-fig="merit" style="height:clamp(170px, 20vw, 220px)" role="img" aria-label="Bar chart of stiffness per density per roughness for carbon fibre, glass fibre and aluminium"></canvas></div>
-                <figcaption><b>Fig. 14</b>Stiffness per unit weight per unit roughness (Table 13 of the report): carbon fibre against glass fibre and aluminium alloys. Carbon fibre has a modulus of 200 GPa, a density of 1.55 Mg/m&sup3; and a roughness of 2.4 &micro;m.</figcaption>
+                <figcaption><b>Fig. 13</b>Stiffness per unit weight per unit roughness (Table 13 of the report): carbon fibre against glass fibre and aluminium alloys. Carbon fibre has a modulus of 200 GPa, a density of 1.55 Mg/m&sup3; and a roughness of 2.4 &micro;m.</figcaption>
             </figure>
 
             <figure class="narrow">
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/ashby-modulus-density.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/ashby-modulus-density.png" alt="A Young&rsquo;s modulus against density chart with bubbles for foams, natural materials, polymers, elastomers, composites, technical ceramics and metals, and dashed guide lines for minimum mass design" loading="lazy"></a></div>
-                <figcaption><b>Fig. 15</b>Young&rsquo;s modulus against density, from the Granta materials database, with the guide lines for minimum-mass design. Composites sit well up and to the left of the metals.</figcaption>
+                <figcaption><b>Fig. 14</b>Young&rsquo;s modulus against density, from the Granta materials database, with the guide lines for minimum-mass design. Composites sit well up and to the left of the metals.</figcaption>
             </figure>
 
             <p>Skin thickness was set by buckling. Treating one panel as a flat plate held on all four edges, a panel with an aspect ratio of one has the highest buckling coefficient, about 14. A panel of 100 mm by 100 mm (a Boeing 747&rsquo;s are about 200 mm, and the Spirit is far smaller) in 1 mm carbon fibre buckles at about 52 MPa, and at the root, the most heavily loaded section, that is 2.6 times the shear stress acting on it. Thicker skin would be safer and heavier; 1 mm was the compromise.</p>
 
-            <figure class="narrow">
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-buckling-coefficient.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-buckling-coefficient.png" alt="A graph of buckling coefficient k against plate aspect ratio a over b for plates with various edge conditions, the highest curve for all edges clamped" loading="lazy"></a></div>
-                <figcaption><b>Fig. 16</b>Buckling coefficient against the aspect ratio of the plate, for different edge conditions. A plate fixed on all edges, with an aspect ratio of one, has the highest coefficient.</figcaption>
-            </figure>
+            <h3>Plate performance and buckling</h3>
+            <p class="flush">A skin panel between two ribs and two stringers is a flat plate, and what limits it is not its strength but its <b>stability</b>: a thin plate loaded in its own plane, in compression or shear, suddenly bows out of plane at a load well below the one that would crush or tear it. How a plate behaves in bending is set by its <b>flexural rigidity</b> D, and the load at which it buckles by D, the plate width b and a buckling coefficient k:</p>
+            <div class="eq">$$D=\frac{E\,t^{3}}{12\,(1-\nu^{2})},\qquad N_{cr}=k\,\frac{\pi^{2}D}{b^{2}},\qquad \sigma_{cr}=\frac{N_{cr}}{t}=k\,\frac{\pi^{2}E}{12\,(1-\nu^{2})}\left(\frac{t}{b}\right)^{2}$$</div>
+            <p>Here E is the modulus of elasticity of the skin, &nu; its Poisson ratio, t the thickness, and b the loaded-edge width of the panel of length a. For shear the same expression is used with a shear buckling coefficient k<sub>s</sub> in place of k, and the result is compared with the shear stress found from the shear flow. The strong message in the equation is the square of t/b: <b>halving the panel width is as good as doubling the thickness</b>, which is why a skin is stiffened with stringers and ribs instead of being made thick.</p>
+            <p>The coefficient k depends on the aspect ratio a/b of the panel and on how its edges are held, and Fig. 16(a) gives it: a plate clamped on all its edges has the highest values, and a/b = 1 is where a square panel does best, with k about 14, which is the value used. As a check on the 52.34 MPa the report finds for the 1 mm, 100 mm square panel: with k = 14 and &nu; = 0.3 it works back to a modulus of about 41 GPa. That is where a laminate with a mix of 0&deg; and &plusmn;45&deg; plies sits on the carpet plot, and well below the 200 GPa of the fibre alone, because buckling depends on the stiffness of the <i>laminate</i>, not of the fibre.</p>
+
+            <h3>Stiffeners: sections, relations and uses</h3>
+            <p class="flush">A stringer takes load along the span and divides the skin into smaller panels, which raises the buckling stress of each. The stringer itself can fail in a way a plate cannot: its own flanges can buckle locally and fold, which is called <b>crippling</b>. The crippling stress of a section is found from an empirical relation in which the cross-section enters through the number of flanges and cuts, g, the cross-sectional area A, the thickness t, the modulus E and the compressive yield stress &sigma;<sub>cy</sub>:</p>
+            <div class="eq">$$\frac{\sigma_{cc}}{\sigma_{cy}}=C\left[\frac{g\,t^{2}}{A}\sqrt{\frac{E}{\sigma_{cy}}}\right]^{m}$$</div>
+            <p>C and m are empirical constants that depend on the material and the section, g counts the flanges, and a section with a large g and a small area for its thickness is made of many thin, well-supported flanges. The relation says that the more the material is spread into well-supported flanges, the nearer the section can get to its full yield stress before it cripples. I have written the standard form here; the constants themselves come from the method&rsquo;s tables.</p>
 
             <figure class="narrow">
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" alt="A graph of laminate stiffness Ex in GPa against the percentage of plus or minus 45 degree layers, with curves for 100, 80, 60, 40 and 20 percent of zero degree layers; the inset gives E1 140 GPa, E2 10 GPa, G12 5 GPa and nu12 0.30" loading="lazy"></a></div>
-                <figcaption><b>Fig. 17</b>Composite skin strength: laminate stiffness E<sub>x</sub> in the span direction against the share of &plusmn;45&deg; layers, for several shares of 0&deg; layers (unidirectional ply E<sub>1</sub> = 140 GPa, E<sub>2</sub> = 10 GPa, G<sub>12</sub> = 5 GPa, &nu;<sub>12</sub> = 0.30). The stacking order of a real skin is chosen from a carpet plot of this kind.</figcaption>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-stringer-sections.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-stringer-sections.png" alt="Stiffener cross-sections with their flange counts: angle g = 2, tube g = 4 cuts plus 8 flanges = 12, T-section g = 3, cruciform g = 4, I-section g = 1 cut plus 6 flanges = 7, Z-section g = 1 cut plus 4 flanges = 5" loading="lazy"></a></div>
+                <figcaption><b>Fig. 15</b>Various stiffener cross-sections, with the flange counts g that enter the crippling relation.</figcaption>
             </figure>
 
+            <table>
+                <tr><th>Section</th><th>g</th><th>Crippling strength</th><th>Behaviour in torsion</th><th>Typical use</th></tr>
+                <tr><td>Angle (L)</td><td>2</td><td>moderate</td><td>good</td><td>light stringers, ribs and frames; easy to fasten to the skin</td></tr>
+                <tr><td>Tube</td><td>12</td><td>highest</td><td>poor</td><td>truss members and struts, where torsion is small</td></tr>
+                <tr><td>T-section</td><td>3</td><td>moderate to good</td><td>moderate</td><td>stringers and rib stiffeners</td></tr>
+                <tr><td>Cruciform</td><td>4</td><td>moderate to good</td><td>moderate</td><td>compression members that must be supported in two directions</td></tr>
+                <tr><td>I-section</td><td>7</td><td>high</td><td>moderate</td><td>spar caps and heavily loaded beams</td></tr>
+                <tr><td>Z-section</td><td>5</td><td>good</td><td>moderate</td><td>skin stringers, which nest and rivet easily</td></tr>
+                <caption>The stiffener sections, with g read from the figure (a cut or a flange each adds one: the tube is 4 cuts + 8 flanges, the I-section 1 cut + 6 flanges, the Z-section 1 cut + 4 flanges). The crippling and torsion columns follow the report&rsquo;s conclusions; the &ldquo;typical use&rdquo; column is general practice.</caption>
+            </table>
+            <p class="after-break">The report chose between them as a compromise. Tubes have the highest crippling strength, but they are poor in torsion, and a wing that twists under load with poor torsional stiffness invites flutter, so I gave up a little crippling strength for a section that behaves well in torsion: an <b>L-shaped</b> stringer of 100 mm&sup2;.</p>
+
+            <figure class="pair tallpair">
+                <div class="pairgrid"><div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-buckling-coefficient.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-buckling-coefficient.png" alt="A graph of buckling coefficient k against plate aspect ratio a over b for plates with various edge conditions, the highest curve for all edges clamped" loading="lazy"></a></div><div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" alt="A graph of laminate stiffness Ex in GPa against the percentage of plus or minus 45 degree layers, with curves for 100, 80, 60, 40 and 20 percent of zero degree layers" loading="lazy"></a></div></div>
+                <figcaption><b>Fig. 16</b>Side by side: (a) the buckling coefficient k against the aspect ratio a/b of the plate, for different edge conditions; a plate fixed on all edges with an aspect ratio of one has the highest coefficient. (b) Composite skin strength: laminate stiffness E<sub>x</sub> in the span direction against the share of &plusmn;45&deg; layers, for several shares of 0&deg; layers (unidirectional ply E<sub>1</sub> = 140 GPa, E<sub>2</sub> = 10 GPa, G<sub>12</sub> = 5 GPa, &nu;<sub>12</sub> = 0.30). The stacking of a real skin is chosen from a carpet plot of this kind.</figcaption>
+            </figure>
             <h3>Spars, stringers and ribs</h3>
             <p class="flush">To save weight the wing has two spars, a front and a rear, with 2 mm webs. The front spar stands 173 mm high at the root and 99.75 mm at the tip (the same 0.45 taper as the wing); the rear spar is 77.85 mm throughout. For the caps, I-channel and C-channel sections were compared with the same web and height. The I-channel has the larger second moment of area (46.4 against 38.3 million mm&#8308;) and so the lower bending stress, and was chosen.</p>
-            <p>The <b>stringers</b> stop the skin buckling between the ribs. Crippling strength was worked out for a range of sections in 20 mm thick carbon fibre, taking the compressive strength as about 30 % of the tensile (689 MPa). Tubes have high crippling strength but are poor in torsion, and a wing that twists with poor torsional stiffness invites flutter, so a slightly weaker section that does well in torsion was chosen: an <b>L-shaped</b> stringer of 100 mm&sup2;. The <b>ribs</b> are carbon fibre with six relief holes, as seen in light sporting aircraft. Shear flow was worked out round the root rib, and deflection, twist and stress were checked in a finite-element model in SimScale.</p>
+            <p>The <b>stringers</b> stop the skin buckling between the ribs. Crippling strength was worked out for a range of sections in 20 mm thick carbon fibre, taking the compressive strength as about 30 % of the tensile (689 MPa). As explained above, the choice was an <b>L-shaped</b> stringer of 100 mm&sup2;. The <b>ribs</b> are carbon fibre with six relief holes, as seen in light sporting aircraft. Shear flow was worked out round the root rib, and deflection, twist and stress were checked in a finite-element model in SimScale.</p>
 
             <figure>
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" alt="Line drawing of the internal structure of the right wing: ribs with lightening holes, spars and stringers" loading="lazy"></a></div>
-                <figcaption><b>Fig. 18</b>The internal structure of the wing alone: ribs with lightening holes running across, and spars and stringers running along the span.</figcaption>
+                <figcaption><b>Fig. 17</b>The internal structure of the wing alone: ribs with lightening holes running across, and spars and stringers running along the span.</figcaption>
             </figure>
 
             <figure>
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" alt="The cross-section of the aerofoil with six lightening holes and the front and rear spars drawn as vertical lines with caps" loading="lazy"></a></div>
-                <figcaption><b>Fig. 19</b>The aerofoil section with its two spars (vertical webs with caps) and lightening holes that shrink towards the trailing edge.</figcaption>
+                <figcaption><b>Fig. 18</b>The aerofoil section with its two spars (vertical webs with caps) and lightening holes that shrink towards the trailing edge.</figcaption>
             </figure>
 
             <h3>Making it</h3>
@@ -228,22 +245,22 @@
 
             <figure class="narrow">
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-hand-vs-vacuum.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-hand-vs-vacuum.png" alt="A stress against strain graph for two vacuum bag moulded specimens and two hand lay-up specimens, the vacuum bag specimens reaching higher stress" loading="lazy"></a></div>
-                <figcaption><b>Fig. 20</b>Hand lay-up against vacuum-bag moulding: stress against strain for two specimens of each. The vacuum-bagged specimens carry more stress.</figcaption>
+                <figcaption><b>Fig. 19</b>Hand lay-up against vacuum-bag moulding: stress against strain for two specimens of each. The vacuum-bagged specimens carry more stress.</figcaption>
             </figure>
 
             <figure class="narrow">
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-heat-treatment.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-heat-treatment.png" alt="A graph of tensile modulus and strength against heat-treatment temperature, the modulus rising steadily with temperature while the strength peaks near 1500 degrees" loading="lazy"></a></div>
-                <figcaption><b>Fig. 21</b>How heat treatment changes carbon fibre: the modulus rises with temperature while the strength peaks and then falls.</figcaption>
+                <figcaption><b>Fig. 20</b>How heat treatment changes carbon fibre: the modulus rises with temperature while the strength peaks and then falls.</figcaption>
             </figure>
 
             <figure class="wide">
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-manufacturing.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-manufacturing.png" alt="A row of icons showing the manufacturing process: a computer simulation, material preparation and vacuum bagging, curing, cooling, removing excess material, inspection, surface treatment and finishing, and assembly of panels" loading="lazy"></a></div>
-                <figcaption><b>Fig. 22</b>The manufacturing process summarised, from CAD to assembled panels.</figcaption>
+                <figcaption><b>Fig. 21</b>The manufacturing process summarised, from CAD to assembled panels.</figcaption>
             </figure>
 
             <figure class="narrow">
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" alt="Diagram of the anatomy of a carbon-fibre laminate showing an upper mould, carbon fibre layers, natural fibre layers, releasing gel, epoxy material and a lower mould" loading="lazy"></a></div>
-                <figcaption><b>Fig. 23</b>The anatomy of a laminate (the report&rsquo;s Figure 71): fibre layers between a lower and an upper mould, with releasing gel and epoxy. A generic illustration, not this wing&rsquo;s layup.</figcaption>
+                <figcaption><b>Fig. 22</b>The anatomy of a laminate (the report&rsquo;s Figure 71): fibre layers between a lower and an upper mould, with releasing gel and epoxy. A generic illustration, not this wing&rsquo;s layup.</figcaption>
             </figure>
 
             <h2><span class="no">Part four</span>Is it stable?</h2>
@@ -261,7 +278,7 @@
 
             <figure>
                 <div class="plate"><canvas id="stab-canvas" style="height:clamp(360px, 52vw, 560px)" role="img" aria-label="An animation: the grid of each of five graphs forms, then the response of the phugoid, short period, Dutch roll, roll subsidence and spiral modes is traced, and a sixth panel shows their roots on the complex plane"></canvas></div>
-                <figcaption><b>Fig. 24</b>The five modes of the modified aircraft, worked out from the report&rsquo;s characteristic equations. Dashed lines are the envelopes that the oscillations decay inside. <button class="replay" id="stab-replay" type="button">Replay</button> These are the free responses of each mode, normalised, and not the report&rsquo;s own response plots (its Figures 37 to 39).</figcaption>
+                <figcaption><b>Fig. 23</b>The five modes of the modified aircraft, worked out from the report&rsquo;s characteristic equations. Dashed lines are the envelopes that the oscillations decay inside. <button class="replay" id="stab-replay" type="button">Replay</button> These are the free responses of each mode, normalised, and not the report&rsquo;s own response plots (its Figures 37 to 39).</figcaption>
             </figure>
 
             <table id="mode-table"><caption>The modes, with the natural frequency, damping ratio, period and time to halve (or double) worked out from the characteristic equations above.</caption></table>
@@ -284,7 +301,7 @@
 
             <figure class="narrow">
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-elevator-types.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-elevator-types.png" alt="Two sketches of a tail with a hinged elevator and of a tail with an all-moving stabiliser" loading="lazy"></a></div>
-                <figcaption><b>Fig. 25</b>The two tail concepts compared: a fixed stabiliser with an elevator, and an all-moving stabiliser.</figcaption>
+                <figcaption><b>Fig. 24</b>The two tail concepts compared: a fixed stabiliser with an elevator, and an all-moving stabiliser.</figcaption>
             </figure>
 
             <p>The elevator was then sized against the FAR 23 stick-force limits: no more than 3 kg of force for sustained flight and 12 to 15 kg for short periods, such as a high-g turn. Trim curves from 1 to 4 g, at 156.55 m/s and 9,048 ft, showed that the worst case needs &minus;2.89&deg; of elevator at 4 g. Of four elevator sizes tried, the smallest (0.268 m&sup2;) gave the lowest stick force, 12.14 kg for that manoeuvre, and trimming it to about 0.25 m&sup2; brought the figure to 11.16 kg, inside the limit.</p>
@@ -307,7 +324,7 @@
 
             <figure>
                 <div class="plate"><canvas data-fig="weights" style="height:clamp(300px, 38vw, 420px)" role="img" aria-label="Horizontal bar chart of the mass of each component of the modified aircraft"></canvas></div>
-                <figcaption><b>Fig. 26</b>The mass of the modified aircraft by component (the report&rsquo;s Table 18). The fireproof casing and coolant, the battery cells, the fuselage and the wing make up most of the 1,244.9 kg.</figcaption>
+                <figcaption><b>Fig. 25</b>The mass of the modified aircraft by component (the report&rsquo;s Table 18). The fireproof casing and coolant, the battery cells, the fuselage and the wing make up most of the 1,244.9 kg.</figcaption>
             </figure>
 
             <table>

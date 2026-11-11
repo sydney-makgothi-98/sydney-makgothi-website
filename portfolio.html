@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gopolang Makgothi | Aerospace Engineer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- The Tailwind utility classes used here are compiled once into this file (13 KB, 3 KB gzipped). The CDN script it replaces was a 350 KB runtime compiler that blocked the first paint. Rebuild with: npx tailwindcss -i in.css -o "Syd Website Assets/Utility/portfolio-tailwind.css" --content portfolio.html --minify -->
+    <link rel="preload" as="image" href="./Images/Scroll%20Linked/SR71.webp" type="image/webp" fetchpriority="high">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -648,6 +649,8 @@
         .menu-subitem.current { background: rgba(0, 113, 227, 0.28); border-color: rgba(96, 165, 250, 0.9); box-shadow: 0 0 14px rgba(0, 113, 227, 0.45); transform: translateX(6px); color: #fff; }
         .menu-option.expanded + .menu-suboptions { gap: clamp(0.3rem, 0.6vh, 0.5rem); }
     </style>
+    <!-- Last in the head on purpose: the Tailwind CDN injected its styles after the page's own, so its utilities (sticky, relative...) won ties. The same order is kept here. -->
+    <link rel="stylesheet" href="./Syd%20Website%20Assets/Utility/portfolio-tailwind.css">
 </head>
 <body class="bg-black">
 
@@ -684,7 +687,7 @@
     <!-- Hero Section -->
     <section id="home" class="relative w-full h-screen overflow-hidden pt-20 flex items-center justify-center">
         <div class="absolute inset-0">
-            <img src="./Images/Scroll Linked/SR71.webp" alt="SR-71 Blackbird" class="w-full h-full object-cover">
+            <img src="./Images/Scroll Linked/SR71.webp" alt="SR-71 Blackbird" class="w-full h-full object-cover" fetchpriority="high" decoding="async">
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent"></div>
             <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20"></div>
         </div>
@@ -1211,6 +1214,21 @@
 
         updateImage(1);
         updateWheelSelection(0);
+
+        // Warm the scroll-linked frames after the hero has loaded: a few at a time, in order, only when the browser is idle. Scrolling then never waits on the network.
+        (function warmFrames() {
+            let next = 1, active = 0; const MAX = 3, cache = [];
+            const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, {timeout: 1000}) : setTimeout(fn, 50));
+            const pump = () => {
+                while (active < MAX && next <= TOTAL_IMAGES) {
+                    const img = new Image(); img.decoding = 'async'; img.src = `${IMAGE_PATH}${getImageFileName(next++)}`; cache.push(img); active++;
+                    const done = () => { active--; idle(pump); };
+                    img.onload = img.onerror = done;
+                }
+            };
+            const go = () => (window.requestIdleCallback ? requestIdleCallback(pump, {timeout: 2500}) : setTimeout(pump, 1500));
+            if (document.readyState === 'complete') go(); else addEventListener('load', go, {once: true});
+        })();
 
         // Scrolling moves through the menu: one stop for each category and one for each of its sub tabs, in the order they are listed
         const subLists = [...document.querySelectorAll('.menu-suboptions')];

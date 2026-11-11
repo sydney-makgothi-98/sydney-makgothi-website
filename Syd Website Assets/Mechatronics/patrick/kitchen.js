@@ -50,19 +50,26 @@ key.castShadow = true; Object.assign(key.shadow.camera, {left: -0.7, right: 0.7,
 scene.add(key, key.target);
 const fill = new THREE.DirectionalLight('#9db7ff', 0.6); fill.position.set(-1, 0.8, 1); scene.add(fill);
 scene.add(new THREE.HemisphereLight('#aab8ff', '#1a1530', 0.5));
-const rt = new THREE.WebGLRenderTarget(4, 4, {type: THREE.HalfFloatType, samples: 4});
-const composer = new EffectComposer(renderer, rt);
-composer.addPass(new RenderPass(scene, camera));
-const gtao = new GTAOPass(scene, camera, 4, 4);
-gtao.output = GTAOPass.OUTPUT.Default;
-gtao.updateGtaoMaterial({radius: 0.035, distanceExponent: 1.2, thickness: 0.6, scale: 1.2, samples: 14, distanceFallOff: 1, screenSpaceRadius: false});
-gtao.updatePdMaterial({lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 5, radiusExponent: 1, rings: 2, samples: 12});
-composer.addPass(gtao); composer.addPass(new OutputPass());
-let useComposer = true;
+// The post-processing chain (a multisampled half-float target, ambient occlusion, output pass) is expensive to create and to compile, so it is only
+// built when a tier actually uses it. Most visitors never need it, and the page starts without it.
+let composer = null, gtao = null, useComposer = false;
+function ensureComposer() {
+  if (composer) return;
+  const rt = new THREE.WebGLRenderTarget(4, 4, {type: THREE.HalfFloatType, samples: 4});
+  composer = new EffectComposer(renderer, rt);
+  composer.addPass(new RenderPass(scene, camera));
+  gtao = new GTAOPass(scene, camera, 4, 4);
+  gtao.output = GTAOPass.OUTPUT.Default;
+  gtao.updateGtaoMaterial({radius: 0.035, distanceExponent: 1.2, thickness: 0.6, scale: 1.2, samples: 14, distanceFallOff: 1, screenSpaceRadius: false});
+  gtao.updatePdMaterial({lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 5, radiusExponent: 1, rings: 2, samples: 12});
+  composer.addPass(gtao); composer.addPass(new OutputPass());
+  composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(stageEl.clientWidth, stageEl.clientHeight);
+}
 
 /* --------------------------------------------------------------------------------------------- the scene -------- */
 const kitchen = buildKitchen(scene);
-const robot = buildRobot({lite: startTier() >= 1}); scene.add(robot.root);
+const FORCED = new URLSearchParams(location.search).get('tier');
+const robot = buildRobot({lite: FORCED === null || FORCED === '' ? true : startTier() >= 1}); scene.add(robot.root);
 const itemMesh = ITEMS.map((it, i) => { const g = buildItem(it.id); scene.add(g); return g; });
 // the sonar beam in 3D: a translucent wedge out to whatever the sensor sees, and a dot where it lands
 const sonarViz = new THREE.Group(); robot.root.add(sonarViz); sonarViz.position.set(M.R.sensorX + 0.008, M.R.sensorY, 0);
@@ -151,7 +158,10 @@ function startTier() {
   if (cores <= 4 || mem <= 4 || big) return 1;
   return 0;
 }
-let tier = startTier();
+// Start at tier 1 (no ambient occlusion, light geometry) so the first frames arrive quickly on every device. A device that would have started
+// at tier 0 is promoted to it after a few seconds of holding its frame rate (see loop); one that struggles never pays for it.
+let tier = (FORCED === null || FORCED === '') ? Math.max(1, startTier()) : startTier();
+let canPromote = (FORCED === null || FORCED === '') && startTier() === 0, promo = {age: 0, sum: 0, n: 0};
 let VP = {W: 1, H: 1};
 const keep = {introR: 0, introB: 0, listR: 230};
 function measure() {                                                // layout reads happen here, on resize, never once per frame
@@ -160,7 +170,7 @@ function measure() {                                                // layout re
 }
 function applyTier() {
   const t = TIERS[tier];
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, t.pr)); useComposer = t.post > 0; gtao.enabled = t.post > 1;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, t.pr)); if (t.post > 0) ensureComposer(); useComposer = t.post > 0 && !!composer; if (gtao) gtao.enabled = t.post > 1;
   key.castShadow = t.shadow > 0; renderer.shadowMap.autoUpdate = t.shEvery === 1;
   if (t.shadow) { key.shadow.mapSize.set(t.shadow, t.shadow); if (key.shadow.map) { key.shadow.map.dispose(); key.shadow.map = null; } }
   stageEl.classList.toggle('lite', t.lite);
@@ -169,7 +179,7 @@ function applyTier() {
 }
 function resize() {
   const w = stageEl.clientWidth, h = stageEl.clientHeight;
-  renderer.setSize(w, h, false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h);
+  renderer.setSize(w, h, false); if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); }
   camera.aspect = w / h; camera.fov = w / h < 0.9 ? 58 : 36; camera.updateProjectionMatrix();
   measure();
 }
@@ -472,11 +482,15 @@ function loop(now) {
   (useComposer ? composer.render() : renderer.render(scene, camera));
   BUBBLES.forEach((b) => { if (frameN % (b.hover ? 2 : T.charts) === b.id.length % 2 || frameN < 4) drawBubbleMini(b, now); });
   if (modal.open && frameN % 2 === 0) drawModal(now);
+  if (canPromote && tier === 1) {                                  // step up once, if the first three seconds ran comfortably above 50 fps
+    promo.age += dt;
+    if (promo.age > 3) { promo.sum += dt; promo.n++; if (promo.n >= 45) { if (promo.sum / promo.n < 0.0185) { tier = 0; applyTier(); perf.sum = perf.n = perf.slow = 0; perf.age = -1.5; } canPromote = false; } }
+  }
   if (tier < TIERS.length - 1) {                                    // step the quality down if the page cannot hold about 40 fps
     perf.age += dt;
     if (perf.age > 1.0) {
       perf.sum += dt; perf.n++;
-      if (perf.n >= 15) { const avg = perf.sum / perf.n; perf.slow = avg > 0.045 ? 2 : avg > 0.027 ? perf.slow + 1 : 0; perf.sum = perf.n = 0; if (perf.slow >= 2) { tier++; applyTier(); perf.slow = 0; perf.age = 0; } }
+      if (perf.n >= 15) { const avg = perf.sum / perf.n; perf.slow = avg > 0.045 ? 2 : avg > 0.027 ? perf.slow + 1 : 0; perf.sum = perf.n = 0; if (perf.slow >= 2) { tier++; canPromote = false; applyTier(); perf.slow = 0; perf.age = 0; } }
     }
   }
   requestAnimationFrame(loop);
@@ -488,4 +502,5 @@ function boot() {
   ready.catch(() => {}).finally(() => { last = performance.now(); requestAnimationFrame(loop); });
   window.__KITCHEN = {tier: () => tier, setTier: (n) => { tier = n; applyTier(); }, select, setLab, sim, S, D, rig, want, robot, scene, camera, renderer, setCam, act, openModal, closeModal, modal, itemMesh, BUBBLES};
 }
-document.fonts?.ready?.then(boot, boot) ?? boot();
+boot();
+document.fonts?.ready?.then(() => { try { measure(); } catch (e) { /* layout will be measured on the next resize */ } });
