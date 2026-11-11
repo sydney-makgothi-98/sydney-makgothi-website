@@ -35,6 +35,37 @@
         <div class="ph">Cover video goes here: Syd Website Assets/Showcase/pump/Cover Video.mp4</div>
         <div class="cv-in"><span class="eyebrow">03 &mdash; TURBOMACHINERY &middot; CENTRIFUGAL PUMP</span><h1>Water, <span>thrown outward.</span></h1><p>An irrigation pump for the faculty building, designed with boundary layer theory, blade design and material selection. Below, take it apart and change it while its curves update.</p><a class="cue" href="#stage">&darr; OPEN THE TEARDOWN</a></div>
     </header>
+    <main class="article" style="padding-bottom:3rem">
+        <section class="sec">
+            <span class="tag">01 &middot; THE IDEA</span>
+            <h2>A pump adds angular momentum</h2>
+            <p>Water enters the impeller's eye along the shaft and is thrown outwards by the blades. Between the eye and the rim its angular momentum rises from almost nothing to <b>r&#8322;c<sub>u2</sub></b>, and the torque that did it is the motor's. Euler's turbomachinery equation turns that statement into a head:</p>
+            <div class="equation">$$H_{th}=\frac{u_2\,c_{u2}}{g},\qquad u_2=\omega r_2,\qquad c_{u2}=\sigma u_2-\frac{c_{m2}}{\tan\beta_2},\qquad c_{m2}=\frac{Q}{\pi D_2 b_2\,\tau_2}$$</div>
+            <p>The first term is the tip speed, which is why head goes with the <b>square</b> of speed. The second is the cost of moving more water: more flow means a larger meridional velocity <b>c<sub>m2</sub></b> and, for a backward-curved blade (small &beta;<sub>2</sub>), a smaller whirl velocity, so the head falls as flow rises. <b>&sigma;</b> is the slip factor: the water in the channel does not follow the blade perfectly, so it leaves with less whirl than the blade geometry promises. This pump uses Wiesner's correlation, <span style="font-family:var(--mono)">&sigma; = 1 &minus; &radic;sin&beta;<sub>2</sub> / z<sup>0.7</sup></span>.</p>
+            <div class="stat-row" id="ptable-wrap">
+                <table class="spec" id="ptable"><tbody>
+                    <tr><td>Duty point</td><td><b id="t-op"></b> where the pump curve crosses the system curve</td></tr>
+                    <tr><td>Best efficiency</td><td><b id="t-bep"></b></td></tr>
+                    <tr><td>Shut-off head</td><td><b id="t-shut"></b> with the valve closed</td></tr>
+                    <tr><td>Tip speed</td><td><b id="t-tip"></b></td></tr>
+                    <tr><td>Slip factor</td><td><b id="t-sig"></b></td></tr>
+                    <tr><td>Specific speed</td><td><b id="t-ws"></b> (dimensionless, \(\omega_s=\omega\sqrt{Q}/(gH)^{3/4}\)): below about 1 the pump is radial</td></tr>
+                    <tr><td>NPSH</td><td><b id="t-npsh"></b></td></tr>
+                    <tr><td>Blade Reynolds no.</td><td><b id="t-re"></b> along the blade surface</td></tr>
+                    <tr><td>Affinity laws</td><td><b id="t-aff"></b></td></tr>
+                </tbody></table>
+            </div>
+        </section>
+
+        <section class="sec">
+            <span class="tag">02 &middot; PUMP AND SYSTEM</span>
+            <h2>Where the pump actually runs</h2>
+            <p>A pump has no flow of its own. It runs where its curve meets the <b>system curve</b>: the static lift to the roof tank plus the friction in the irrigation main, which grows with the square of the flow, <span style="font-family:var(--mono)">H<sub>sys</sub> = H<sub>static</sub> + K Q&sup2;</span>. Close the valve and K grows, the crossing slides up and to the left, efficiency falls: the pump is being throttled. The best efficiency point is where the water meets the blades most nearly without shock, and a pump left far from it suffers radial loads, recirculation and early bearing failure. Try the valve slider.</p>
+            <div class="equation">$$H(Q)=H_{th}-k_fQ^2-k_s\,(Q-Q_{sl})^2,\qquad \eta=\frac{\rho g Q H}{P_{shaft}}$$</div>
+            <p>The first loss is friction, rising with the square of the flow. The second is <b>incidence loss</b>, which is zero at the shockless flow Q<sub>sl</sub> where the water arrives exactly along the blade's leading edge and grows either side of it. Their sum is why the efficiency curve is a hill.</p>
+        </section>
+    </main>
+
     <section class="stage" id="stage" aria-label="Centrifugal pump teardown">
         <div class="viewport"><canvas id="gl" role="img"></canvas><div class="labels" id="labels"></div></div>
         <div class="s-title"><div class="eyebrow">03 &mdash; TURBOMACHINERY &middot; IRRIGATION PUMP</div><h1>Centrifugal pump</h1><p>Designed to irrigate across the faculty building. Drag to orbit; change the impeller and watch every curve follow.</p></div>
@@ -64,36 +95,7 @@
         <div class="modal" id="modal"><h3></h3><button class="btn x">Close</button><canvas></canvas></div>
     </section>
 
-    <main class="article">
-        <section class="sec">
-            <span class="tag">01 &middot; THE IDEA</span>
-            <h2>A pump adds angular momentum</h2>
-            <p>Water enters the impeller's eye along the shaft and is thrown outwards by the blades. Between the eye and the rim its angular momentum rises from almost nothing to <b>r&#8322;c<sub>u2</sub></b>, and the torque that did it is the motor's. Euler's turbomachinery equation turns that statement into a head:</p>
-            <div class="equation">$$H_{th}=\frac{u_2\,c_{u2}}{g},\qquad u_2=\omega r_2,\qquad c_{u2}=\sigma u_2-\frac{c_{m2}}{\tan\beta_2},\qquad c_{m2}=\frac{Q}{\pi D_2 b_2\,\tau_2}$$</div>
-            <p>The first term is the tip speed, which is why head goes with the <b>square</b> of speed. The second is the cost of moving more water: more flow means a larger meridional velocity <b>c<sub>m2</sub></b> and, for a backward-curved blade (small &beta;<sub>2</sub>), a smaller whirl velocity, so the head falls as flow rises. <b>&sigma;</b> is the slip factor: the water in the channel does not follow the blade perfectly, so it leaves with less whirl than the blade geometry promises. This pump uses Wiesner's correlation, <span style="font-family:var(--mono)">&sigma; = 1 &minus; &radic;sin&beta;<sub>2</sub> / z<sup>0.7</sup></span>.</p>
-            <div class="stat-row" id="ptable-wrap">
-                <table class="spec" id="ptable"><tbody>
-                    <tr><td>Duty point</td><td><b id="t-op"></b> where the pump curve crosses the system curve</td></tr>
-                    <tr><td>Best efficiency</td><td><b id="t-bep"></b></td></tr>
-                    <tr><td>Shut-off head</td><td><b id="t-shut"></b> with the valve closed</td></tr>
-                    <tr><td>Tip speed</td><td><b id="t-tip"></b></td></tr>
-                    <tr><td>Slip factor</td><td><b id="t-sig"></b></td></tr>
-                    <tr><td>Specific speed</td><td><b id="t-ws"></b> (dimensionless, \(\omega_s=\omega\sqrt{Q}/(gH)^{3/4}\)): below about 1 the pump is radial</td></tr>
-                    <tr><td>NPSH</td><td><b id="t-npsh"></b></td></tr>
-                    <tr><td>Blade Reynolds no.</td><td><b id="t-re"></b> along the blade surface</td></tr>
-                    <tr><td>Affinity laws</td><td><b id="t-aff"></b></td></tr>
-                </tbody></table>
-            </div>
-        </section>
-
-        <section class="sec">
-            <span class="tag">02 &middot; PUMP AND SYSTEM</span>
-            <h2>Where the pump actually runs</h2>
-            <p>A pump has no flow of its own. It runs where its curve meets the <b>system curve</b>: the static lift to the roof tank plus the friction in the irrigation main, which grows with the square of the flow, <span style="font-family:var(--mono)">H<sub>sys</sub> = H<sub>static</sub> + K Q&sup2;</span>. Close the valve and K grows, the crossing slides up and to the left, efficiency falls: the pump is being throttled. The best efficiency point is where the water meets the blades most nearly without shock, and a pump left far from it suffers radial loads, recirculation and early bearing failure. Try the valve slider.</p>
-            <div class="equation">$$H(Q)=H_{th}-k_fQ^2-k_s\,(Q-Q_{sl})^2,\qquad \eta=\frac{\rho g Q H}{P_{shaft}}$$</div>
-            <p>The first loss is friction, rising with the square of the flow. The second is <b>incidence loss</b>, which is zero at the shockless flow Q<sub>sl</sub> where the water arrives exactly along the blade's leading edge and grows either side of it. Their sum is why the efficiency curve is a hill.</p>
-        </section>
-
+    <main class="article" style="padding-top:3rem">
         <section class="sec">
             <span class="tag">03 &middot; BOUNDARY LAYER THEORY</span>
             <h2>What the blade does to the water next to it</h2>
