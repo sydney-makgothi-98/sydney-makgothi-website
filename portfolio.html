@@ -994,7 +994,7 @@
                 title: 'Propulsion',
                 desc: 'Jet Engines, Control Systems, Orbital Mechanics',
                 image: './Images/Game%20Options/Propulsion.jpg',
-                branches: ['Engine Design', 'Turbomachinery', 'Combustion Analysis', 'Parachute Design For Shockwave Jet Truck [Project 3]'],
+                branches: ['Engine Design', 'Turbomachinery', 'Combustion Analysis', 'Parachute Design For Shockwave Jet Truck'],
                 branchLinks: { 'Engine Design': 'propulsion.html', 'Turbomachinery': 'pump.html', 'Combustion Analysis': 'engine.html', 'Parachute Design For Shockwave Jet Truck [Project 3]': 'parachute.html' }
             },
             {
@@ -1179,6 +1179,7 @@
                     subitem.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        try { sessionStorage.setItem('wheelIndex', String(index)); } catch (err) { /* private windows may refuse: the page still works */ }
                         window.location.href = link;
                     });
                 }
@@ -1197,6 +1198,20 @@
 
         updateImage(1);
         updateWheelSelection(0);
+
+        // Coming back from a sub page ("Back to Portfolio" links to #expertise-wheel): land on the selection screen with the category you left from open
+        try {
+            if (location.hash === '#expertise-wheel') {
+                const wi = parseInt(sessionStorage.getItem('wheelIndex'), 10);
+                if (wi >= 0 && wi < WHEEL_OPTIONS.length) {
+                    const all = document.querySelectorAll('.menu-option');
+                    all.forEach((m) => m.classList.remove('active', 'expanded'));
+                    all[wi].classList.add('active', 'expanded');
+                    updateWheelSelection(wi);
+                }
+                wheelSection.scrollIntoView();
+            }
+        } catch (err) { /* nothing to restore */ }
     </script>
 
 </body>

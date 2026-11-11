@@ -7,7 +7,8 @@
 // no compressibility, no 3D) and not measured data from the truck's engines. The readouts and the picture come from the same state function, so they agree.
 import {fit} from '../chart.js';
 
-const W = 1000, H = 660, T_END = 36, HOLD = 3;
+// the schedule below was written for a 32 s start; it is stretched or squeezed so that FULL THRUST is reached at T_FULL seconds, to match the footage beside it
+const W = 1000, H = 660, T_END = 15, T_FULL = 12, TW = T_FULL / 32;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -24,9 +25,9 @@ function rotor(t) {
 }
 const T_FUEL = 7.0, T_LIGHT = 7.8;
 const flame = (t, r) => (t < T_LIGHT ? 0 : clamp(sm(T_LIGHT, T_LIGHT + 0.8, t) * (0.10 + 0.52 * Math.pow(r, 1.1) + 0.30 * Math.exp(-(t - 8.2) / 2.5)), 0, 0.82));
-const state = (t) => { const r = rotor(t), f = flame(t, r); return {r, f, egt: 15 + 1000 * (0.3 * Math.pow(r, 2.2) * 0.7 + f * 0.7), thrust: f > 0 ? 3000 * Math.pow(r, 3.2) : 0, pr: 1 + 3.9 * r * r, vex: f > 0 ? 30 + 570 * Math.pow(r, 1.4) : 8 * r}; };
+const state = (tt) => { const u = tt / TW, r = rotor(u), f = flame(u, r); return {r, f, egt: 15 + 1000 * (0.3 * Math.pow(r, 2.2) * 0.7 + f * 0.7), thrust: f > 0 ? 3000 * Math.pow(r, 3.2) : 0, pr: 1 + 3.9 * r * r, vex: f > 0 ? 30 + 570 * Math.pow(r, 1.4) : 8 * r}; };
 const PHASES = [[0, 'Cold, still and ready.'], [1, 'The starter spins the compressor.'], [T_FUEL, 'Fuel flows and the igniter fires.'], [T_LIGHT + 0.6, 'Light-off: the flame takes hold, and the exhaust runs briefly hot.'], [14, 'The turbine takes over; the starter drops out.'], [18, 'Acceleration to idle.'], [23, 'Throttle up: the gas path fills with fire.'], [32, 'Full power. Three of these push the truck.']];
-const phase = (t) => PHASES.filter((p) => t >= p[0]).pop()[1];
+const phase = (t) => PHASES.filter((p) => t / TW >= p[0]).pop()[1];
 const HIST = Array.from({length: T_END * 10 + 1}, (_, i) => { const s = state(i / 10); return {egt: s.egt, r: s.r}; });
 
 /* geometry of the cutaway: half-height of the casing and of the hub along the axis (design units), one half drawn and mirrored */
@@ -140,23 +141,29 @@ function makeSim() {
   return {step, render, reset, T, axial, regime};
 }
 
-export function initJet(canvas) {
+export function initJet(canvas, video) {
   if (!canvas) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, sim = makeSim();
+  let t = reduce ? 13 : 0, last = 0, visible = true, phaseAng = 0, shaft = 0, running = false, started = false;
   const axS = new Float32Array(NX); let rgA = null, rgB = null;
-  let t = reduce ? 31 : 0, hold = 0, last = 0, visible = true, phaseAng = 0, shaft = 0, running = false;
+  // one cycle of the card is as long as the footage, so that the two start together, the simulation reaches full thrust at T_FULL, and both restart together
+  const cyc = () => (video && isFinite(video.duration) && video.duration > T_FULL + 0.5 ? video.duration : T_END);
+  const begin = () => { started = true; t = 0; sim.reset(); if (video && video.readyState >= 2 && !reduce) { try { video.pause(); video.currentTime = 0; const q = video.play(); if (q && q.catch) q.catch(() => {}); } catch (e) { /* the clip is optional */ } } };
   const start = () => { if (!running) { running = true; last = 0; requestAnimationFrame(tick); } };
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); }).observe(canvas);
+  if (video) { video.loop = false; video.removeAttribute('autoplay'); video.pause(); }
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) { start(); if (!reduce) begin(); } else if (video) video.pause(); }).observe(canvas);
+  if (video && !reduce) { video.addEventListener('canplay', () => { if (!started && visible) begin(); }, {once: true}); setTimeout(() => { if (!started && visible) begin(); }, 1500); }
   if (reduce) { const s = state(t); for (let k = 0; k < 240; k++) sim.step(s, s.f); }
 
   function draw() {
     const {ctx, w, h} = fit(canvas), s = w / W; ctx.save(); ctx.scale(s, s);
-    const st = state(t), now = performance.now() / 1000;
+    const st = state(t), now = performance.now() / 1000, u = t / TW;
     ctx.fillStyle = '#08080f'; ctx.fillRect(0, 0, W, h / s);
     // header, timeline, title
     ctx.font = `600 10px ${MONO}`; ctx.fillStyle = '#e9e7ff'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillText('ILLUSTRATIVE · NOT MEASURED DATA', 40, 34); ctx.textAlign = 'right'; ctx.fillText('SIMULATION', 960, 34);
     ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(40, 54); ctx.lineTo(960, 54); ctx.stroke();
-    for (let k = 0; k <= 36; k += 2) { ctx.beginPath(); ctx.moveTo(40 + 920 * k / T_END, 51); ctx.lineTo(40 + 920 * k / T_END, 57); ctx.stroke(); }
+    for (let k = 0; k <= T_END; k += 1) { ctx.beginPath(); ctx.moveTo(40 + 920 * k / T_END, 51); ctx.lineTo(40 + 920 * k / T_END, k % 5 === 0 ? 60 : 57); ctx.stroke(); }
+    ctx.font = `600 8.5px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.75)'; ctx.textAlign = 'center'; ctx.fillText('FULL THRUST', 40 + 920 * T_FULL / T_END, 70); ctx.beginPath(); ctx.strokeStyle = 'rgba(255,225,80,0.9)'; ctx.moveTo(40 + 920 * T_FULL / T_END, 47); ctx.lineTo(40 + 920 * T_FULL / T_END, 62); ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(40 + 920 * t / T_END, 46); ctx.lineTo(40 + 920 * t / T_END, 62); ctx.stroke();
     ctx.textAlign = 'left'; ctx.fillStyle = '#f4f2ff'; ctx.font = `800 36px ${SERIF}`; ctx.fillText('How a jet truck engine starts', 40, 96);
     ctx.fillStyle = 'rgba(244,242,255,0.7)'; ctx.font = `italic 400 19px ${BODY}`; ctx.fillText('a simulated fluid cutaway of one turbojet, then the numbers it produces', 40, 126);
@@ -165,7 +172,7 @@ export function initJet(canvas) {
     ctx.save(); ctx.translate(40, AXIS); ctx.scale(K, K); ctx.translate(-40, -AXIS);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(sim.render(), DX0, DY0, NX * CS, NY * CS);
     ctx.save(); ctx.translate(0, AXIS);
-    const cy = 0, burst = Math.exp(-Math.max(0, t - T_LIGHT) * 1.6) * (t >= T_LIGHT ? 1 : 0);
+    const cy = 0, burst = Math.exp(-Math.max(0, u - T_LIGHT) * 1.6) * (u >= T_LIGHT ? 1 : 0);
     // flame glow in the combustor
     if (st.f > 0.01 || burst > 0.01) {
       const fl = 0.75 + 0.25 * Math.sin(now * 23) * Math.sin(now * 7.3); ctx.globalCompositeOperation = 'lighter';
@@ -185,8 +192,8 @@ export function initJet(canvas) {
     // component names
     ctx.font = `500 9px ${MONO}`; ctx.fillStyle = 'rgba(244,242,255,0.65)'; ctx.textAlign = 'center';
     [['INLET', 100], ['COMPRESSOR', 270], ['COMBUSTOR', 480], ['TURBINE', 650], ['NOZZLE', 760]].forEach(([n, x]) => ctx.fillText(n, mx(x), AXIS + 100 * K + 18));
-    if (t >= T_FUEL && t < T_LIGHT + 1.2) { ctx.font = `700 10px ${MONO}`; ctx.fillStyle = '#ffe28a'; ctx.fillText(t < T_LIGHT ? 'FUEL ON' : 'IGNITER FIRES', mx(480), AXIS - 84 * K - 10); }
-    if (t > 1 && t < 17) { ctx.font = `500 9px ${MONO}`; ctx.fillStyle = 'rgba(200,220,255,0.8)'; ctx.fillText(t < 14 ? 'STARTER DRIVING' : 'STARTER CUTS OUT', mx(270), AXIS - 84 * K - 10); }
+    if (u >= T_FUEL && u < T_LIGHT + 1.2) { ctx.font = `700 10px ${MONO}`; ctx.fillStyle = '#ffe28a'; ctx.fillText(u < T_LIGHT ? 'FUEL ON' : 'IGNITER FIRES', mx(480), AXIS - 84 * K - 10); }
+    if (u > 1 && u < 17) { ctx.font = `500 9px ${MONO}`; ctx.fillStyle = 'rgba(200,220,255,0.8)'; ctx.fillText(u < 14 ? 'STARTER DRIVING' : 'STARTER CUTS OUT', mx(270), AXIS - 84 * K - 10); }
 
     // the flow regime along the jet, read from the sideways motion in its core, and the gas speed along the whole path
     { const ax = sim.axial(), Ub = 78 * Math.pow(st.r, 1.3) * (st.f > 0 ? 1 : 0.4), g = sim.regime(Ub), cx = (x) => mx(x), x0 = cx(X1 + 8), x1 = cx(DX0 + NX * CS);
@@ -220,8 +227,10 @@ export function initJet(canvas) {
     if (!visible || document.hidden) { running = false; return; } requestAnimationFrame(tick);
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 0); last = now; phaseAng += dt * (0.5 + 12 * state(t).r);
     if (!reduce) {
-      if (hold > 0) { hold -= dt; if (hold <= 0) { t = 0; sim.reset(); } } else { t += dt; if (t >= T_END) { t = T_END; hold = HOLD; } }
-      const st = state(t), burst = Math.exp(-Math.max(0, t - T_LIGHT) * 1.6) * (t >= T_LIGHT ? 1 : 0); sim.step(st, clamp(st.f + 0.4 * burst, 0, 1));
+      t += dt; if (t >= cyc()) begin();
+      // keep the footage and the card on the same second: only nudge the video if it has drifted
+      if (video && video.readyState >= 2 && !video.paused && Math.abs(video.currentTime - t) > 0.4) { try { video.currentTime = Math.min(t, video.duration || t); } catch (e) { /* ignore */ } }
+      const st = state(t), u = t / TW, burst = Math.exp(-Math.max(0, u - T_LIGHT) * 1.6) * (u >= T_LIGHT ? 1 : 0); sim.step(st, clamp(st.f + 0.4 * burst, 0, 1));
     }
     draw();
   }

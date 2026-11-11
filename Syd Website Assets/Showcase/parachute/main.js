@@ -71,5 +71,5 @@ function frame(now) {
     if (S.t >= S.r.tStop) { S.run = false; S.hold = 4; readouts(); gr.draw(); }
   } else if (S.hold > 0) { S.hold -= dt; if (S.hold <= 0) { S.t = 0; S.run = true; } }
 }
-solve(); readouts(); gr.draw(); requestAnimationFrame(frame); initJet(document.getElementById('jet'));
+solve(); readouts(); gr.draw(); requestAnimationFrame(frame); initJet(document.getElementById('jet'), document.querySelector('#real video'));
 window.__CH = {p, P, S, gr};

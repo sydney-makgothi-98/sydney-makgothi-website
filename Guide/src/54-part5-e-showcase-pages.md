@@ -120,7 +120,7 @@ The jet truck page has an animation of an engine starting. The first version pai
 
 The page's version is in `parachute/jet.js`. This excerpt holds three of its lines of reasoning: how strongly eddies are kept alive (`eps`, which grows with the square of the speed), the measurement of sideways motion that the flow markers use, and the viscosity (`nu`), which falls as the speed rises:
 
-@code Syd Website Assets/Showcase/parachute/jet.js 102-108
+@code Syd Website Assets/Showcase/parachute/jet.js 103-108
 
 A smaller program with the same five steps lives in the book's code folder, so you can run it in two seconds and see the claims checked:
 
@@ -169,6 +169,62 @@ Thin gas alone (row 2) barely helps if the jet is slow. Fast speed alone (row 3)
 It is two-dimensional, so it cannot show the way real eddies stretch and break into smaller ones. It is incompressible, so it has no shock waves. Heating is not computed from burning fuel: it is imposed as a target temperature in the combustor. The viscosity is an eddy-viscosity stand-in, not the air's real viscosity. The page says all this next to the animation, because the whole point of a teaching model is to be honest about where it stops teaching.
 :::
 
+## One Grid, Two Rows: The Simulation Above the Real Thing
+
+The most useful way to check a simulation is to put it next to the real thing. On the jet truck page the simulation is on top and the footage of the engines is directly beneath it, separated by a solid line. They are two elements, a `<canvas>` and a `<video>`, and they live in **one CSS grid with two rows**:
+
+@code parachute.html 22-23
+
+Read the first rule. `grid-template-columns: 100%` makes one column as wide as the container, and `grid-template-rows: auto auto` makes two rows, each as tall as its contents. The canvas is the first child, so it sits in row 1; the video is the second, so it sits in row 2. Each has the same `aspect-ratio`, so the two halves are exactly the same size and a feature on one can be compared by eye with the same place on the other. The solid line is a `border-top` on the second row.
+
+:::why One grid container, not two separate cards
+**What it is.** The simulation and the footage are children of one container that lays them out in rows.
+
+**Why it is done this way.** A comparison is one object, not two. With one container they share a width, a rounded outline and a background, and they can never end up different sizes because someone changed one card's padding.
+
+**Why it matters.** The two halves line up at every window width, on a phone as well as a monitor, with no JavaScript measuring anything.
+
+**What happens if you do not.** Two cards with separate rules drift: one becomes wider, one gets an extra margin, and the comparison stops being fair.
+:::
+
+:::tip An overlay was tried and thrown away
+The first version put both children in the **same** cell (`grid-area: 1 / 1`), so the simulation lay on top of the video. That is a legitimate use of a grid (a grid does not forbid two items sharing a cell; it stacks them in page order), but for this page it was the wrong picture: the real flame showed through the simulated gas and the eye could not tell which was which. Stacking one above the other, with a line between, is easier to read. The lesson is to try the layout before committing to it, and to be ready to change it.
+:::
+
+### Making the two agree in time
+
+An overlay is worthless if the two disagree about when things happen. The start-up schedule in `jet.js` was first written to take 32 seconds. The footage reaches its moment of full thrust at 12. The fix is not to rewrite the schedule but to **stretch time**: every function that reads the schedule is given `t / TW`, where `TW = 12 / 32`, so that "32 seconds of the schedule" becomes "12 seconds of the clock". Change `T_FULL` and the whole sequence, including the captions, the ignition flash and the timeline mark, slides to match.
+
+The script also makes the two restart together. One cycle of the card lasts as long as the video does; when the cycle ends the video is rewound and replayed in the same instant that the simulation resets, and if the video drifts more than 0.4 seconds from the card's clock it is nudged back.
+
+:::warning Check the footage before you build on a number
+The page was first built on the statement that the clip was 12 seconds long. The file was 14.9 seconds, and its opening frames show a truck already at full power, so it is an edited montage and not a single start from rest. Nothing in the code was wrong, but a side-by-side comparison of a start-up needs footage that begins at the start. Measure the file (a video's length is in the `duration` property once its metadata has loaded) before you promise an alignment.
+:::
+
+### Fitting the comparison on one screen
+
+A comparison that has to be scrolled is a comparison that cannot be seen. Two cards, each 1000 by 660 units, stacked, are taller than most laptop screens, so the container's **width** is chosen from the window's **height**: `width: min(100%, max(320px, calc((100svh - 200px) / 1.2225)))`. The number 1.2225 is the height of the pair divided by its width (the card is 0.66 as tall as it is wide, the 16:9 footage is 0.5625, and 0.66 + 0.5625 = 1.2225), and the 200 pixels leave room for the page's own bar and the panel's heading. The result is the widest comparison that is still no taller than the window. `svh` means the "small" viewport height, which ignores a phone's collapsing address bar, so the card does not jump as you scroll.
+
+## Coming Back to Where You Were
+
+A visitor chooses Propulsion on the selection screen, then Combustion Analysis, reads the page, and presses "Back to Portfolio". They expect to land on the selection screen with Propulsion still open. A plain link to `portfolio.html` throws them to the top of the home page instead, a thousand pixels from where they were.
+
+Two small pieces of the page fix it. Every sub page links back with a **fragment**, `portfolio.html#expertise-wheel`, which tells the browser to scroll to the element with that id (the selection section). And the portfolio remembers the choice, because the click that opens a sub page first writes the category's number into **session storage**, a small notebook the browser keeps for one tab:
+
+@code portfolio.html 1202-1214
+
+On load, if the address ends in `#expertise-wheel`, the script reads the notebook, opens that category and scrolls the section into view. Both calls are wrapped in `try`: a private window may refuse to let a page write to storage, and the page must still work. It does, it just opens the first category.
+
+:::why A fragment and session storage, not a back button
+**What it is.** A link that names a place on the page (`#expertise-wheel`) and a one-line note, saved when you leave, of which category you had open.
+
+**Why it is done this way.** The browser's own Back button would also work, but only if the visitor arrived by clicking; a bookmark, a shared link, or a new tab would have nowhere to go back to. A link to a named place works from every route. The note is kept in session storage, not a cookie, because it is only wanted for this visit and should vanish when the tab closes.
+
+**Why it matters.** Every sub page shares the rule, so a visitor can explore several sub pages in a row and always return to the same place.
+
+**What happens if you do not.** Each return is a long scroll back down through the introduction and the image sequence.
+:::
+
 ## Telling the Truth on a Page That Looks Finished
 
 These pages have a lot of numbers and some of them are not measurements. A short rule kept the book and the site honest:
@@ -207,6 +263,8 @@ The jet truck page does this in a paragraph headed "What is and is not real here
 3. Name the three kinds of strobing found on the tower, in one phrase each.
 4. Which two things make a jet go from laminar to turbulent in the engine animation?
 5. What did the black-and-white pages reuse, and why?
+6. How does a CSS grid put a canvas above a video, with the same width, and what makes the dividing line?
+7. What two things make "Back to Portfolio" return to the selection screen with the right category open?
 :::
 
 :::answers
@@ -217,4 +275,6 @@ The jet truck page does this in a paragraph headed "What is and is not real here
 3. Two surfaces on one plane, a back face fighting a front face on the same plane, and a stretched texture on a surface that should be plain.
 4. A higher speed and a thinner gas (a lower viscosity), which together mean a higher Reynolds number.
 5. The chart-drawing code. Only the palette object was swapped, so a fix to a chart fixes both kinds of page.
+6. The container is a grid with one column and two rows (`grid-template-rows: auto auto`); the canvas is the first child, so it is in row 1, and the video is the second, so it is in row 2. Both use the same `aspect-ratio`, and the line is a `border-top` on the video's row.
+7. The link ends in a fragment (`#expertise-wheel`) that scrolls to the selection section, and the click that opened the sub page saved the category's number in session storage, which the portfolio reads on load.
 :::

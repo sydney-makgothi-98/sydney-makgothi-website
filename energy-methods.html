@@ -24,7 +24,7 @@
 </head>
 <body class="fmt">
     <nav class="topnav">
-        <a href="portfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        <a href="portfolio.html#expertise-wheel" class="back-link">&larr; Back to Portfolio</a>
         <div class="nav-status"><span>SECTION</span> 02 &mdash; STRUCTURAL &middot; ENERGY METHODS</div>
     </nav>
     <a class="sib" href="aeroelasticity.html" aria-label="Next: aeroelasticity"><small>NEXT</small><span>AEROELASTICITY</span></a>
@@ -113,10 +113,10 @@
             <p>The Ritz displacement is always <b>stiffer</b> than the truth: restricting the shape to a family of polynomials can only add constraints, so the computed energy is an upper bound on the true minimum and the computed mid-span deflection approaches the exact value from below as terms are added. In the numbers above, N = 1 gives 4.87 mm against an exact 5.40 mm, N = 3 gives 5.42 mm, and N = 5 reproduces it to four digits. A symmetric load excites only symmetric shapes, which is why terms improve the answer in pairs. Bending moments converge more slowly than displacements, because they involve a second derivative of the series; the moment chart is the one to watch when choosing N.</p>
             <p>The method is also honest about the assumptions behind it: the floor strip is one-dimensional, the springs are linear and independent (a Winkler bed), the beam is elastic and slender, and the supports are idealised as pins. The value of the idealisation is that each assumption is explicit and can be relaxed: a varying EI or k only changes the integrals, and a different support condition only changes the basis functions.</p>
             <p>The default values (a 6 m span, a 200 mm reinforced concrete strip with EI = 20 MN&middot;m&sup2;, 15 kN/m of load) are a representative office floor chosen for the demonstration, so that the sliders can move them across a realistic range.</p>
-            <div class="more"><a href="aeroelasticity.html">Aeroelasticity &rarr;</a><a href="aerostructures.html">Aerostructures &rarr;</a><a href="cad-gallery.html">CAD gallery &rarr;</a><a href="portfolio.html">Portfolio</a></div>
+            <div class="more"><a href="aeroelasticity.html">Aeroelasticity &rarr;</a><a href="aerostructures.html">Aerostructures &rarr;</a><a href="cad-gallery.html">CAD gallery &rarr;</a><a href="portfolio.html#expertise-wheel">Portfolio</a></div>
         </section>
     </main>
-    <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html">Back to portfolio</a></footer>
+    <footer class="fine">Gopolang Makgothi &middot; Engineering portfolio &middot; <a href="portfolio.html#expertise-wheel">Back to portfolio</a></footer>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (window.renderMathInElement) renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }], throwOnError: false });
