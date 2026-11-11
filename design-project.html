@@ -26,129 +26,330 @@
         <div class="hero-in">
             <div class="kicker">Senior Design Project &middot; Electric Flight</div>
             <h1>The <em>one percent</em> problem</h1>
-            <p class="deck">The Spirit of Innovation is the fastest all-electric aircraft in the world. The brief was to make it go one percent faster, as cheaply as possible.</p>
-            <div class="byline"><span>By <b>Gopolang Makgothi</b></span><span>From the senior design report</span><span>2025</span></div>
+            <p class="deck">The Spirit of Innovation is the fastest all-electric aircraft in the world. The brief was to make it go one percent faster: a smaller wing, a bigger propeller, and a great deal of checking.</p>
+            <div class="byline"><span>By <b>Gopolang Makgothi</b></span><span>From the senior design report, under the supervision of Mr Michael F Boer</span><span>2025</span></div>
         </div>
     </header>
 
-    <main class="story">
+<main class="story">
         <article class="cols">
-            <p class="dropcap">The Rolls-Royce Spirit of Innovation is a modified Sharp Nemesis NXT racing airframe with three YASA 750R electric motors, a 400 kW power output, and about 6,000 cells in a 750 V battery of 216 kg that stores 90 kWh. It flies at a take-off mass of about 1,250 kg, and it holds the speed record for electric aircraft. The report this article comes from takes its 3 km record speed as <b>155.28 m/s</b>, which is 559 km/h, and asks one question: <b>what is the cheapest way to beat it by 1 %</b>, to 156.83 m/s or 564.6 km/h, so that the next record is held by this design?</p>
-            <p>The question has a nice shape. A 1 % target is small enough that a modification of the existing aircraft should beat a new design on cost, but not so small that it is free. The honest first step is a model that says which variables move the top speed, and by how much.</p>
+            <p class="dropcap">The Rolls-Royce Spirit of Innovation is a modified Sharp Nemesis NXT racing airframe, driven by three YASA 750R electric motors through one three-blade propeller. It makes 400 kW (535 hp) from a 750 V battery of about 6,000 cells and 90 kWh, flies at a take-off mass of about 1,250 kg, and holds the speed record for electric aircraft. It was built under ACCEL, the &ldquo;Accelerating the Electrification of Flight&rdquo; programme, to show that electric propulsion can compete on performance and to promote zero-emission flight.</p>
+            <p>The senior design project began from a single observation: the record has stood since 2021, and a record that stands for years is a sign that nothing is catching it. The Fédération Aéronautique Internationale (FAI) says a new record must beat the old by <b>1 %</b>. Taking the speed to beat as <b>155.28 m/s</b> (559 km/h), that is <b>156.83 m/s</b>, or 564.6 km/h. The question was how to get the Spirit of Innovation there, cheaply, without making it unstable, unsafe or illegal to certify.</p>
 
             <figure>
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/airframe-cad.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/airframe-cad.png" alt="Line drawing of the aircraft in three-quarter view: a single-engine low-wing racing aeroplane with a bubble canopy and a swept tailplane" loading="lazy"></a></div>
-                <figcaption><b>Fig. 1</b>The airframe. A line drawing of the aircraft the study starts from: a small single-engine racer with a low wing and a bubble canopy. Every change in the article is a change to this airframe.</figcaption>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-rr-spirit.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-rr-spirit.png" alt="The Rolls-Royce Spirit of Innovation parked on a concrete apron, in a silver and blue livery" loading="lazy"></a></div>
+                <figcaption><b>Fig. 1</b>The Rolls-Royce Spirit of Innovation, the aircraft this project sets out to improve.</figcaption>
             </figure>
 
             <blockquote>What is the cheapest way to beat the record by one percent?<cite>The brief</cite></blockquote>
 
-            <h2><span class="no">Part one</span>Power available against power required</h2>
-            <p class="flush">In level flight at top speed the thrust power the propeller delivers equals the power the drag absorbs, and the top speed is where the two curves cross. The drag is the sum of the parasite drag of the whole aircraft and the induced drag of the wing, which depends on the weight W and the wing.</p>
-            <div class="eq">$$\eta P_{shaft}=D\,V,\qquad D=\tfrac12\rho V^{2}S\,C_{D0}+\frac{2\,W^{2}}{\rho V^{2}S\,\pi\,e\,AR}$$</div>
-            <p class="after-break">The aircraft is flown at about 3,000 m (9,048 ft) in ISA conditions, so the air density is 0.909 kg/m&sup3;. The report estimated the parasite drag coefficient by a component drag build-up, C<sub>D0</sub> = 0.01832, took the wing efficiency as 0.75 and the aspect ratio as 8.2 (span 7.3 m, area 6.5 m&sup2;). Checked against the published speeds, the build-up predicts 158.4 m/s for the Spirit of Innovation (2.1 % high) and 91.1 m/s for the competing Extra 330LE (4.2 % low). That is close enough to use as a baseline for a 1 % question, because every comparison that follows is a ratio against the same baseline.</p>
-            <p>The overall drivetrain efficiency is not published, so the model here takes it as the single number that makes the baseline reproduce the report&rsquo;s 158.4 m/s, about 0.58. It then gives the sensitivities the report found.</p>
+            <p class="flush">The answer the report reached has four parts, and this article follows them in order. The <b>wing</b> was made smaller: the span reduced from 7.30 m to 7.11 m and the area from 6.33 m&sup2; to 6.14 m&sup2;, with a 0.45 taper and a NACA 23015 section, built in carbon fibre. The <b>tail</b> was scaled to match, keeping the aircraft stable and its controls light enough to fly. The <b>propeller</b> was redesigned with a larger diameter and a slower tip, raising its efficiency from 80 % to 85 %. And everything was <b>checked again</b>: the structure, the centre of gravity, the weight, and the stability in all five of its modes. The report&rsquo;s final top speed is 158 m/s.</p>
+
+            <h2><span class="no">Part one</span>The competition, and the power balance</h2>
+            <p class="flush">Before changing anything, the report asked what the Spirit of Innovation had already done right. Its only real competitor in the electric class is the Extra 330LE, a single-seat aerobatic monoplane with a 260 kW motor, which held the record from 2016 to 2021 with a published top speed of 343 km/h (95 m/s). The two aircraft were compared on powerplant, propeller, drag and wing, using thrust and drag curves, an activity-factor propeller model, a component drag build-up and Vortex Lattice models in Tornado for MATLAB.</p>
 
             <figure>
-                <div class="plate"><canvas data-fig="power" role="img" aria-label="Power available and power required against airspeed for the chosen wing, with the unmodified aircraft dashed"></canvas></div>
-                <figcaption><b>Fig. 2</b>Power available and power required against airspeed for the report&rsquo;s wing. The top speed is where they cross. The dashed line is the power required by the aircraft as flown: the smaller wing lowers it, and the crossing moves to the right.</figcaption>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-extra-330le.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-extra-330le.png" alt="The Extra 330LE electric aerobatic aircraft in a hangar" loading="lazy"></a></div>
+                <figcaption><b>Fig. 2</b>The competitor: the Extra 330LE, with a 260 kW motor and fixed, external landing gear.</figcaption>
             </figure>
 
-            <ul>
-                <li><b>Drag.</b> At top speed the drag is mostly parasite, so the power required rises roughly with the cube of speed, and a 1 % speed gain needs about 3 % less drag or 3 % more thrust power. The report&rsquo;s own figure is 3.81 %.</li>
-                <li><b>Wing efficiency.</b> Raising the Oswald efficiency from 0.75 to 0.80 by making the lift distribution more elliptical changes the top speed by less than 0.2 %. At this speed the wing is lightly loaded, so induced drag is a small part of the total.</li>
-                <li><b>Wing area.</b> Parasite drag is proportional to the wing area, so a smaller wing is faster: a 3 % reduction in area is worth about 1 % in speed. The wing area is the most direct lever.</li>
-            </ul>
+            <table>
+                <tr><th>Aircraft</th><th>Published top speed, m/s</th><th>Estimated, m/s</th><th>Power, kW</th><th>Error</th><th>C<sub>D0</sub> estimate</th></tr>
+                <tr><td>Rolls-Royce Spirit of Innovation</td><td>155.2</td><td>158.41</td><td>400</td><td>2.07 %</td><td>0.018321</td></tr>
+                <tr><td>Extra 330LE</td><td>95</td><td>91.05</td><td>260</td><td>4.16 %</td><td>0.020403</td></tr>
+                <caption>Speed performance: published against estimated, from the report&rsquo;s drag build-up. The small errors justify using the model as a baseline.</caption>
+            </table>
+            <p class="after-break">The comparison put the Spirit ahead on four counts. Its powerplant makes 53.85 % more power than the Extra&rsquo;s. Its propeller (an activity factor of 180 against 120, a radius of 0.683 m against 0.975 m) is 7.04 % more efficient at speeds of 90 m/s and above. It has retractable landing gear, where the Extra&rsquo;s is fixed. And its sleeker wing produces about 8.33 % less induced drag. The drag build-up showed landing gear, fuselage and wing as the three largest contributors for both aircraft.</p>
+
+            <figure class="pair">
+                <div class="pairgrid"><div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-drag-rr.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-drag-rr.png" alt="Pie chart of drag by component for the Rolls-Royce: landing gear 33.2 %, fuselage 20.9 %, wing 24.3 %, horizontal tail 5.1 %, vertical tail 3.9 %, propeller blades 2.9 %" loading="lazy"></a></div><div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-drag-extra.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-drag-extra.png" alt="Pie chart of drag by component for the Extra 330LE: landing gear 32.7 %, fuselage 20.1 %, wing 24.2 %, horizontal tail 6.2 %, vertical tail 4.6 %, propeller blades 2.5 %" loading="lazy"></a></div></div>
+                <figcaption><b>Fig. 3</b>Drag by component, in the report&rsquo;s drag build-up with the landing gear down: (a) the Rolls-Royce, (b) the Extra 330LE. Landing gear, fuselage and wing dominate both.</figcaption>
+            </figure>
+
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-induced-drag.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-induced-drag.png" alt="Line graph of induced drag along the wingspan for the Extra 330LE and the Rolls-Royce, the Rolls-Royce lower" loading="lazy"></a></div>
+                <figcaption><b>Fig. 4</b>Induced drag along the span from the Vortex Lattice models: the Rolls-Royce (black) is lower than the Extra 330LE (grey).</figcaption>
+            </figure>
+
+            <p>Two more checks closed the question of whether to modify or to start again. A plot of speed-to-weight ratio against year for the high-performance electric aircraft put the Spirit first, at 0.608 km/h per kg, with nothing close enough to modify. And the money pointed the same way: the Spirit cost about £6.9 million to develop, so a new aircraft would cost something similar, while the computational fluid dynamics for a modification costs between about $2,000 and $20,000, and certifying a changed aircraft has been quoted at up to $150,000. A modification was the only sensible route.</p>
+
+            <h3>The power balance</h3>
+            <p class="flush">In level flight at top speed the thrust power the propeller delivers equals the power the drag absorbs, and the top speed is where the two curves cross. The drag is the parasite drag of the whole aircraft plus the induced drag of the wing, which depends on the weight W and the wing.</p>
+            <div class="eq">$$\eta P_{shaft}=D\,V,\qquad D=\tfrac12\rho V^{2}S\,C_{D0}+\frac{2\,W^{2}}{\rho V^{2}S\,\pi\,e\,AR}$$</div>
+            <p class="after-break">The report took the wing efficiency as 0.75 (from Cook), the parasite drag coefficient as C<sub>D0</sub> = 0.01832 from a component build-up, a mass of 1248.6 kg and 535 hp, and an unmodified wing of 6.33 m&sup2; and 7.30 m span, an aspect ratio of about 8.4. The altitude is quoted as 3,000 m and, in the drag table, as 9,048 ft, which is 2,758 m; the model here uses the air density at 3,000 m, 0.909 kg/m&sup3;. The drivetrain efficiency is not published, so it is taken as the single number that makes the baseline reproduce the report&rsquo;s 158.41 m/s. Every comparison below is then a ratio against the same baseline.</p>
+
+            <figure>
+                <div class="plate"><canvas data-fig="power" role="img" aria-label="Power available and power required against airspeed for the modified wing, with the unmodified aircraft dashed"></canvas></div>
+                <figcaption><b>Fig. 5</b>Power available and power required against airspeed for the report&rsquo;s wing. The top speed is where they cross; the dashed line is the aircraft as flown. The smaller wing lowers the power required, and the crossing moves to the right.</figcaption>
+            </figure>
+
+            <h3>The method of net outcomes</h3>
+            <p class="flush">To find which parameters could give 1 %, the specific excess power equation was broken down as far as it would go, a technique the report calls the <b>method of net outcomes</b>: each term splits into the things that can be changed, until what is left is a list of knobs. Thrust per unit mass depends on the number of cells and on the propeller; drag per unit mass on the parasite drag (wing area, the scrubbing drag of the propeller) and on the induced drag (span, area, aerofoil).</p>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-net-outcomes.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-net-outcomes.png" alt="A tree diagram that breaks specific excess power into thrust over mass and drag over mass, then into cells, propeller efficiency, parasite drag and induced drag, and finally into wing span, wing area and aerofoil design" loading="lazy"></a></div>
+                <figcaption><b>Fig. 6</b>The method of net outcomes: specific excess power, broken down until what remains is a list of things the designer can change.</figcaption>
+            </figure>
+
+            <p>An energy&ndash;manoeuvrability chart, drawn for the aircraft before and after, then showed how far the zero line of specific excess power had to move: a <b>3.09 %</b> increase in thrust or a 3.09 % reduction in drag was enough to take the top speed from 155 m/s to 156.55 m/s. A sensitivity analysis turned that into three routes.</p>
+            <table>
+                <tr><th>Route</th><th>What would have to change</th></tr>
+                <tr><td>Wing area</td><td>reduce the area by 3.09 %</td></tr>
+                <tr><td>Hybrid: power to area</td><td>raise the power-to-area ratio by 3.17 %</td></tr>
+                <tr><td>Aspect ratio or Oswald efficiency</td><td>an increase beyond what is practical</td></tr>
+                <caption>The three routes to the target found by the sensitivity analysis.</caption>
+            </table>
+            <p>The three user requirements that follow from this are the report&rsquo;s starting point: a top speed of 564.6 km/h or more over 3 km; either 3.17 % more horsepower or 3.09 % less wing area; and, as constraints, an all-electric powerplant, a mass no greater than 1.75 tonnes, a centre of gravity kept 18 % ahead of the aerodynamic centre, flight no higher or lower than 3,000 m, and FAI and FAR 23 regulations. The limit load factor had to be at least 3.61 g and the ultimate 4.30 g.</p>
 
             <h2><span class="no">Part two</span>More power, or less wing</h2>
-            <p class="flush">The report works in <b>power per unit wing area</b>, the quantity that sets how fast a given wing can be pushed. The unmodified aircraft has 82.4 hp/m&sup2;, and a 1 % faster one needs 84.8, an increase of 2.96 %. A constraint diagram built from the thrust-to-weight equation at zero specific excess power shows the feasible region, and two ways to enter it.</p>
+            <h3>Routes that were rejected</h3>
+            <p class="flush"><b>More cells.</b> The powertrain is 18 modules making 535.5 hp and weighing about 700 kg, so one more module is worth 29.6 hp (5.53 %) and costs 38.9 kg (3.07 % of the aircraft). That would move the centre of gravity back from 18 % to about 15 % ahead of the aerodynamic centre, making the aircraft less nose-heavy and less stable, and the schematics show no room for the extra cells inside the fuselage. Lengthening the fuselage would mean redesigning and recertifying the airframe. The route was dropped.</p>
+            <p><b>A higher aspect ratio.</b> To cut the area by 3.09 % through aspect ratio, the aspect ratio would have to rise by about 4 %, which by NASA&rsquo;s FLOPS wing-weight method takes the aircraft from 1248.6 kg to about 1286.6 kg and raises the parasite drag coefficient from 0.0183 to 0.019. The specific excess power curves showed the energy margin <i>falling</i>, not rising. The route was dropped.</p>
+            <h3>The route that worked: a shorter span</h3>
+            <p class="flush">By elimination, the wing area had to come down through the span. Reducing it from 7.30 m to 7.11 m takes the area from 6.33 m&sup2; to 6.14 m&sup2; (3.0 %), lowers the aspect ratio from 8.44 to 8.22, and makes the wing lighter. With the span and area fixed, the planform was a matter of taper.</p>
+            <p>The <b>aerofoil</b> came first. A thicker section raises the form factor and so the parasite drag, which defeats the purpose, so the 16 % thickness of the existing wing was set as a limit. Lift and pitching-moment data for the NACA four- and five-digit sections thinner than that were extracted in XFLR5 (the six-series is not supported there). The NACA 23015 won on two counts: the lowest stall speed, and a pitching moment near zero at low angles of attack, like a symmetric section.</p>
+            <table>
+                <tr><th>Profile</th><th>Stall speed, m/s</th></tr>
+                <tr><td>NACA 0012</td><td>56.64</td></tr><tr><td>NACA 2412</td><td>52.38</td></tr><tr><td>NACA 4412</td><td>51.87</td></tr><tr><td>NACA 23012</td><td>52.73</td></tr><tr><td><b>NACA 23015</b></td><td><b>51.06</b></td></tr><tr><td>NACA 24012</td><td>52.56</td></tr>
+                <caption>Stall speeds of the candidate aerofoils, from the report.</caption>
+            </table>
+            <p>Six <b>planforms</b> were generated with the same span and area but different taper ratios, from 0.1 to 1.0, using a spreadsheet provided by Mr Michael F Boer, and their spanwise lift was found with the Tornado vortex lattice method. The planform with the most elliptical lift distribution wins, because it has the least induced drag. Wing 3, at a taper of 0.45, was the most elliptical of the six and, with its low taper, the lightest by the FLOPS equation. A caution from the report: Tornado is unreliable above Mach 0.35 and the Spirit flies at about Mach 0.47, so the loads it gives are exaggerated from root to tip; it was used only to compare shapes against each other.</p>
+            <table>
+                <tr><th>Wing</th><th>1</th><th>2</th><th>3 (chosen)</th><th>4</th><th>5</th><th>6</th></tr>
+                <tr><td>Taper ratio</td><td>0.10</td><td>0.30</td><td><b>0.45</b></td><td>0.60</td><td>0.78</td><td>1.00</td></tr>
+                <tr><td>Root chord, m</td><td>1.57</td><td>1.33</td><td><b>1.19</b></td><td>1.08</td><td>0.97</td><td>0.86</td></tr>
+                <tr><td>Tip chord, m</td><td>0.16</td><td>0.40</td><td><b>0.54</b></td><td>0.65</td><td>0.76</td><td>0.86</td></tr>
+                <tr><td>Mean aerodynamic chord, m</td><td>1.06</td><td>0.95</td><td><b>0.91</b></td><td>0.88</td><td>0.87</td><td>0.86</td></tr>
+                <caption>The six planform concepts, each with a span of 7.11 m, an area of 6.14 m&sup2; and an aspect ratio of 8.22.</caption>
+            </table>
+            <p>Why not a fully <b>elliptical</b> wing, then? No published figure for its cost could be found, so the report estimated it from complexity: spars are simplest when straight, harder when tapered and hardest when elliptical, and the development times of two wartime fighters (about five years for the elliptical-winged Spitfire, three for the Westland F.7/30) were used to scale the labour cost. The author says these are high-level estimates, ignoring the materials and labour costs of the 1930s, but they showed the elliptical planform costing far more than a tapered one that gives a very similar lift distribution.</p>
 
-            <h3>Route one: add power</h3>
-            <p class="flush">The motors are built from 18 battery and motor modules which together give 535.35 hp and weigh about 700 kg, so each module is worth 29.6 hp and costs 38.9 kg. One extra module raises the power per unit area by 5.55 %, comfortably past the target. The price is that it raises the mass by 3.07 %, lengthens the fuselage and moves the centre of gravity. The report treats that as a violation of its requirement to keep the centre of gravity 18 % ahead of the aerodynamic centre: the aircraft is already inherently unstable, and any mass added forward makes it worse.</p>
-            <p>Raising the propeller efficiency was also tried. The activity-factor method puts the propeller at about 75 % efficiency, and the report finds that a gain of 5 % in efficiency is worth only 0.35 % in thrust, too little to matter. Changes to the propulsion system were set aside in favour of the wing.</p>
-
-            <h3>Route two: reduce the wing area</h3>
-            <p class="flush">At the same 535 hp, a power per area of 84.8 hp/m&sup2; means a wing of 6.3 m&sup2;, a reduction of 3.1 %. The span is held at 7.3 m to keep the ribs, spars and fittings the same, so the area is reduced by changing the chord.</p>
-            <div class="eq">$$S=\frac{(C_r+C_t)\,b}{2},\qquad \lambda=\frac{C_t}{C_r}$$</div>
-            <p class="after-break">The report generated 15 planforms in MATLAB by varying the taper ratio and root chord at constant span, and kept those with an area at or below 6.3 m&sup2;. Delta wings, higher aspect ratios and forward-swept wings were excluded in advance. The delta cannot be trimmed at this speed because it would need about 69 % more lift than the aircraft can produce. Forward sweep makes the aircraft unstable in roll, since the rolling moment slope with sideslip turns positive. Swept-back wings cost induced drag at low subsonic speed and are a transonic device.</p>
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-spar-types.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-spar-types.png" alt="Drawings of the spars of an elliptical wing, a tapered wing and a rectangular wing" loading="lazy"></a></div>
+                <figcaption><b>Fig. 7</b>Spar construction in an elliptical wing (hardest to build), a tapered wing and a rectangular wing (simplest), used to rank the complexity of each planform.</figcaption>
+            </figure>
 
             <figure>
                 <div class="plate"><canvas data-fig="plan" style="height:clamp(230px, 27vw, 310px)" role="img" aria-label="Wing planform of the chosen design against the aircraft as flown"></canvas></div>
-                <figcaption><b>Fig. 3</b>The wing planform, the chosen design (shaded) against the aircraft as flown (dashed). The span is fixed; the chord at the root and the taper change the area.</figcaption>
+                <figcaption><b>Fig. 8</b>The wing planform: the chosen design (shaded) against the aircraft as flown (dashed). The span goes from 7.30 m to 7.11 m and the area from 6.33 m&sup2; to 6.14 m&sup2;.</figcaption>
             </figure>
 
-            <p>Taper alone gave the best first change. It keeps the span, the main structure and the control-surface layout, and so needs the least redesign and recertification. The selected concept has a root chord of about 1.19 m, a taper ratio of 0.45 and no sweep, which gives 6.28 m&sup2; in the report (the rounded figures in Fig. 3 give 6.30). Of the concepts that reduce the area enough, it was the only one that still satisfied the limit load factor required by the regulations: the wing becomes smaller and more heavily loaded as the area falls, and so the wing requirement fixed the span, the taper and a minimum area of 6.28 m&sup2;.</p>
-
+            <table>
+                <tr><th>The chosen wing</th><th></th></tr>
+                <tr><td>Span / area</td><td>7.11 m / 6.14 m&sup2;</td></tr>
+                <tr><td>Root chord / tip chord</td><td>1.19 m / 0.54 m</td></tr>
+                <tr><td>Taper ratio / sweep</td><td>0.45 / none</td></tr>
+                <tr><td>Mean aerodynamic chord</td><td>0.91 m</td></tr>
+                <tr><td>Aspect ratio</td><td>8.22</td></tr>
+                <tr><td>Aerofoil / thickness</td><td>NACA 23015 / 15 %</td></tr>
+                <tr><td>Wing mass (FLOPS estimate)</td><td>73.69 kg</td></tr>
+                <caption>The wing as defined at the end of the concept stage.</caption>
+            </table>
             <div class="nums">
-                <div><span class="v" id="x-gain">&nbsp;</span><span class="k">speed gained over the baseline, target 1 %</span></div>
-                <div><span class="v" id="x-v" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">top speed in the model</span></div>
-                <div><span class="v" id="x-time" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">time over 3 km</span></div>
-                <div><span class="v" id="x-dt" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">faster than the record: what 1 % buys</span></div>
+                <div><span class="v" id="x-gain">&nbsp;</span><span class="k">speed gain from the wing alone, in this model, over the 155.28 m/s record</span></div>
+                <div><span class="v" id="x-v" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">record-equivalent speed, wing alone</span></div>
+                <div><span class="v" id="x-time" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">time over 3 km, wing alone</span></div>
+                <div><span class="v" id="x-dt" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">&nbsp;</span><span class="k">faster than the record, with the new propeller</span></div>
             </div>
+            <p>The model reproduces the report&rsquo;s own finding for the wing: a gain of about 0.9 % from the smaller area, a little less than the 1 % needed. The report&rsquo;s 156.55 m/s is 1 % above a baseline of 155.0 m/s; against the 155.28 m/s record used for the target (156.83 m/s) the wing on its own falls just short, which is why the propeller matters (Part six).</p>
 
             <figure>
-                <div class="plate"><canvas data-fig="bars" style="height:clamp(230px, 28vw, 320px)" role="img" aria-label="Time over 3 km for the baseline and the design"></canvas></div>
-                <figcaption><b>Fig. 4</b>What a percent is worth: time over the 3 km course for the aircraft as flown and for the modified wing. The vertical axis starts at 18.9 s so that the difference can be seen.</figcaption>
+                <div class="plate"><canvas data-fig="bars" style="height:clamp(230px, 28vw, 320px)" role="img" aria-label="Time over 3 km for the baseline, the modified wing and the modified wing with the new propeller"></canvas></div>
+                <figcaption><b>Fig. 9</b>What a percent is worth: time over the 3 km course for the aircraft as flown, for the wing alone (this model) and for the wing with the new propeller (the report&rsquo;s 158 m/s, quoted). The vertical axis starts at 18.8 s so the difference can be seen.</figcaption>
+            </figure>
+
+            <h3>Where the wing goes</h3>
+            <p class="flush">The last wing decision was its height on the fuselage. A mid or high wing improves lateral stability in a turn, but needs external landing gear, and the Extra 330LE&rsquo;s fixed gear is one of the reasons it is slower. A low wing lets the gear retract <i>into</i> the wing. A flight-dynamics study (Part four) then checked that a low wing is stable enough in manoeuvres.</p>
+
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-wing-configs.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-wing-configs.png" alt="Front-view drawings of high-wing, mid-wing and low-wing aircraft, each with its landing gear" loading="lazy"></a></div>
+                <figcaption><b>Fig. 10</b>High, mid and low wing configurations. Only the low wing lets the landing gear retract into the wing.</figcaption>
             </figure>
 
             <h2><span class="no">Part three</span>Inside the new wing</h2>
-            <p class="flush">A smaller wing is a more heavily loaded wing, so choosing the planform is only half of the job; the other half is making it strong enough. The limit load factor of 3.61 g and the ultimate factor of 4.72 g set the target, and the structure that meets it is a conventional one: ribs that hold the aerofoil shape, spars that carry the bending, stringers and a skin that carries the twist and the pressure.</p>
+            <p class="flush">A smaller wing is a more heavily loaded wing, so choosing the planform is only half of the job; the other half is making it strong enough. The structure was designed in sequence, a component at a time, against the lift distribution given by <b>Schrenk&rsquo;s approximation</b> and checked with computational fluid dynamics on a three-dimensional model of the wing in level flight, because Tornado and XFLR5 both lose accuracy past Mach 0.35. The wing was compared with the lift of a fully elliptical wing from Prandtl&rsquo;s lifting-line theory to see how efficient it is. The structure is conventional: ribs hold the shape, spars carry the bending, stringers keep the skin from buckling, and the skin carries the twist and the pressure.</p>
+
+            <figure class="wide">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-final-design.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-final-design.png" alt="Two line drawings of the final design: the complete aircraft and the aircraft with its internal structure visible" loading="lazy"></a></div>
+                <figcaption><b>Fig. 11</b>The final design, with the internal structure shown on the right.</figcaption>
+            </figure>
 
             <figure>
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/assembled-frame.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/assembled-frame.png" alt="Isometric line drawing of the complete internal structure of the aircraft: the fuselage frames, the spars and ribs of both wings and the tailplane" loading="lazy"></a></div>
-                <figcaption><b>Fig. 5</b>The fully assembled frame. The fuselage rings and the ribs and spars of the wings and tail, drawn without the skin, so the load path from wing to fuselage can be followed.</figcaption>
+                <figcaption><b>Fig. 12</b>The fully assembled frame: the fuselage rings and the ribs and spars of the wings and tail, drawn without the skin, so the load path from wing to fuselage can be followed.</figcaption>
             </figure>
-
-            <figure>
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" alt="Line drawing of the internal structure of the right wing: ribs with lightening holes, spars and stringers" loading="lazy"></a></div>
-                <figcaption><b>Fig. 6</b>The internal structure of the wing alone: ribs with lightening holes, running across, and spars and stringers running along the span. The holes remove weight where the rib is not carrying much.</figcaption>
-            </figure>
-
-            <figure>
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" alt="The cross-section of the aerofoil with five lightening holes of decreasing size and the front and rear spars drawn as vertical lines with caps" loading="lazy"></a></div>
-                <figcaption><b>Fig. 7</b>The aerofoil section as defined for the new wing: the front and rear spars, drawn as vertical webs with caps at top and bottom, and lightening holes that shrink towards the trailing edge where the section is thin.</figcaption>
-            </figure>
-            <h3>The skin</h3>
-            <p class="flush">The skin is a carbon-fibre laminate, and how stiff it is depends on how its layers are turned. A layer with its fibres along the span (0&deg;) is very stiff in that direction; layers at &plusmn;45&deg; resist twisting. The plot is the standard way of choosing: stiffness in the span direction against the fraction of &plusmn;45&deg; layers, with one curve for each fraction of 0&deg; layers. For the unidirectional ply it uses E<sub>1</sub> = 140 GPa along the fibre, E<sub>2</sub> = 10 GPa across it, a shear modulus G<sub>12</sub> = 5 GPa and a Poisson&rsquo;s ratio of 0.30.</p>
 
             <figure class="narrow">
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" alt="A graph of laminate stiffness Ex in GPa against the percentage of plus or minus 45 degree layers, with curves for 100, 80, 60, 40 and 20 percent of zero degree layers; the inset gives E1 140 GPa, E2 10 GPa, G12 5 GPa and nu12 0.30" loading="lazy"></a></div>
-                <figcaption><b>Fig. 8</b>Composite skin strength. Laminate stiffness E<sub>x</sub> in the span direction against the share of &plusmn;45&deg; layers, for several shares of 0&deg; layers. Stiffness is highest with every layer at 0&deg; (140 GPa) and falls steadily as the &plusmn;45&deg; share rises, which is the price of resisting twist.</figcaption>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-structure-method.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-structure-method.png" alt="A flow chart of the structural design method, from the modified wing to the skin, spars, stringers and ribs and a final validation" loading="lazy"></a></div>
+                <figcaption><b>Fig. 13</b>The structural design method: a component at a time, each checked before the next.</figcaption>
             </figure>
-            <p>The trade is plain from the curves. A skin made only of 0&deg; layers is stiffest in bending, but a wing also has to resist torsion and shear, and for that some &plusmn;45&deg; layers are needed. Each point on the plot is one compromise, and a stiffness target together with a mass budget picks the point.</p>
-            <h3>Choosing the material</h3>
-            <p class="flush">Which material to make the laminate and the core from is a question of stiffness for the weight. The chart below plots Young&rsquo;s modulus against density for every family of material, on logarithmic axes, so that a family appears as a bubble. The dashed guide lines show lines of equal merit for minimum-mass design: moving up and to the left, across the guide lines, always means a stiffer material for less mass. In the textbook form of this method the line E/&rho; is for a tie rod, E<sup>1/2</sup>/&rho; for a beam such as a spar, and E<sup>1/3</sup>/&rho; for a panel such as a skin. Composites (CFRP among them) sit well up and to the left of metals, which is why the wing is carbon.</p>
+
+            <h3>The skin</h3>
+            <p class="flush">Three skin materials were compared on stiffness for the weight and the smoothness of the surface, since a rough skin costs drag. The merit used was Young&rsquo;s modulus over density over average surface roughness, with data from the Granta database. Carbon-fibre reinforced polymer won by a wide margin.</p>
+
+            <figure>
+                <div class="plate"><canvas data-fig="merit" style="height:clamp(170px, 20vw, 220px)" role="img" aria-label="Bar chart of stiffness per density per roughness for carbon fibre, glass fibre and aluminium"></canvas></div>
+                <figcaption><b>Fig. 14</b>Stiffness per unit weight per unit roughness (Table 13 of the report): carbon fibre against glass fibre and aluminium alloys. Carbon fibre has a modulus of 200 GPa, a density of 1.55 Mg/m&sup3; and a roughness of 2.4 &micro;m.</figcaption>
+            </figure>
 
             <figure class="narrow">
                 <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/ashby-modulus-density.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/ashby-modulus-density.png" alt="A Young&rsquo;s modulus against density chart with bubbles for foams, natural materials, polymers, elastomers, composites, technical ceramics and metals, and dashed guide lines for minimum mass design" loading="lazy"></a></div>
-                <figcaption><b>Fig. 9</b>Young&rsquo;s modulus against density, from the Granta materials database. Foams at the lower left, then polymers and elastomers, natural materials such as wood, composites, metals and ceramics. The dashed guide lines mark minimum-mass design.</figcaption>
+                <figcaption><b>Fig. 15</b>Young&rsquo;s modulus against density, from the Granta materials database, with the guide lines for minimum-mass design. Composites sit well up and to the left of the metals.</figcaption>
             </figure>
-            <h3>Making it</h3>
-            <p class="flush">A laminate is built by hand, layer by layer, in a mould. Fibre fabric is laid in the lower mould on a releasing gel (so that the finished part can be lifted out), wetted with epoxy, covered with the next layer, and pressed with the upper mould while it cures. The schematic shows the arrangement; it is a generic illustration of hybrid-laminate fabrication, with carbon fibre layers and a natural-fibre layer between them, and shows the order of the layers and the role of the moulds, not the layup schedule of this wing.</p>
+
+            <p>Skin thickness was set by buckling. Treating one panel as a flat plate held on all four edges, a panel with an aspect ratio of one has the highest buckling coefficient, about 14. A panel of 100 mm by 100 mm (a Boeing 747&rsquo;s are about 200 mm, and the Spirit is far smaller) in 1 mm carbon fibre buckles at about 52 MPa, and at the root, the most heavily loaded section, that is 2.6 times the shear stress acting on it. Thicker skin would be safer and heavier; 1 mm was the compromise.</p>
 
             <figure class="narrow">
-                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" alt="Diagram of laminate fabrication showing an upper mould, carbon fibre layers, natural fibre layers, releasing gel, epoxy material and a lower mould" loading="lazy"></a></div>
-                <figcaption><b>Fig. 10</b>Fabrication of a hybrid composite laminate. Carbon fibre and natural-fibre layers are stacked between a lower and an upper mould, with releasing gel and epoxy; the upper mould presses the stack while it cures.</figcaption>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-buckling-coefficient.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-buckling-coefficient.png" alt="A graph of buckling coefficient k against plate aspect ratio a over b for plates with various edge conditions, the highest curve for all edges clamped" loading="lazy"></a></div>
+                <figcaption><b>Fig. 16</b>Buckling coefficient against the aspect ratio of the plate, for different edge conditions. A plate fixed on all edges, with an aspect ratio of one, has the highest coefficient.</figcaption>
             </figure>
-            <h2><span class="no">Part four</span>The checklist</h2>
-            <p class="flush">The user requirement specification turned the 1 % goal into numbers that a design either meets or does not. They are evaluated here for the chosen wing. The structural and aeroelastic detail (the sizing of the skin, spars, stringers and ribs, and the divergence check) follows in the full report; the limit load factor of 3.61 g and the ultimate factor of 4.72 g are the structural targets it is designed against.</p>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" alt="A graph of laminate stiffness Ex in GPa against the percentage of plus or minus 45 degree layers, with curves for 100, 80, 60, 40 and 20 percent of zero degree layers; the inset gives E1 140 GPa, E2 10 GPa, G12 5 GPa and nu12 0.30" loading="lazy"></a></div>
+                <figcaption><b>Fig. 17</b>Composite skin strength: laminate stiffness E<sub>x</sub> in the span direction against the share of &plusmn;45&deg; layers, for several shares of 0&deg; layers (unidirectional ply E<sub>1</sub> = 140 GPa, E<sub>2</sub> = 10 GPa, G<sub>12</sub> = 5 GPa, &nu;<sub>12</sub> = 0.30). The stacking order of a real skin is chosen from a carpet plot of this kind.</figcaption>
+            </figure>
+
+            <h3>Spars, stringers and ribs</h3>
+            <p class="flush">To save weight the wing has two spars, a front and a rear, with 2 mm webs. The front spar stands 173 mm high at the root and 99.75 mm at the tip (the same 0.45 taper as the wing); the rear spar is 77.85 mm throughout. For the caps, I-channel and C-channel sections were compared with the same web and height. The I-channel has the larger second moment of area (46.4 against 38.3 million mm&#8308;) and so the lower bending stress, and was chosen.</p>
+            <p>The <b>stringers</b> stop the skin buckling between the ribs. Crippling strength was worked out for a range of sections in 20 mm thick carbon fibre, taking the compressive strength as about 30 % of the tensile (689 MPa). Tubes have high crippling strength but are poor in torsion, and a wing that twists with poor torsional stiffness invites flutter, so a slightly weaker section that does well in torsion was chosen: an <b>L-shaped</b> stringer of 100 mm&sup2;. The <b>ribs</b> are carbon fibre with six relief holes, as seen in light sporting aircraft. Shear flow was worked out round the root rib, and deflection, twist and stress were checked in a finite-element model in SimScale.</p>
+
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" alt="Line drawing of the internal structure of the right wing: ribs with lightening holes, spars and stringers" loading="lazy"></a></div>
+                <figcaption><b>Fig. 18</b>The internal structure of the wing alone: ribs with lightening holes running across, and spars and stringers running along the span.</figcaption>
+            </figure>
+
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" alt="The cross-section of the aerofoil with six lightening holes and the front and rear spars drawn as vertical lines with caps" loading="lazy"></a></div>
+                <figcaption><b>Fig. 19</b>The aerofoil section with its two spars (vertical webs with caps) and lightening holes that shrink towards the trailing edge.</figcaption>
+            </figure>
+
+            <h3>Making it</h3>
+            <p class="flush">Two methods suit a one-off aircraft because their tooling is cheap: <b>hand lay-up</b>, in which dry fabric is placed on a mould and wetted with resin by hand, and <b>vacuum bagging</b>, in which the lay-up is sealed in a bag and the air pumped out, compacting it and removing voids. Published tests give vacuum-bagged specimens about 28.57 % more strength than hand lay-up, so vacuum bagging was recommended for the skin. The recommended route is: choose the fibre (Toray T700SC, whose modulus meets the 200 GPa target), stack the plies at the angles a carpet plot gives, heat-treat the stretched fibre (about 1,800 &deg;C is recommended for the modulus), vacuum-bag and cure, trim, inspect by ultrasound and coat for smoothness.</p>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-hand-vs-vacuum.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-hand-vs-vacuum.png" alt="A stress against strain graph for two vacuum bag moulded specimens and two hand lay-up specimens, the vacuum bag specimens reaching higher stress" loading="lazy"></a></div>
+                <figcaption><b>Fig. 20</b>Hand lay-up against vacuum-bag moulding: stress against strain for two specimens of each. The vacuum-bagged specimens carry more stress.</figcaption>
+            </figure>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-heat-treatment.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-heat-treatment.png" alt="A graph of tensile modulus and strength against heat-treatment temperature, the modulus rising steadily with temperature while the strength peaks near 1500 degrees" loading="lazy"></a></div>
+                <figcaption><b>Fig. 21</b>How heat treatment changes carbon fibre: the modulus rises with temperature while the strength peaks and then falls.</figcaption>
+            </figure>
+
+            <figure class="wide">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-manufacturing.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-manufacturing.png" alt="A row of icons showing the manufacturing process: a computer simulation, material preparation and vacuum bagging, curing, cooling, removing excess material, inspection, surface treatment and finishing, and assembly of panels" loading="lazy"></a></div>
+                <figcaption><b>Fig. 22</b>The manufacturing process summarised, from CAD to assembled panels.</figcaption>
+            </figure>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" alt="Diagram of the anatomy of a carbon-fibre laminate showing an upper mould, carbon fibre layers, natural fibre layers, releasing gel, epoxy material and a lower mould" loading="lazy"></a></div>
+                <figcaption><b>Fig. 23</b>The anatomy of a laminate (the report&rsquo;s Figure 71): fibre layers between a lower and an upper mould, with releasing gel and epoxy. A generic illustration, not this wing&rsquo;s layup.</figcaption>
+            </figure>
+
+            <h2><span class="no">Part four</span>Is it stable?</h2>
+            <p class="flush">A smaller wing and a smaller tail change how the aircraft responds when it is disturbed, so the report repeated the flight-dynamics analysis for the modified aircraft. The mass moments of inertia were estimated by following Roskam&rsquo;s method (interpolating the known moments of inertia of other aircraft against mass): <b>I<sub>xx</sub></b> = 1,521.9, <b>I<sub>zz</sub></b> = 3,176.2 and <b>I<sub>xz</sub></b> = 158.8 kg&middot;m&sup2;. The stability derivatives were then found analytically, and with the inertias they give the characteristic equation of each motion.</p>
+            <table>
+                <tr><th>Longitudinal</th><th>Value</th><th>Longitudinal</th><th>Value</th><th>Lateral</th><th>Value</th><th>Lateral</th><th>Value</th></tr>
+                <tr><td>X<sub>u</sub></td><td>&minus;0.023</td><td>Z<sub>q</sub></td><td>&minus;6.83</td><td>Y<sub>v</sub></td><td>&minus;0.23</td><td>Y<sub>r</sub></td><td>&minus;0.17</td></tr>
+                <tr><td>X<sub>w</sub></td><td>0.54</td><td>M<sub>u</sub></td><td>0.036</td><td>L<sub>v</sub></td><td>&minus;0.0023</td><td>L<sub>r</sub></td><td>0.026</td></tr>
+                <tr><td>X<sub>q</sub></td><td>&minus;0.061</td><td>M<sub>w</sub></td><td>&minus;0.69</td><td>N<sub>v</sub></td><td>&minus;0.088</td><td>N<sub>r</sub></td><td>&minus;0.065</td></tr>
+                <tr><td>Z<sub>u</sub></td><td>&minus;0.66</td><td>M<sub>q</sub></td><td>&minus;8.47</td><td>Y<sub>p</sub></td><td>&minus;0.025</td><td>L<sub>p</sub></td><td>&minus;0.481</td></tr>
+                <tr><td>Z<sub>w</sub></td><td>&minus;4.86</td><td>M<sub>&#7819;</sub></td><td>&minus;0.21</td><td>N<sub>p</sub></td><td>0.000092</td><td></td><td></td></tr>
+                <caption>Stability derivatives of the modified aircraft (the report&rsquo;s Table 8). X<sub>&#7819;</sub> and Z<sub>&#7819;</sub> are zero.</caption>
+            </table>
+            <p>The animation below plays the five modes. Each graph&rsquo;s grid forms first, and then the motion is traced: a unit disturbance, followed in time. The two longitudinal modes (the <b>phugoid</b> and the <b>short period</b>) and the three lateral modes (the <b>Dutch roll</b>, <b>roll subsidence</b> and <b>spiral</b>) come straight from the characteristic equations in the report&rsquo;s Table 10. The last panel plots the roots of those equations on the complex plane: a root on the left is a stable mode, a root on the right an unstable one.</p>
+
+            <figure>
+                <div class="plate"><canvas id="stab-canvas" style="height:clamp(360px, 52vw, 560px)" role="img" aria-label="An animation: the grid of each of five graphs forms, then the response of the phugoid, short period, Dutch roll, roll subsidence and spiral modes is traced, and a sixth panel shows their roots on the complex plane"></canvas></div>
+                <figcaption><b>Fig. 24</b>The five modes of the modified aircraft, worked out from the report&rsquo;s characteristic equations. Dashed lines are the envelopes that the oscillations decay inside. <button class="replay" id="stab-replay" type="button">Replay</button> These are the free responses of each mode, normalised, and not the report&rsquo;s own response plots (its Figures 37 to 39).</figcaption>
+            </figure>
+
+            <table id="mode-table"><caption>The modes, with the natural frequency, damping ratio, period and time to halve (or double) worked out from the characteristic equations above.</caption></table>
+
+            <p class="after-break">The result is that the modified aircraft is <b>stable in both longitudinal modes, in the Dutch roll and in roll</b>, and <b>unstable in the spiral</b>. A spiral divergence is common and mild: the time constant of the spiral mode is 1 / 0.011 = 91 s, and the disturbance doubles in about 63 s, which leaves the pilot ample time to correct it before it develops. The report concluded that a low wing, with its stability and its low drag, is the right configuration. The aircraft was also run through elevator step inputs to confirm that the elevator, as sized in Part five, damps out a disturbance quickly.</p>
+
+            <h2><span class="no">Part five</span>The tail and the controls</h2>
+            <p class="flush">With the wing smaller, the tail had to be resized so that the aircraft kept its pitch and yaw stability. The rule was to hold the <b>aerodynamic tail length</b> (3.754 m) and the <b>tail volume coefficients</b> constant, which scales the tail area down with the wing area. The spans were kept and the root chords reduced, since the root chord reduces area far more than the taper does and a smaller tip chord would cost the tail its torsional stiffness.</p>
+            <table>
+                <tr><th></th><th>Unmodified</th><th>Modified</th><th>Change</th></tr>
+                <tr><td>Wing area, m&sup2;</td><td>6.330</td><td>6.140</td><td>&minus;3.00 %</td></tr>
+                <tr><td>Horizontal tail area, m&sup2;</td><td>1.116</td><td>1.083</td><td>&minus;3.00 %</td></tr>
+                <tr><td>Horizontal tail root chord, m</td><td>0.742</td><td>0.706</td><td>&minus;4.83 %</td></tr>
+                <tr><td>Vertical tail area, m&sup2;</td><td>0.869</td><td>0.843</td><td>&minus;3.00 %</td></tr>
+                <tr><td>Vertical tail root chord, m</td><td>1.073</td><td>1.023</td><td>&minus;4.61 %</td></tr>
+                <tr><td>Spans, tip chords, aerodynamic tail length</td><td colspan="3">unchanged (0.932 m and 1.085 m spans, 3.754 m)</td></tr>
+                <caption>The tailplane before and after (the report&rsquo;s Table 12). The tail volume coefficients stay at 0.871 (horizontal) and 0.072 (vertical).</caption>
+            </table>
+            <p>Both tails use a <b>NACA 0009</b>, the symmetric section with the highest lift-curve slope of those tried, which gives the elevator and rudder the most lift per degree. For the elevator, three balance designs (overhanging, horn, internal sealed) were compared by hinge moment, and the <b>horn balance</b> needed the least force at speed. A horn-balanced elevator was then compared with an all-moving stabiliser, taking 15&deg; of deflection (a quarter is lost in flight to aerodynamic and aeroelastic effects) and a pilot who can pull the stick back 25 cm; the elevator needed less stick force, and the all-moving stabiliser was ruled out.</p>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-elevator-types.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/d-elevator-types.png" alt="Two sketches of a tail with a hinged elevator and of a tail with an all-moving stabiliser" loading="lazy"></a></div>
+                <figcaption><b>Fig. 25</b>The two tail concepts compared: a fixed stabiliser with an elevator, and an all-moving stabiliser.</figcaption>
+            </figure>
+
+            <p>The elevator was then sized against the FAR 23 stick-force limits: no more than 3 kg of force for sustained flight and 12 to 15 kg for short periods, such as a high-g turn. Trim curves from 1 to 4 g, at 156.55 m/s and 9,048 ft, showed that the worst case needs &minus;2.89&deg; of elevator at 4 g. Of four elevator sizes tried, the smallest (0.268 m&sup2;) gave the lowest stick force, 12.14 kg for that manoeuvre, and trimming it to about 0.25 m&sup2; brought the figure to 11.16 kg, inside the limit.</p>
+
+            <h2><span class="no">Part six</span>More thrust: the propeller</h2>
+            <p class="flush">The report notes that the smaller wing already meets its target on paper, so the thrust work was a buffer in case the geometric changes fell short. There were three ways to add thrust. A more powerful motor was ruled out: the YASA is already the most powerful all-electric aircraft motor, and the FAI requires an electric one. More cells was ruled out for the reasons in Part two. That left the propeller.</p>
+            <p>The propeller was first put at 80 % efficient, from the activity-factor model (an activity factor of 180). Raising it to 85 % gives <b>6.25 % more thrust</b> from the same motor, and 85 % is about the best realistic figure, since most propellers are 80 to 85 % efficient. Blade Element Momentum Theory was used to find how, using a first-order approximation from Raymer that splits the change in shaft power into an induced part (about 30 %) and a profile part (about 70 %). The iteration gave the targets:</p>
+            <table>
+                <tr><th>Propeller change</th><th>Target</th></tr>
+                <tr><td>Diameter</td><td>+19.05 %, from 1.365 m to 1.625 m</td></tr>
+                <tr><td>Blade tip speed</td><td>&minus;3.45 %</td></tr>
+                <tr><td>Average blade chord</td><td>+8 %, to restore the solidity</td></tr>
+                <tr><td>Overall efficiency</td><td>80 % to 85 %</td></tr>
+                <caption>The propeller design targets of the report.</caption>
+            </table>
+            <p class="after-break">A larger disc moves more air more slowly, which is more efficient; the chord is increased so that the thrust coefficient, which depends on the solidity, stays acceptable as the tip slows. The new propeller still clears the ground, so no new landing gear was designed. With it, the report&rsquo;s thrust and drag curves give a top speed of about <b>158 m/s</b>. The cost is a slight reduction in the turn rate.</p>
+
+            <h2><span class="no">Part seven</span>Does it still comply?</h2>
+            <p class="flush">With the design complete, the report checked it against the requirements. The V&ndash;n diagram for the modified aircraft, drawn to FAR 23 with gust speeds of 15.28 and 7.62 m/s, still satisfies the limit and ultimate load factors. The centre-of-gravity envelope, drawn for masses between 490 kg and 1,750 kg, is unaffected, because the mass fell slightly and no cells were added, so the centre of gravity does not move. The mass is the sum of the components below.</p>
+
+            <figure>
+                <div class="plate"><canvas data-fig="weights" style="height:clamp(300px, 38vw, 420px)" role="img" aria-label="Horizontal bar chart of the mass of each component of the modified aircraft"></canvas></div>
+                <figcaption><b>Fig. 26</b>The mass of the modified aircraft by component (the report&rsquo;s Table 18). The fireproof casing and coolant, the battery cells, the fuselage and the wing make up most of the 1,244.9 kg.</figcaption>
+            </figure>
+
+            <table>
+                <tr><th>Final specification</th><th></th></tr>
+                <tr><td>Top speed</td><td>158 m/s</td></tr><tr><td>Mass</td><td>1,244 kg</td></tr><tr><td>Engine power</td><td>535 hp</td></tr>
+                <tr><td>Wing area / span</td><td>6.14 m&sup2; / 7.11 m</td></tr><tr><td>Propeller diameter</td><td>1.62 m</td></tr>
+                <tr><td>Power load / wing load</td><td>2.33 kg/hp / 202.6 kg/m&sup2;</td></tr><tr><td>Taper ratio</td><td>0.45</td></tr>
+                <tr><td>Material</td><td>carbon fibre reinforced polymer</td></tr><tr><td>Wing / tail profile</td><td>NACA 23015 / NACA 0009</td></tr>
+                <caption>Summary specification of the modified aircraft (the report&rsquo;s Table 20).</caption>
+            </table>
+            <h3>The checklist</h3>
             <table>
                 <tr><th>Requirement</th><th>This design</th></tr>
-                <tr><td>Top speed of 564.6 km/h or more over 3 km</td><td id="u-speed"></td></tr>
-                <tr><td>Power per wing area of 84.80 hp/m&sup2; or more</td><td id="u-hpa"></td></tr>
+                <tr><td>Top speed of 564.6 km/h (156.83 m/s) or more over 3 km</td><td id="u-speed"></td></tr>
+                <tr><td>Wing area reduced by 3.09 %</td><td id="u-area"></td></tr>
                 <tr><td>Mass at most 1.75 tonnes</td><td id="u-mass"></td></tr>
-                <tr><td>Wing area not below the load-factor limit</td><td id="u-area"></td></tr>
                 <tr><td>Centre of gravity kept 18 % ahead of the aerodynamic centre</td><td id="u-cg"></td></tr>
+                <tr><td>Power load not below 2.33 kg/hp</td><td id="u-pl"></td></tr>
                 <tr><td><b>Overall</b></td><td id="u-all"><b></b></td></tr>
             </table>
+            <p>The power load is the one marginal item: 1,244 kg over 535 hp is about 2.325 kg/hp, a hair under the limit, which the report accepts because the aircraft gained speed and the power load changed by only about 0.3 %.</p>
 
-            <h3>Why modify, not redesign</h3>
-            <p class="flush">A cost-to-benefit comparison, with total cost the sum of development, production, operation and certification less any return, shows that for a small gain in speed a new design costs far more than the benefit. A new design only pays when the gain is large, of the order of 40 %. For 1 %, a modified wing on a proven aircraft is the sensible answer.</p>
+            <h2><span class="no">Part eight</span>What the report says about itself</h2>
+            <p class="flush">The report ends with an honest critical evaluation, and it is worth quoting its sense. The author writes that, much as he would like to say the aircraft is 2 % faster, it is quite likely to be only about 1 %, and barely: the masses of the components were not analysed in detail, parts such as air intakes were left out of the parasite-drag sum, the thrust models are not exact, and most inputs and outputs are estimates, including those from NASA&rsquo;s FLOPS. Structurally, the wing&rsquo;s natural frequency was not compared with the fuselage&rsquo;s, torsional stiffness was not analysed and control reversal was not computed, so whether the aircraft is safe from an aeroelastic point of view is <b>uncertain</b>. Aerodynamically, the effect of twist, geometric and aerodynamic, was not investigated, which biases the wing selection, and the tailplane could have been constrained more tightly.</p>
+            <blockquote>It is hard to say, with full confidence, that a 1 % increase was obtained.<cite>From the critical evaluation</cite></blockquote>
+            <h3>What comes next</h3>
+            <p class="flush">The recommended work is: <b>aileron sizing</b>, which the report demonstrates in MATLAB as a worked example (an aileron of about 1.68 m span with chords of 0.177 m and 0.080 m, starting 1.90 m from the root, meets the FAR 23.157 requirement to roll through 60&deg; in 4 s); a <b>vibration analysis</b> of the wing, to get mode shapes and behaviour in hard manoeuvres, which is the subject of the <a href="aeroelasticity.html">aeroelasticity page</a>; better mass estimates, by averaging methods such as Roskam&rsquo;s with FLOPS; CFD over the entire aircraft, to include boundary-layer effects; and an investigation of twist.</p>
 
-            <blockquote>For one percent, a modified wing on a proven aircraft is the sensible answer.<cite>From the conclusions</cite></blockquote>
+            <h3>A note on the numbers</h3>
+            <ul>
+                <li><b>How much faster.</b> The report&rsquo;s summary calls the result a 2 % gain. A final speed of 158 m/s is 1.75 % over the 155.28 m/s record, and 0.9 % over the 156.55 m/s that the wing change alone reached. The page uses 1.75 %.</li>
+                <li><b>The 1 % line.</b> 156.55 m/s is 1 % above 155.0 m/s. Against the record of 155.28 m/s the 1 % line is 156.83 m/s, which the wing alone does not quite reach and the propeller does.</li>
+                <li><b>The spiral.</b> The time constant of a mode with root 0.011 is 1 / 0.011 = 91 s (the report&rsquo;s text says 83.33 s, which is 1 / 0.012); the doubling time is 63 s.</li>
+                <li><b>The aerofoil.</b> The wing requirement in the report names a NACA 23012; every other table and the text use the NACA 23015, which the page follows.</li>
+                <li><b>The speed to beat.</b> The introduction quotes 626.4 km/h for the record; the analysis uses 155.28 m/s (559 km/h), which the page follows.</li>
+                <li><b>Wing mass.</b> 73.69 kg is the FLOPS estimate for the wing concept; the weight table uses 163.26 kg for the wing. They are different estimates in the report, and the page quotes each where the report does.</li>
+                <li><b>The model.</b> The curves in this article are a simplified power balance, calibrated to the report&rsquo;s own baseline. For the wing alone it agrees with the report. For the propeller the report&rsquo;s 158 m/s is quoted and not modelled, since the simple model would give a larger gain than the report&rsquo;s thrust curves do.</li>
+            </ul>
 
             <div class="ornament">&#9670; &#9670; &#9670;</div>
-            <p class="fine">Source: the author&rsquo;s senior design report on the Spirit of Innovation. The drivetrain efficiency is calibrated in this model so that the baseline reproduces the report&rsquo;s estimated 158.41 m/s; the drag build-up, the 82.4 and 84.8 hp/m&sup2; figures and the selected wing are the report&rsquo;s. The figures here are drawn from a re-implementation of the report&rsquo;s power balance, not from the report&rsquo;s own plots.</p>
+            <p class="fine">Author: Mr Gopolang George Sydney [Syd] Makgothi. Under the supervision of Mr Michael F Boer.</p>
+            <p class="fine">Source: the author&rsquo;s senior design report on the Spirit of Innovation (2025). Tables, specifications and results are the report&rsquo;s; several figures are the report&rsquo;s own, redrawn here in black and white. The power balance, the planform, the weight and material charts and the stability animation are drawn for this article from the report&rsquo;s numbers.</p>
 
             <div class="more-links"><a href="research-project.html">Has the bow really evolved?</a><a href="aeroelasticity.html">Aeroelasticity</a><a href="energy-methods.html">Energy methods</a><a href="portfolio.html#expertise-wheel">Portfolio</a></div>
         </article>

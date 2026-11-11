@@ -3,7 +3,7 @@
 // wing efficiency 0.75, flight at 3000 m (ISA, 9048 ft). The overall drivetrain efficiency is not given, so it is calibrated here so that the
 // baseline reproduces the report's estimated top speed of 158.41 m/s.
 export const HP = 745.7, G = 9.80665;
-export const BASE = {S: 6.5, b: 7.3, m: 1248.6, P: 535.35, cd0: 0.018321, e: 0.75, rho: 0.9093, modules: 18, modMass: 38.89, modHp: 29.63, cdCut: 0};
+export const BASE = {S: 6.33, b: 7.3, m: 1248.6, P: 535.35, cd0: 0.018321, e: 0.75, rho: 0.9093, modules: 18, modMass: 38.89, modHp: 29.63, cdCut: 0};
 export const REPORT = {vBase: 155.28, vEst: 158.41, vTarget: 156.83, kmhTarget: 564.6, hpArea: 82.38, hpAreaTarget: 84.8, limitG: 4.72, area1: 6.28};
 const AR = (p) => p.b * p.b / p.S;
 /** Drag in newtons at speed V for parameters p. */
@@ -16,7 +16,7 @@ export function etaCal() {
   if (KE !== null) return KE;
   const p = {...BASE}; KE = drag(REPORT.vEst, p) * REPORT.vEst / (p.P * HP); return KE;
 }
-export const powerAvail = (p) => etaCal() * (p.P + (p.extra || 0) * p.modHp) * HP;
+export const powerAvail = (p) => etaCal() * (p.etaMul || 1) * (p.P + (p.extra || 0) * p.modHp) * HP;     // etaMul: how much better the propeller is than the baseline (85/80 in the final design)
 /** Top speed: the highest speed where the thrust power available meets the power required. */
 export function topSpeed(p) {
   const pa = powerAvail(p); let lo = 80, hi = 260;
