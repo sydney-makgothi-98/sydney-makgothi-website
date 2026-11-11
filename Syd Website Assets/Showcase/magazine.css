@@ -74,3 +74,14 @@ body.mag { margin: 0; background: var(--paper); color: var(--ink); font-family: 
 
 @media (max-width: 880px) { .cols { column-count: 1; text-align: left; hyphens: manual; } .cols p + p { text-indent: 0; margin-top: 0.9em; } .cols .nums > div { border-right: 0; border-bottom: 1px solid var(--hair); padding-left: 0; } .cols table { display: block; overflow-x: auto; } }
 @media print { .mnav, .more-links { display: none; } }
+
+/* picture figures: black-and-white images, opened full size on click */
+.cols figure .plate img { display: block; margin: 0 auto; max-width: 100%; height: auto; max-height: 560px; width: auto; }
+.cols figure.wide .plate img { max-height: none; width: 100%; }
+.cols figure.narrow .plate { max-width: 560px; margin-left: auto; margin-right: auto; }
+.cols figure.narrow figcaption { max-width: 560px; margin-left: auto; margin-right: auto; }
+.cols figure .pairgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: end; }
+.cols figure .pairgrid .plate { border: 0; padding: 0; } .cols figure.pair .plate:first-child { border: 0; }
+.cols figure.tallpair .plate img { max-height: 520px; }
+.cols figure img { filter: grayscale(1); }
+@media (max-width: 880px) { .cols figure .pairgrid { grid-template-columns: 1fr; } }

@@ -645,6 +645,7 @@
         .game-menu-options { gap: clamp(0.4rem, 1.2vh, 1.5rem); margin-bottom: clamp(0.8rem, 2vh, 3rem); }
         .menu-option { padding: clamp(0.45rem, 1.1vh, 1rem) 1.5rem; }
         .menu-subitem { padding: clamp(0.4rem, 1vh, 0.75rem) 1rem; }
+        .menu-subitem.current { background: rgba(0, 113, 227, 0.28); border-color: rgba(96, 165, 250, 0.9); box-shadow: 0 0 14px rgba(0, 113, 227, 0.45); transform: translateX(6px); color: #fff; }
         .menu-option.expanded + .menu-suboptions { gap: clamp(0.3rem, 0.6vh, 0.5rem); }
     </style>
 </head>
@@ -776,7 +777,7 @@
 
                 <!-- Right Side: Artwork -->
                 <div class="game-menu-right">
-                    <img id="wheel-artwork" src="./Images/Game%20Options/CFD.jpeg" alt="Aerodynamics" class="game-artwork">
+                    <video id="wheel-artwork" class="game-artwork" muted loop playsinline autoplay preload="metadata" poster="./Images/Game%20Options/CFD.jpeg" src="./Syd%20Website%20Assets/XP%20Wheel/Aerodynamics.mp4" aria-label="Aerodynamics"></video>
                 </div>
 
                 <!-- Corner Decorations -->
@@ -972,6 +973,7 @@
         const WHEEL_OPTIONS = [
             {
                 id: 'aerodynamics',
+                video: './Syd%20Website%20Assets/XP%20Wheel/Aerodynamics.mp4',
                 name: 'Aerodynamics',
                 title: 'Aerodynamics',
                 desc: 'CFD, Wind Tunnel, Transonic Flow',
@@ -981,6 +983,7 @@
             },
             {
                 id: 'structural',
+                video: './Syd%20Website%20Assets/XP%20Wheel/Structural.mp4',
                 name: 'Structural',
                 title: 'Structural Analysis',
                 desc: 'FEA, Composites, Failure Analysis',
@@ -990,15 +993,17 @@
             },
             {
                 id: 'propulsion',
+                video: './Syd%20Website%20Assets/XP%20Wheel/Propulsion.mp4',
                 name: 'Propulsion',
                 title: 'Propulsion',
                 desc: 'Jet Engines, Control Systems, Orbital Mechanics',
                 image: './Images/Game%20Options/Propulsion.jpg',
                 branches: ['Engine Design', 'Turbomachinery', 'Combustion Analysis', 'Parachute Design For Shockwave Jet Truck'],
-                branchLinks: { 'Engine Design': 'propulsion.html', 'Turbomachinery': 'pump.html', 'Combustion Analysis': 'engine.html', 'Parachute Design For Shockwave Jet Truck [Project 3]': 'parachute.html' }
+                branchLinks: { 'Engine Design': 'propulsion.html', 'Turbomachinery': 'pump.html', 'Combustion Analysis': 'engine.html', 'Parachute Design For Shockwave Jet Truck': 'parachute.html' }
             },
             {
                 id: 'systems',
+                video: './Syd%20Website%20Assets/XP%20Wheel/Systems.mp4',
                 name: 'Systems',
                 title: 'Systems Engineering',
                 desc: 'CAD, 3D Modeling, Systems Integration',
@@ -1008,6 +1013,7 @@
             },
             {
                 id: 'senior',
+                video: './Syd%20Website%20Assets/XP%20Wheel/Senior%20Projects.mp4',
                 name: 'Senior Projects',
                 title: 'Senior Projects',
                 desc: 'Research Project, Design Project',
@@ -1017,6 +1023,11 @@
             }
         ];
 
+        // the stops: for every category, the category itself (sub = -1) and then each sub tab
+        const STOPS = []; WHEEL_OPTIONS.forEach((o, oi) => { STOPS.push({opt: oi, sub: -1}); o.branches.forEach((b, bi) => STOPS.push({opt: oi, sub: bi})); });
+        const STOP_PX = 230;
+        document.getElementById('expertise-wheel').style.height = (STOPS.length * STOP_PX + window.innerHeight) + 'px';
+        const stopScrollPos = (i) => document.getElementById('expertise-wheel').getBoundingClientRect().top + window.scrollY + i * STOP_PX + 2;
         let currentWheelIndex = 0;
         const wheelSection = document.getElementById('expertise-wheel');
         const wheelBgImage = document.getElementById('wheel-bg-image');
@@ -1036,8 +1047,11 @@
             wheelBgImage.alt = option.name;
 
             // Update artwork
-            wheelArtwork.src = option.image;
-            wheelArtwork.alt = option.name;
+            // the picture on the right is the section's cover video, with the old still as its poster while the file loads
+            wheelArtwork.poster = option.image;
+            wheelArtwork.src = option.video;
+            wheelArtwork.setAttribute('aria-label', option.name);
+            { const q = wheelArtwork.play(); if (q && q.catch) q.catch(() => {}); }
 
             // Update center text
             wheelTitle.textContent = option.title;
@@ -1152,8 +1166,7 @@
                 updateWheelSelection(index);
 
                 // Calculate scroll position
-                const sectionTop = wheelSection.getBoundingClientRect().top + window.scrollY;
-                const optionScrollPos = sectionTop + (index * 900);
+                const optionScrollPos = stopScrollPos(STOPS.findIndex((st) => st.opt === index && st.sub === -1));
 
                 // Smooth scroll
                 window.scrollTo({
@@ -1199,17 +1212,31 @@
         updateImage(1);
         updateWheelSelection(0);
 
+        // Scrolling moves through the menu: one stop for each category and one for each of its sub tabs, in the order they are listed
+        const subLists = [...document.querySelectorAll('.menu-suboptions')];
+        let curStop = -1;
+        function applyStop(i) {
+            if (i === curStop) return; curStop = i;
+            const st = STOPS[i], all = document.querySelectorAll('.menu-option');
+            all.forEach((m, k) => { m.classList.toggle('active', k === st.opt); m.classList.toggle('expanded', k === st.opt); });
+            subLists.forEach((list, k) => [...list.children].forEach((c, j) => c.classList.toggle('current', k === st.opt && j === st.sub)));
+            updateWheelSelection(st.opt);
+        }
+        function onWheelScroll() {
+            const p = window.scrollY - (wheelSection.getBoundingClientRect().top + window.scrollY);
+            applyStop(Math.max(0, Math.min(STOPS.length - 1, Math.floor(p / STOP_PX))));
+        }
+        window.addEventListener('scroll', onWheelScroll, {passive: true});
+        window.addEventListener('resize', () => { wheelSection.style.height = (STOPS.length * STOP_PX + window.innerHeight) + 'px'; onWheelScroll(); });
+
         // Coming back from a sub page ("Back to Portfolio" links to #expertise-wheel): land on the selection screen with the category you left from open
         try {
             if (location.hash === '#expertise-wheel') {
                 const wi = parseInt(sessionStorage.getItem('wheelIndex'), 10);
                 if (wi >= 0 && wi < WHEEL_OPTIONS.length) {
-                    const all = document.querySelectorAll('.menu-option');
-                    all.forEach((m) => m.classList.remove('active', 'expanded'));
-                    all[wi].classList.add('active', 'expanded');
-                    updateWheelSelection(wi);
-                }
-                wheelSection.scrollIntoView();
+                    window.scrollTo(0, stopScrollPos(STOPS.findIndex((st) => st.opt === wi && st.sub === -1)));
+                } else wheelSection.scrollIntoView();
+                onWheelScroll();
             }
         } catch (err) { /* nothing to restore */ }
     </script>

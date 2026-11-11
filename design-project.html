@@ -36,6 +36,11 @@
             <p class="dropcap">The Rolls-Royce Spirit of Innovation is a modified Sharp Nemesis NXT racing airframe with three YASA 750R electric motors, a 400 kW power output, and about 6,000 cells in a 750 V battery of 216 kg that stores 90 kWh. It flies at a take-off mass of about 1,250 kg, and it holds the speed record for electric aircraft. The report this article comes from takes its 3 km record speed as <b>155.28 m/s</b>, which is 559 km/h, and asks one question: <b>what is the cheapest way to beat it by 1 %</b>, to 156.83 m/s or 564.6 km/h, so that the next record is held by this design?</p>
             <p>The question has a nice shape. A 1 % target is small enough that a modification of the existing aircraft should beat a new design on cost, but not so small that it is free. The honest first step is a model that says which variables move the top speed, and by how much.</p>
 
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/airframe-cad.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/airframe-cad.png" alt="Line drawing of the aircraft in three-quarter view: a single-engine low-wing racing aeroplane with a bubble canopy and a swept tailplane" loading="lazy"></a></div>
+                <figcaption><b>Fig. 1</b>The airframe. A line drawing of the aircraft the study starts from: a small single-engine racer with a low wing and a bubble canopy. Every change in the article is a change to this airframe.</figcaption>
+            </figure>
+
             <blockquote>What is the cheapest way to beat the record by one percent?<cite>The brief</cite></blockquote>
 
             <h2><span class="no">Part one</span>Power available against power required</h2>
@@ -46,7 +51,7 @@
 
             <figure>
                 <div class="plate"><canvas data-fig="power" role="img" aria-label="Power available and power required against airspeed for the chosen wing, with the unmodified aircraft dashed"></canvas></div>
-                <figcaption><b>Fig. 1</b>Power available and power required against airspeed for the report&rsquo;s wing. The top speed is where they cross. The dashed line is the power required by the aircraft as flown: the smaller wing lowers it, and the crossing moves to the right.</figcaption>
+                <figcaption><b>Fig. 2</b>Power available and power required against airspeed for the report&rsquo;s wing. The top speed is where they cross. The dashed line is the power required by the aircraft as flown: the smaller wing lowers it, and the crossing moves to the right.</figcaption>
             </figure>
 
             <ul>
@@ -69,10 +74,10 @@
 
             <figure>
                 <div class="plate"><canvas data-fig="plan" style="height:clamp(230px, 27vw, 310px)" role="img" aria-label="Wing planform of the chosen design against the aircraft as flown"></canvas></div>
-                <figcaption><b>Fig. 2</b>The wing planform, the chosen design (shaded) against the aircraft as flown (dashed). The span is fixed; the chord at the root and the taper change the area.</figcaption>
+                <figcaption><b>Fig. 3</b>The wing planform, the chosen design (shaded) against the aircraft as flown (dashed). The span is fixed; the chord at the root and the taper change the area.</figcaption>
             </figure>
 
-            <p>Taper alone gave the best first change. It keeps the span, the main structure and the control-surface layout, and so needs the least redesign and recertification. The selected concept has a root chord of about 1.19 m, a taper ratio of 0.45 and no sweep, which gives 6.28 m&sup2; in the report (the rounded figures in Fig. 2 give 6.30). Of the concepts that reduce the area enough, it was the only one that still satisfied the limit load factor required by the regulations: the wing becomes smaller and more heavily loaded as the area falls, and so the wing requirement fixed the span, the taper and a minimum area of 6.28 m&sup2;.</p>
+            <p>Taper alone gave the best first change. It keeps the span, the main structure and the control-surface layout, and so needs the least redesign and recertification. The selected concept has a root chord of about 1.19 m, a taper ratio of 0.45 and no sweep, which gives 6.28 m&sup2; in the report (the rounded figures in Fig. 3 give 6.30). Of the concepts that reduce the area enough, it was the only one that still satisfied the limit load factor required by the regulations: the wing becomes smaller and more heavily loaded as the area falls, and so the wing requirement fixed the span, the taper and a minimum area of 6.28 m&sup2;.</p>
 
             <div class="nums">
                 <div><span class="v" id="x-gain">&nbsp;</span><span class="k">speed gained over the baseline, target 1 %</span></div>
@@ -83,11 +88,50 @@
 
             <figure>
                 <div class="plate"><canvas data-fig="bars" style="height:clamp(230px, 28vw, 320px)" role="img" aria-label="Time over 3 km for the baseline and the design"></canvas></div>
-                <figcaption><b>Fig. 3</b>What a percent is worth: time over the 3 km course for the aircraft as flown and for the modified wing. The vertical axis starts at 18.9 s so that the difference can be seen.</figcaption>
+                <figcaption><b>Fig. 4</b>What a percent is worth: time over the 3 km course for the aircraft as flown and for the modified wing. The vertical axis starts at 18.9 s so that the difference can be seen.</figcaption>
             </figure>
 
-            <h2><span class="no">Part three</span>The checklist</h2>
-            <p class="flush">The user requirement specification turned the 1 % goal into numbers that a design either meets or does not. They are evaluated here for the chosen wing. The structural and aeroelastic parts of the design (the skin, spars, stringers and ribs of the new wing, and the divergence check) follow in the full report; the limit load factor of 3.61 g and the ultimate factor of 4.72 g are the structural targets those parts are designed against.</p>
+            <h2><span class="no">Part three</span>Inside the new wing</h2>
+            <p class="flush">A smaller wing is a more heavily loaded wing, so choosing the planform is only half of the job; the other half is making it strong enough. The limit load factor of 3.61 g and the ultimate factor of 4.72 g set the target, and the structure that meets it is a conventional one: ribs that hold the aerofoil shape, spars that carry the bending, stringers and a skin that carries the twist and the pressure.</p>
+
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/assembled-frame.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/assembled-frame.png" alt="Isometric line drawing of the complete internal structure of the aircraft: the fuselage frames, the spars and ribs of both wings and the tailplane" loading="lazy"></a></div>
+                <figcaption><b>Fig. 5</b>The fully assembled frame. The fuselage rings and the ribs and spars of the wings and tail, drawn without the skin, so the load path from wing to fuselage can be followed.</figcaption>
+            </figure>
+
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/wing-internal-structure.png" alt="Line drawing of the internal structure of the right wing: ribs with lightening holes, spars and stringers" loading="lazy"></a></div>
+                <figcaption><b>Fig. 6</b>The internal structure of the wing alone: ribs with lightening holes, running across, and spars and stringers running along the span. The holes remove weight where the rib is not carrying much.</figcaption>
+            </figure>
+
+            <figure>
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/foil-section.png" alt="The cross-section of the aerofoil with five lightening holes of decreasing size and the front and rear spars drawn as vertical lines with caps" loading="lazy"></a></div>
+                <figcaption><b>Fig. 7</b>The aerofoil section as defined for the new wing: the front and rear spars, drawn as vertical webs with caps at top and bottom, and lightening holes that shrink towards the trailing edge where the section is thin.</figcaption>
+            </figure>
+            <h3>The skin</h3>
+            <p class="flush">The skin is a carbon-fibre laminate, and how stiff it is depends on how its layers are turned. A layer with its fibres along the span (0&deg;) is very stiff in that direction; layers at &plusmn;45&deg; resist twisting. The plot is the standard way of choosing: stiffness in the span direction against the fraction of &plusmn;45&deg; layers, with one curve for each fraction of 0&deg; layers. For the unidirectional ply it uses E<sub>1</sub> = 140 GPa along the fibre, E<sub>2</sub> = 10 GPa across it, a shear modulus G<sub>12</sub> = 5 GPa and a Poisson&rsquo;s ratio of 0.30.</p>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/skin-stiffness-plot.png" alt="A graph of laminate stiffness Ex in GPa against the percentage of plus or minus 45 degree layers, with curves for 100, 80, 60, 40 and 20 percent of zero degree layers; the inset gives E1 140 GPa, E2 10 GPa, G12 5 GPa and nu12 0.30" loading="lazy"></a></div>
+                <figcaption><b>Fig. 8</b>Composite skin strength. Laminate stiffness E<sub>x</sub> in the span direction against the share of &plusmn;45&deg; layers, for several shares of 0&deg; layers. Stiffness is highest with every layer at 0&deg; (140 GPa) and falls steadily as the &plusmn;45&deg; share rises, which is the price of resisting twist.</figcaption>
+            </figure>
+            <p>The trade is plain from the curves. A skin made only of 0&deg; layers is stiffest in bending, but a wing also has to resist torsion and shear, and for that some &plusmn;45&deg; layers are needed. Each point on the plot is one compromise, and a stiffness target together with a mass budget picks the point.</p>
+            <h3>Choosing the material</h3>
+            <p class="flush">Which material to make the laminate and the core from is a question of stiffness for the weight. The chart below plots Young&rsquo;s modulus against density for every family of material, on logarithmic axes, so that a family appears as a bubble. The dashed guide lines show lines of equal merit for minimum-mass design: moving up and to the left, across the guide lines, always means a stiffer material for less mass. In the textbook form of this method the line E/&rho; is for a tie rod, E<sup>1/2</sup>/&rho; for a beam such as a spar, and E<sup>1/3</sup>/&rho; for a panel such as a skin. Composites (CFRP among them) sit well up and to the left of metals, which is why the wing is carbon.</p>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/ashby-modulus-density.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/ashby-modulus-density.png" alt="A Young&rsquo;s modulus against density chart with bubbles for foams, natural materials, polymers, elastomers, composites, technical ceramics and metals, and dashed guide lines for minimum mass design" loading="lazy"></a></div>
+                <figcaption><b>Fig. 9</b>Young&rsquo;s modulus against density, from the Granta materials database. Foams at the lower left, then polymers and elastomers, natural materials such as wood, composites, metals and ceramics. The dashed guide lines mark minimum-mass design.</figcaption>
+            </figure>
+            <h3>Making it</h3>
+            <p class="flush">A laminate is built by hand, layer by layer, in a mould. Fibre fabric is laid in the lower mould on a releasing gel (so that the finished part can be lifted out), wetted with epoxy, covered with the next layer, and pressed with the upper mould while it cures. The schematic shows the arrangement; it is a generic illustration of hybrid-laminate fabrication, with carbon fibre layers and a natural-fibre layer between them, and shows the order of the layers and the role of the moulds, not the layup schedule of this wing.</p>
+
+            <figure class="narrow">
+                <div class="plate"><a href="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" target="_blank" rel="noopener"><img src="./Syd%20Website%20Assets/Senior%20Research%20Projects/bw/laminate-fabrication.png" alt="Diagram of laminate fabrication showing an upper mould, carbon fibre layers, natural fibre layers, releasing gel, epoxy material and a lower mould" loading="lazy"></a></div>
+                <figcaption><b>Fig. 10</b>Fabrication of a hybrid composite laminate. Carbon fibre and natural-fibre layers are stacked between a lower and an upper mould, with releasing gel and epoxy; the upper mould presses the stack while it cures.</figcaption>
+            </figure>
+            <h2><span class="no">Part four</span>The checklist</h2>
+            <p class="flush">The user requirement specification turned the 1 % goal into numbers that a design either meets or does not. They are evaluated here for the chosen wing. The structural and aeroelastic detail (the sizing of the skin, spars, stringers and ribs, and the divergence check) follows in the full report; the limit load factor of 3.61 g and the ultimate factor of 4.72 g are the structural targets it is designed against.</p>
             <table>
                 <tr><th>Requirement</th><th>This design</th></tr>
                 <tr><td>Top speed of 564.6 km/h or more over 3 km</td><td id="u-speed"></td></tr>

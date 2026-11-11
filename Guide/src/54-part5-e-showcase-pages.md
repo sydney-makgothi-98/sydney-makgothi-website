@@ -225,6 +225,30 @@ On load, if the address ends in `#expertise-wheel`, the script reads the noteboo
 **What happens if you do not.** Each return is a long scroll back down through the introduction and the image sequence.
 :::
 
+## Pictures in Black and White
+
+The magazine pages first had only charts drawn in code. Later the author supplied photographs, drawings and scanned tables for the research and design articles, most of them in colour. "Purely black and white" applies to pictures too, so each was converted once, with a few lines of Python and the Pillow library, and the converted copies live in a `bw/` folder beside the originals:
+
+```
+im = Image.open(src).convert('RGBA')                      # keep any transparency
+white = Image.new('RGBA', im.size, (255, 255, 255, 255))
+white.alpha_composite(im)                                  # put it on white paper first
+gray = white.convert('L')                                  # then drop the colour
+gray.thumbnail((1600, 99999))                              # and cap the width
+```
+
+:::why Convert the files, and keep the originals
+**What it is.** Greyscale copies, saved at a sensible size, that the pages load instead of the originals.
+
+**Why it is done this way.** A CSS `filter: grayscale(1)` would also work, and the page keeps it as a safety net, but it makes every visitor download the full colour file. A transparent PNG also turns black where its transparency is, unless it is first laid on white, which is why the code composites before converting.
+
+**Why it matters.** The pages are lighter (the 14 images came to about 1.4 MB), and the picture is black and white in every browser, in print, and in a link preview.
+
+**What happens if you do not.** A colour table with a gold header shows up gold in a black-and-white article, and the original 2000-pixel scans slow the page.
+:::
+
+Each picture sits in a `<figure>` with a caption written for it, and is wrapped in a link to the full-size file, because the arrow tables are far too small to read at column width. The text next to each figure was written to match the picture and its file name: the stone-tool plate opens the research article, the terminology diagram defines the words the article uses, and the Ashby chart explains how the wing's material was chosen. Where a caption describes a diagram that came from somewhere else (the laminate schematic is generic, not this wing's layup), it says so.
+
 ## Telling the Truth on a Page That Looks Finished
 
 These pages have a lot of numbers and some of them are not measurements. A short rule kept the book and the site honest:
